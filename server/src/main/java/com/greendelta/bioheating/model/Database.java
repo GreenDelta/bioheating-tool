@@ -1,24 +1,40 @@
 package com.greendelta.bioheating.model;
 
+import java.util.HashMap;
 import java.util.Objects;
+
+import org.eclipse.persistence.jpa.PersistenceProvider;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import jakarta.persistence.EntityManagerFactory;
+
 public class Database implements AutoCloseable {
 
 	private final HikariDataSource pool;
+	private final EntityManagerFactory entityFactory;
 
 	public static Config of(String name) {
 		return new Config(name);
 	}
 
 	private Database(Config config) {
+
+		// create the connection pool
 		var poolConf = new HikariConfig();
 		poolConf.setJdbcUrl(config.url());
 		poolConf.setUsername(config.user);
 		poolConf.setPassword(config.password);
 		pool = new HikariDataSource(poolConf);
+
+		// create the JPA persistence manager
+		var jpaConfig = new HashMap<>();
+		jpaConfig.put("javax.persistence.nonJtaDataSource", pool);
+		// jpaConfig.put("jakarta.persistence.jdbc.driver", "org.postgresql.Driver");
+		// jpaConfig.put("eclipselink.target-database", "PostgreSQL");
+		entityFactory = new PersistenceProvider()
+			.createEntityManagerFactory("bio-heating", jpaConfig);
 	}
 
 	@Override
