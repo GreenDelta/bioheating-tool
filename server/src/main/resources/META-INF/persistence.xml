@@ -7,6 +7,7 @@
 	<persistence-unit name="bio-heating" transaction-type="RESOURCE_LOCAL">
 		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
 		<class>com.greendelta.bioheating.model.Project</class>
+		<class>com.greendelta.bioheating.model.User</class>
 		<shared-cache-mode>ALL</shared-cache-mode>
 
 		<properties>

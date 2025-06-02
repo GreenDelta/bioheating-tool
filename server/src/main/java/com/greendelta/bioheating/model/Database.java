@@ -1,13 +1,17 @@
 package com.greendelta.bioheating.model;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.eclipse.persistence.jpa.PersistenceProvider;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
 public class Database implements AutoCloseable {
@@ -36,13 +40,40 @@ public class Database implements AutoCloseable {
 			.createEntityManagerFactory("bio-heating", jpaConfig);
 	}
 
-	public <T extends BaseEntity> T insert(T entity) {
+	public <T extends BaseEntity> T getForId(Class<T> type, long id) {
+		try (var em = entityFactory.createEntityManager()) {
+			return em.find(type, id);
+		}
+	}
+
+	public <T extends BaseEntity> List<T> getAll(Class<T> type) {
+		try (var em = entityFactory.createEntityManager()) {
+			var q = em.createQuery(
+				"SELECT e FROM " + type.getSimpleName() + " e", type);
+			return q.getResultList();
+		}
+	}
+
+	public <T extends BaseEntity> void insert(T entity) {
+		withTransaction(em -> em.persist(entity));
+	}
+
+	public <T extends BaseEntity> T update(T entity) {
+		var ref = new AtomicReference<>(entity);
+		withTransaction(em -> ref.set(em.merge(entity)));
+		return ref.get();
+	}
+
+	public <T extends BaseEntity> void delete(T entity) {
+		withTransaction(em -> em.remove(entity));
+	}
+
+	private void withTransaction(Consumer<EntityManager> fn) {
 		var em = entityFactory.createEntityManager();
 		try {
 			em.getTransaction().begin();
-			em.persist(entity);
+			fn.accept(em);
 			em.getTransaction().commit();
-			return entity;
 		} catch (Exception e) {
 			if (em.getTransaction().isActive()) {
 				em.getTransaction().rollback();
