@@ -19,12 +19,13 @@ module.exports = {
   },
   output: {
     filename: 'main.js',
-    path: path.resolve(__dirname, 'static'),
+    path: path.resolve(__dirname, '../server/static'),
   },
   plugins: [
     new CopyWebpackPlugin({
       patterns: [
-        { from: 'node_modules/@picocss/pico/css/pico.min.css', to: './' }
+        { from: 'node_modules/@picocss/pico/css/pico.min.css', to: './' },
+				{ from: 'src/index.html', to: './' },
       ]
     })
   ]

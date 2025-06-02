@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/pico.min.css">
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>BIOHEATING - Tool</title>
+  <!-- see CSS variables: https://github.com/picocss/pico/blob/master/css/themes/default.css -->
+  <style>
+    [data-theme=light],
+    :root:not([data-theme=dark]) {
+      --primary: #258529;
+    }
+
+    :root {
+      --line-height: 1.0;
+    }
+
+    a {
+      cursor: pointer;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    footer.container {
+      min-height: 50px;
+      padding: 10px 0px;
+    }
+
+    main {
+      flex: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <main id="app" class="container"></main>
+  <footer class="container">
+    <nav>
+      <ul>
+        <li>
+          The BIOHEATING project 2025
+        </li>
+      </ul>
+      <ul>
+        <li><a href="/ui/about">About</a></li>
+      </ul>
+    </nav>
+  </footer>
+  <script src="/main.js"></script>
+</body>
+
+</html>
