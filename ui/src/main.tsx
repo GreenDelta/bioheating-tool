@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { useNavigate, Outlet, Link, RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { User } from './model';
 import * as api from './api';
+import { LoginPage } from './login';
 
 const Root = () => {
   const navigate = useNavigate();
@@ -57,6 +58,12 @@ function main() {
     {
       path: "/",
       element: <Root />,
+      children: [
+        {
+          path: "/ui/login",
+          element: <LoginPage />
+        }
+      ]
     }
   ]);
   const provider = <React.StrictMode>
