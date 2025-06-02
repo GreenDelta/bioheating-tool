@@ -1,6 +1,6 @@
 import { Credentials, User } from "./model";
 
-export async function postLogin(credentials: Credentials): Promise<User> {
+export async function postLogin(credentials: Credentials): Promise<boolean> {
   const r = await fetch("/api/users/login", {
     method: "POST",
     headers: {
@@ -8,11 +8,7 @@ export async function postLogin(credentials: Credentials): Promise<User> {
     },
     body: JSON.stringify(credentials),
   });
-  if (r.status !== 200) {
-    const message = await r.text();
-    throw new Error(`failed to login: ${message}`);
-  }
-  return r.json();
+	return r.status === 200;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
