@@ -15,11 +15,11 @@ public abstract class BaseEntity {
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "entity_seq")
 	@TableGenerator(
 		name = "entity_seq",
-		pkColumnName = "SEQ_NAME",
-		valueColumnName = "SEQ_COUNT",
+		pkColumnName = "seq_name",
+		valueColumnName = "seq_value",
 		pkColumnValue = "entity_seq",
 		allocationSize = 150,
-		table = "SEQUENCE")
+		table = "tbl_sequences")
 	private long id;
 
 	public long id() {

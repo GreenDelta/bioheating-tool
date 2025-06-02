@@ -14,16 +14,18 @@ public class Project extends BaseEntity {
 		return name;
 	}
 
-	public void name(String name) {
+	public Project name(String name) {
 		this.name = name;
+		return this;
 	}
 
 	public String description() {
 		return description;
 	}
 
-	public void description(String description) {
+	public Project description(String description) {
 		this.description = description;
+		return this;
 	}
 
 	@Override

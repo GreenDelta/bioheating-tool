@@ -30,11 +30,27 @@ public class Database implements AutoCloseable {
 
 		// create the JPA persistence manager
 		var jpaConfig = new HashMap<>();
-		jpaConfig.put("javax.persistence.nonJtaDataSource", pool);
-		// jpaConfig.put("jakarta.persistence.jdbc.driver", "org.postgresql.Driver");
-		// jpaConfig.put("eclipselink.target-database", "PostgreSQL");
+		jpaConfig.put("jakarta.persistence.nonJtaDataSource", pool);
+		jpaConfig.put("eclipselink.target-database", "PostgreSQL");
 		entityFactory = new PersistenceProvider()
 			.createEntityManagerFactory("bio-heating", jpaConfig);
+	}
+
+	public <T extends BaseEntity> T insert(T entity) {
+		var em = entityFactory.createEntityManager();
+		try {
+			em.getTransaction().begin();
+			em.persist(entity);
+			em.getTransaction().commit();
+			return entity;
+		} catch (Exception e) {
+			if (em.getTransaction().isActive()) {
+				em.getTransaction().rollback();
+			}
+			throw e;
+		} finally {
+			em.close();
+		}
 	}
 
 	@Override
