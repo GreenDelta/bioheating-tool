@@ -11,9 +11,10 @@ insert into tbl_sequences(seq_name, seq_value) values('entity_seq', 0);
 drop table if exists tbl_users;
 create table tbl_users (
     id int not null primary key,
-    username varchar(50),
-    password varchar(255),
-    email varchar(100)
+    username varchar,
+    password varchar,
+    full_name varchar,
+    is_admin boolean
 );
 
 
