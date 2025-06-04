@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.greendelta.bioheating.model.Database;
@@ -28,6 +29,12 @@ public class UserService {
 		return infos;
 	}
 
+	public Optional<User> getUser(Authentication auth) {
+		return auth != null && auth.isAuthenticated()
+			? getUser(auth.getName())
+			: Optional.empty();
+	}
+
 	public Optional<User> getUser(String name) {
 		if (name == null || name.isBlank())
 			return Optional.empty();
@@ -49,7 +56,7 @@ public class UserService {
 		if (data == null)
 			return Res.error("no user data provided");
 
-		if(getUser(data.name).isPresent())
+		if (getUser(data.name).isPresent())
 			return Res.error("a user '" + data.name + "' already exists");
 
 		var nameRes = validateUserName(data.name);

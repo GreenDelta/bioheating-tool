@@ -1,6 +1,7 @@
 package com.greendelta.bioheating.services;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -20,76 +21,46 @@ public class ProjectService {
 		this.db = db;
 	}
 
-	public List<Project> getProjectsForUser(String username) {
-		var user = db.get(User.class, "name", username).orElse(null);
-		if (user == null) {
+	public List<Project> getProjects(User user) {
+		if (user == null)
 			return List.of();
-		}
-		return db.getAll(
-			"select p from Project p where p.user.name = ?1 order by p.name",
-			Project.class, username
-		);
+		return db.getAll(Project.class).stream()
+			.filter(p -> Objects.equals(p.user(), user))
+			.toList();
 	}
 
-	public Optional<Project> getProject(long projectId, String username) {
-		var project = db.get(Project.class, projectId).orElse(null);
-		if (project == null) {
+	public Optional<Project> getProject(User user, long id) {
+		if (user == null)
 			return Optional.empty();
-		}
-		// Check if the project belongs to the user
-		if (project.user() == null || !Strings.eq(project.user().name(), username)) {
-			return Optional.empty();
-		}
-		return Optional.of(project);
+		var p = db.getForId(Project.class, id);
+		return p != null && Objects.equals(user, p.user())
+			? Optional.of(p)
+			: Optional.empty();
 	}
 
-	public Res<ProjectInfo> createProject(ProjectData data, String username) {
-		if (data == null) {
-			return Res.error("no project data given");
-		}
-		if (Strings.nullOrEmpty(data.name)) {
+	public Res<Project> createProject(User user, ProjectData data) {
+		if (user == null || data == null)
+			return Res.error("no user or project data given");
+		if (Strings.isNil(data.name))
 			return Res.error("project name is required");
-		}
-
-		var user = db.get(User.class, "name", username).orElse(null);
-		if (user == null) {
-			return Res.error("user not found: " + username);
-		}
-
-		// Check if project name already exists for this user
-		var existing = db.getFirst(
-			"select p from Project p where p.user.name = ?1 and p.name = ?2",
-			Project.class, username, data.name
-		);
-		if (existing.isPresent()) {
-			return Res.error("project with name '" + data.name + "' already exists");
-		}
 
 		var project = new Project()
 			.name(data.name)
 			.description(data.description)
 			.user(user);
-
 		db.insert(project);
-		return Res.of(ProjectInfo.of(project));
+		return Res.of(project);
 	}
 
-	public static class ProjectData {
-		public String name;
-		public String description;
-	}
+	public record ProjectData(
+		long id, String name, String description
+	) {
 
-	public static class ProjectInfo {
-		public long id;
-		public String name;
-		public String description;
-
-		public static ProjectInfo of(Project project) {
-			var info = new ProjectInfo();
-			info.id = project.id();
-			info.name = project.name();
-			info.description = project.description();
-			return info;
+		public static ProjectData of(Project p) {
+			return new ProjectData(
+				p.id(), p.name(), p.description()
+			);
 		}
 	}
+
 }
