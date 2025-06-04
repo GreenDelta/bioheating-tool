@@ -52,6 +52,18 @@ public class ProjectService {
 		return Res.of(project);
 	}
 
+	public Res<Void> deleteProject(User user, long projectId) {
+		if (user == null)
+			return Res.error("no user given");
+		var project = db.getForId(Project.class, projectId);
+		if (project == null)
+			return Res.error("project not found");
+		if (!Objects.equals(user, project.user()))
+			return Res.error("not authorized to delete this project");
+		db.delete(project);
+		return Res.VOID;
+	}
+
 	public record ProjectData(
 		long id, String name, String description
 	) {

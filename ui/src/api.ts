@@ -54,3 +54,13 @@ export async function getProject(id: number): Promise<Project | null> {
 	return r.status === 200 ? r.json() : null;
 }
 
+export async function deleteProject(id: number): Promise<void> {
+	const r = await fetch(`/api/projects/${id}`, {
+		method: "DELETE",
+	});
+	if (r.status !== 200) {
+		const message = await r.text();
+		throw new Error(`failed to delete project: ${message}`);
+	}
+}
+

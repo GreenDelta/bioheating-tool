@@ -2,6 +2,7 @@ package com.greendelta.bioheating.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,5 +63,19 @@ public class ProjectController {
 		return result.hasError()
 			? Http.badRequest("failed to create project: " + result.error())
 			: Http.ok(result.value());
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> deleteProject(
+		Authentication auth, @PathVariable long id
+	) {
+		var user = users.getUser(auth).orElse(null);
+		if (user == null)
+			return Http.badRequest("not authenticated");
+
+		var result = projects.deleteProject(user, id);
+		return result.hasError()
+			? Http.badRequest("failed to delete project: " + result.error())
+			: Http.ok("project deleted successfully");
 	}
 }
