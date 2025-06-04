@@ -107,7 +107,8 @@ function main() {
 					children: [
 						{
 							path: "projects",
-							element: <ProjectList />
+							Component: ProjectList,
+							loader: api.getProjects,
 						},
 						{
 							path: "projects/new",
