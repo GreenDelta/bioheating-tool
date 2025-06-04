@@ -22,7 +22,8 @@ drop table if exists tbl_projects;
 create table tbl_projects (
     id int not null primary key,
     name varchar,
-    description text
+    description text,
+    f_user int
 );
 
 

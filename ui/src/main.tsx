@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { useNavigate, Outlet, Link, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { useNavigate, Outlet, Link, RouterProvider, createBrowserRouter, useParams } from 'react-router-dom';
 import { User } from './model';
 import * as api from './api';
 import { LoginPage } from './login';
+import { ProjectList, ProjectForm, ProjectDetail } from './projects';
 
 const Root = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const MainMenu = (props: { user: User | null, onLogout: () => void }) => {
       <ul>
         <li><Link to="/">BIOHEATING</Link></li>
         <li></li>
+        <li><Link to="/ui/projects">projects</Link></li>
         <li><Link to="/ui/users">users</Link></li>
       </ul>
       <ul>
@@ -53,6 +55,11 @@ const MainMenu = (props: { user: User | null, onLogout: () => void }) => {
   );
 };
 
+const ProjectDetailWrapper = () => {
+  const { id } = useParams();
+  return <ProjectDetail projectId={parseInt(id || '0', 10)} />;
+};
+
 function main() {
   const router = createBrowserRouter([
     {
@@ -62,6 +69,18 @@ function main() {
         {
           path: "/ui/login",
           element: <LoginPage />
+        },
+        {
+          path: "/ui/projects",
+          element: <ProjectList />
+        },
+        {
+          path: "/ui/projects/new",
+          element: <ProjectForm />
+        },
+        {
+          path: "/ui/projects/:id",
+          element: <ProjectDetailWrapper />
         }
       ]
     }

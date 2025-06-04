@@ -1,4 +1,4 @@
-import { Credentials, User } from "./model";
+import { Credentials, User, Project, ProjectData } from "./model";
 
 export async function postLogin(credentials: Credentials): Promise<boolean> {
   const r = await fetch("/api/users/login", {
@@ -24,5 +24,33 @@ export async function postLogout(): Promise<void> {
 		const message = await r.text();
 		throw new Error(`failed to logout: ${message}`);
 	}
+}
+
+export async function getProjects(): Promise<Project[]> {
+	const r = await fetch("/api/projects");
+	if (r.status !== 200) {
+		throw new Error(`failed to fetch projects: ${r.statusText}`);
+	}
+	return r.json();
+}
+
+export async function createProject(data: ProjectData): Promise<Project> {
+	const r = await fetch("/api/projects", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(data),
+	});
+	if (r.status !== 200) {
+		const message = await r.text();
+		throw new Error(`failed to create project: ${message}`);
+	}
+	return r.json();
+}
+
+export async function getProject(id: number): Promise<Project | null> {
+	const r = await fetch(`/api/projects/${id}`);
+	return r.status === 200 ? r.json() : null;
 }
 
