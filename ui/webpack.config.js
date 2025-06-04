@@ -28,5 +28,8 @@ module.exports = {
 				{ from: 'src/index.html', to: './' },
       ]
     })
-  ]
+  ],
+  performance: {
+    hints: false
+  }
 };
