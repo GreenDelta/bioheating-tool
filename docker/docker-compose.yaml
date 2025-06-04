@@ -1,0 +1,25 @@
+services:
+  bioheating-db:
+    image: bioheating-db:latest
+    container_name: bioheating-db
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: bioheating
+      POSTGRES_DB: bioheating
+      PGDATA: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    network_mode: host
+
+  bioheating-app:
+    image: bioheating-app:latest
+    container_name: bioheating-app
+    depends_on:
+      bioheating-db:
+        condition: service_healthy
+    network_mode: host
