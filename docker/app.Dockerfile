@@ -12,6 +12,6 @@ RUN apt-get install -y ./scip.deb && rm scip.deb
 
 COPY bioheating-tool.jar /app/bioheating-tool.jar
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["java", "-XX:MaxRAMPercentage=80", "-XX:+UseG1GC", "-jar", "bioheating-tool.jar"]

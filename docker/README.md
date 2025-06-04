@@ -52,10 +52,10 @@ cd docker
 docker build -t bioheating-app . -f app.Dockerfile
 
 # run it
-docker run --rm -d -p 8080:8080 --name bioheating-app bioheating-app
+docker run --rm -d -p 3000:3000 --name bioheating-app bioheating-app
 
 # or interactively
-docker run --rm -it -p 8080:8080 --name bioheating-app bioheating-app
+docker run --rm -it -p 3000:3000 --name bioheating-app bioheating-app
 ```
 
 
