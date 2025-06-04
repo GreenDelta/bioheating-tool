@@ -36,7 +36,7 @@ export const LoginPage = () => {
 		navigate("/");
 	}
 
-	return <form style={{paddingTop: "5%"}}>
+	return <form style={{ paddingTop: "5%" }}>
 		<div className="grid">
 			<div />
 			<label>
@@ -65,7 +65,11 @@ export const LoginPage = () => {
 		</div>
 		<div className="grid">
 			<div />
-			<button type="button" onClick={() => onLogin()}>Login</button>
+			<button
+				type="button" onClick={() => onLogin()}
+				style={{ marginTop: 10, justifySelf: "start", width: "33%" }}>
+				Login
+			</button>
 			<div />
 		</div>
 	</form>;

@@ -2,18 +2,38 @@ import React from 'react';
 import { Link, useLoaderData, useNavigate } from 'react-router-dom';
 import { Project } from '../model';
 import { AddIcon, DeleteIcon } from '../icons';
+import * as api from "../api";
 
 export const ProjectList = () => {
 	const projects: Project[] = useLoaderData();
+	const [deletable, setDeletable] = React.useState<Project | null>(null);
+
+	const onDelete = (b: boolean) => {
+		if (!b || !deletable) {
+			setDeletable(null);
+			return;
+		}
+		// TODO delete a project via the API
+		const idx = projects.indexOf(deletable);
+		if (idx > -1) {
+			projects.splice(idx, 1);
+		}
+		setDeletable(null);
+	};
+
 	return (
 		<div>
 			<h1>My Projects</h1>
-			<ProjectTable projects={projects} />
+			<DeleteDialog project={deletable} doIt={onDelete} />
+			<ProjectTable projects={projects} onDelete={setDeletable} />
 		</div>
 	)
 };
 
-const ProjectTable = ({ projects }: { projects: Project[] }) => {
+const ProjectTable = ({ projects, onDelete }: {
+	projects: Project[],
+	onDelete: (p: Project) => void,
+}) => {
 	if (!projects || projects.length === 0) {
 		return <div>
 			<Link to="/ui/projects/new">Create your first project.</Link>
@@ -30,7 +50,7 @@ const ProjectTable = ({ projects }: { projects: Project[] }) => {
 				</Link>
 			</td>
 			<td style={{ textAlign: "right" }}>
-				<DeleteIcon color="var(--pico-del-color)"/>
+				<DeleteIcon color="var(--pico-del-color)" onClick={() => onDelete(p)} />
 			</td>
 		</tr>
 	));
@@ -49,4 +69,28 @@ const ProjectTable = ({ projects }: { projects: Project[] }) => {
 			</tbody>
 		</table>
 	);
+};
+
+const DeleteDialog = ({ project, doIt }: {
+	project: Project | null,
+	doIt: (b: boolean) => void
+}) => {
+	if (!project) {
+		return <></>;
+	}
+	return (
+		<dialog open={true}>
+			<article>
+				<p>
+					Do you really want to delete project <em>{project.name}</em>?
+				</p>
+				<footer>
+					<div className="grid">
+						<button className="secondary" onClick={() => doIt(false)}>Cancel</button>
+						<button onClick={() => doIt(true)}>OK</button>
+					</div>
+				</footer>
+			</article>
+		</dialog>
+	)
 }

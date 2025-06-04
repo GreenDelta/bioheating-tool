@@ -2,55 +2,61 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/pico.min.css">
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <title>BIOHEATING - Tool</title>
-  <!-- see CSS variables: https://github.com/picocss/pico/blob/master/css/themes/default.css -->
-  <style>
-    a {
-      cursor: pointer;
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="/pico.min.css">
+	<link rel="icon" type="image/png" href="/favicon.png" />
+	<title>BIOHEATING - Tool</title>
+	<!-- see CSS variables: https://github.com/picocss/pico/blob/master/css/themes/default.css -->
+	<style>
+		:root {
+			--pico-form-element-spacing-vertical: 0.25rem;
+			--pico-form-element-spacing-horizontal: 0.25rem;
+			--pico-spacing: 0.5rem;
+		}
+
+		a {
+			cursor: pointer;
 			text-decoration: none;
-    }
+		}
 
 		h1 {
 			--pico-font-size: 1.2em;
 		}
 
-    body {
-      min-height: 100vh;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-    }
+		body {
+			min-height: 100vh;
+			margin: 0;
+			display: flex;
+			flex-direction: column;
+		}
 
-    footer.container {
-      min-height: 50px;
-      padding: 10px 0px;
-    }
+		footer.container {
+			min-height: 50px;
+			padding: 10px 0px;
+		}
 
-    main {
-      flex: 1;
-    }
-  </style>
+		main {
+			flex: 1;
+		}
+	</style>
 </head>
 
 <body>
-  <main id="app" class="container"></main>
-  <footer class="container">
-    <nav>
-      <ul>
-        <li>
-          The BIOHEATING Project 2025
-        </li>
-      </ul>
-      <ul>
-        <li><a href="/ui/about">About</a></li>
-      </ul>
-    </nav>
-  </footer>
-  <script src="/main.js"></script>
+	<main id="app" class="container"></main>
+	<footer class="container">
+		<nav>
+			<ul>
+				<li>
+					The BIOHEATING Project 2025
+				</li>
+			</ul>
+			<ul>
+				<li><a href="/ui/about">About</a></li>
+			</ul>
+		</nav>
+	</footer>
+	<script src="/main.js"></script>
 </body>
 
 </html>
