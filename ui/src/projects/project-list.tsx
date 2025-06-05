@@ -2,11 +2,11 @@ import React from 'react';
 import { Link, useLoaderData, useNavigate } from 'react-router-dom';
 import { Project } from '../model';
 import { AddIcon, DeleteIcon } from '../icons';
-import { Res } from '../api';
+import * as api from '../api';
 
 export const ProjectList = () => {
 
-	const res: Res<Project[]> = useLoaderData();
+	const res: api.Res<Project[]> = useLoaderData();
 	const projects = res.isOk ? res.value : [];
 
 	const [deletable, setDeletable] = React.useState<Project | null>(null);
@@ -16,11 +16,19 @@ export const ProjectList = () => {
 			setDeletable(null);
 			return;
 		}
-		// TODO delete a project via the API
-		const idx = projects.indexOf(deletable);
+
+		const p = deletable;
+
+		const idx = projects.indexOf(p);
 		if (idx > -1) {
 			projects.splice(idx, 1);
 		}
+		api.deleteProject(p.id).then(res => {
+			if (res.isErr) {
+				// TODO: navigate to an error page
+			}
+		});
+
 		setDeletable(null);
 	};
 
@@ -84,16 +92,23 @@ const DeleteDialog = ({ project, doIt }: {
 	return (
 		<dialog open={true}>
 			<article>
+				<header>
+					Delete project?
+				</header>
 				<p>
-					Do you really want to delete project <em>{project.name}</em>?
+					Do you really want to delete project <em>{project.name}</em>? Note
+					that this cannot be undone.
 				</p>
 				<footer>
 					<div className="grid">
-						<button className="secondary" onClick={() => doIt(false)}>Cancel</button>
-						<button onClick={() => doIt(true)}>OK</button>
+						<div />
+						<div className="grid">
+							<button className="secondary" onClick={() => doIt(false)}>Cancel</button>
+							<button onClick={() => doIt(true)}>OK</button>
+						</div>
 					</div>
 				</footer>
 			</article>
 		</dialog>
 	)
-}
+};

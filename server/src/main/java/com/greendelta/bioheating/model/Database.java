@@ -65,7 +65,12 @@ public class Database implements AutoCloseable {
 	}
 
 	public <T extends BaseEntity> void delete(T entity) {
-		withTransaction(em -> em.remove(entity));
+		withTransaction(em -> {
+			var e = em.contains(entity)
+				? entity
+				: em.merge(entity);
+			em.remove(e);
+		});
 	}
 
 	private void withTransaction(Consumer<EntityManager> fn) {
