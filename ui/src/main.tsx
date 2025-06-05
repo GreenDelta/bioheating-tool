@@ -16,6 +16,7 @@ import * as api from './api';
 import { LoginPage } from './login';
 import { ProjectList, ProjectForm, ProjectDetail } from './projects';
 import { HomePage } from './home';
+import { ErrorPage } from './error-page';
 
 
 const MainMenu = (props: { user: User | null, onLogout: () => void }) => {
@@ -101,6 +102,10 @@ function main() {
 				{
 					path: "/ui/login",
 					element: <LoginPage />
+				},
+				{
+					path: "/ui/error",
+					element: <ErrorPage />
 				},
 				{
 					path: "/ui",

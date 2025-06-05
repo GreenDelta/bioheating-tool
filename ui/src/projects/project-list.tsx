@@ -7,8 +7,18 @@ import * as api from '../api';
 export const ProjectList = () => {
 
 	const res: api.Res<Project[]> = useLoaderData();
-	const projects = res.isOk ? res.value : [];
+	const navigate = useNavigate();
 
+	if (res.isErr) {
+		const params = new URLSearchParams({
+			message: 'Failed to load projects',
+			details: res.error
+		});
+		navigate(`/ui/error?${params.toString()}`);
+		return null;
+	}
+
+	const projects = res.value;
 	const [deletable, setDeletable] = React.useState<Project | null>(null);
 
 	const onDelete = (b: boolean) => {
@@ -25,7 +35,11 @@ export const ProjectList = () => {
 		}
 		api.deleteProject(p.id).then(res => {
 			if (res.isErr) {
-				// TODO: navigate to an error page
+				const params = new URLSearchParams({
+					message: 'Failed to delete project',
+					details: res.error
+				});
+				navigate(`/ui/error?${params.toString()}`);
 			}
 		});
 
