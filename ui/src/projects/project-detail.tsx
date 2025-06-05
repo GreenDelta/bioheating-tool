@@ -1,41 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLoaderData } from 'react-router-dom';
 import { Project } from '../model';
 import * as api from '../api';
 
-export const ProjectDetail = ({ projectId }: { projectId: number }) => {
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const ProjectDetail = () => {
 
-  useEffect(() => {
-    loadProject();
-  }, [projectId]);
-
-  const loadProject = async () => {
-    try {
-      setLoading(true);
-      const projectData = await api.getProject(projectId);
-      setProject(projectData);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load project');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return <div>Loading project...</div>;
+	const res: api.Res<Project> = useLoaderData();
+  if (res.isErr) {
+    return <div style={{ color: 'red' }}>Error: {res.error}</div>;
   }
-
-  if (error) {
-    return <div style={{ color: 'red' }}>Error: {error}</div>;
-  }
-
-  if (!project) {
-    return <div>Project not found</div>;
-  }
+	const project = res.value;
 
   return (
     <div>

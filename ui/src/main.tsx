@@ -57,7 +57,13 @@ const Root = () => {
 	const navigate = useNavigate();
 	const [user, setUser] = React.useState<User | null>(null);
 	useEffect(() => {
-		api.getCurrentUser().then(setUser);
+		api.getCurrentUser().then(u => {
+			if (u.isErr) {
+				setUser(null);
+			} else {
+				setUser(u.value);
+			}
+		});
 	}, [])
 
 	const onLogout = () => {
@@ -80,11 +86,6 @@ const ProtectedRoutes = () => {
 	return <Outlet context={[user]} />;
 };
 
-
-const ProjectDetailWrapper = () => {
-	const { id } = useParams();
-	return <ProjectDetail projectId={parseInt(id || '0', 10)} />;
-};
 
 function main() {
 	const router = createBrowserRouter([
@@ -116,7 +117,11 @@ function main() {
 						},
 						{
 							path: "projects/:id",
-							element: <ProjectDetailWrapper />
+							Component: ProjectDetail,
+							loader: async () => {
+								const { id } = useParams();
+								return api.getProject(parseInt(id || '0', 10));
+							}
 						}
 					]
 				}

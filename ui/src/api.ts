@@ -26,7 +26,7 @@ export class Res<T> {
 		return typeof this.value !== "undefined";
 	}
 
-	get hasError(): boolean {
+	get isErr(): boolean {
 		return typeof this._err === "string";
 	}
 
@@ -54,30 +54,38 @@ export async function postLogin(credentials: Credentials): Promise<Res<boolean>>
 	return Res.err(`login failed: ${r.status} | ${msg}`);
 }
 
-export async function getCurrentUser(): Promise<User | null> {
+export async function getCurrentUser(): Promise<Res<User>> {
 	const r = await fetch("/api/users/current");
-	return r.status === 200 ? r.json() : null;
+	if (r.status === 200) {
+		const user = await r.json();
+		return Res.ok(user);
+	}
+	const msg = await r.text();
+	return Res.err(`failed to get current user: ${r.status} | ${msg}`);
 }
 
-export async function postLogout(): Promise<void> {
+export async function postLogout(): Promise<Res<boolean>> {
 	const r = await fetch("/api/users/logout", {
 		method: "POST",
 	});
-	if (r.status !== 200) {
-		const message = await r.text();
-		throw new Error(`failed to logout: ${message}`);
+	if (r.status === 200) {
+		return Res.ok(true);
 	}
+	const msg = await r.text();
+	return Res.err(`failed to logout: ${r.status} | ${msg}`);
 }
 
-export async function getProjects(): Promise<Project[]> {
+export async function getProjects(): Promise<Res<Project[]>> {
 	const r = await fetch("/api/projects");
-	if (r.status !== 200) {
-		throw new Error(`failed to fetch projects: ${r.statusText}`);
+	if (r.status === 200) {
+		const projects = await r.json();
+		return Res.ok(projects);
 	}
-	return r.json();
+	const msg = await r.text();
+	return Res.err(`failed to get projects: ${r.status} | ${msg}`);
 }
 
-export async function createProject(data: ProjectData): Promise<Project> {
+export async function createProject(data: ProjectData): Promise<Res<Project>> {
 	const r = await fetch("/api/projects", {
 		method: "POST",
 		headers: {
@@ -85,25 +93,35 @@ export async function createProject(data: ProjectData): Promise<Project> {
 		},
 		body: JSON.stringify(data),
 	});
-	if (r.status !== 200) {
-		const message = await r.text();
-		throw new Error(`failed to create project: ${message}`);
+	if (r.status === 200) {
+		const project = await r.json();
+		return Res.ok(project);
 	}
-	return r.json();
+	const msg = await r.text();
+	return Res.err(`failed to create project: ${r.status} | ${msg}`);
 }
 
-export async function getProject(id: number): Promise<Project | null> {
+export async function getProject(id: number): Promise<Res<Project>> {
 	const r = await fetch(`/api/projects/${id}`);
-	return r.status === 200 ? r.json() : null;
+	if (r.status === 200) {
+		const project = await r.json();
+		return Res.ok(project);
+	}
+	if (r.status === 404) {
+		return Res.err("project not found");
+	}
+	const msg = await r.text();
+	return Res.err(`failed to get project: ${r.status} | ${msg}`);
 }
 
-export async function deleteProject(id: number): Promise<void> {
+export async function deleteProject(id: number): Promise<Res<boolean>> {
 	const r = await fetch(`/api/projects/${id}`, {
 		method: "DELETE",
 	});
-	if (r.status !== 200) {
-		const message = await r.text();
-		throw new Error(`failed to delete project: ${message}`);
+	if (r.status === 200) {
+		return Res.ok(true);
 	}
+	const msg = await r.text();
+	return Res.err(`failed to delete project: ${r.status} | ${msg}`);
 }
 

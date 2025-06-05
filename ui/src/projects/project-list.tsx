@@ -2,10 +2,13 @@ import React from 'react';
 import { Link, useLoaderData, useNavigate } from 'react-router-dom';
 import { Project } from '../model';
 import { AddIcon, DeleteIcon } from '../icons';
-import * as api from "../api";
+import { Res } from '../api';
 
 export const ProjectList = () => {
-	const projects: Project[] = useLoaderData();
+
+	const res: Res<Project[]> = useLoaderData();
+	const projects = res.isOk ? res.value : [];
+
 	const [deletable, setDeletable] = React.useState<Project | null>(null);
 
 	const onDelete = (b: boolean) => {
