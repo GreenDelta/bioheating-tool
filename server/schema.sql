@@ -23,6 +23,7 @@ create table tbl_projects (
     id int not null primary key,
     name varchar,
     description text,
+    citygml_filename varchar,
     f_user int
 );
 

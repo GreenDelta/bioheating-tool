@@ -10,23 +10,31 @@ export const ProjectForm = () => {
 		name: '',
 		description: ''
 	});
+	const [cityGmlFile, setCityGmlFile] = useState<File | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
 	const handleSubmit = async () => {
 		if (!data.name.trim()) {
 			setError('Project name is required');
 			return;
 		}
 
+		if (!cityGmlFile) {
+			setError('CityGML file is required');
+			return;
+		}
+
 		setLoading(true);
 		setError(null);
-		const res = await api.createProject(data);
+		
+		const res = await api.createProjectWithFile(data.name, data.description, cityGmlFile);
 		setLoading(false);
+		
 		if (res.isErr) {
 			setError(res.error);
 			return;
 		}
+		
 		navigate("/ui/projects");
 	};
 
@@ -57,11 +65,22 @@ export const ProjectForm = () => {
 					}}
 					rows={2}
 				/>
-			</label>
-
-			<label>
+			</label>			<label>
 				CityGML
-				<input type="file" />
+				<input 
+					type="file" 
+					accept=".gml,.xml"
+					onChange={(e) => {
+						const file = e.target.files?.[0] || null;
+						setCityGmlFile(file);
+						setError(null);
+					}}
+				/>
+				{cityGmlFile && (
+					<small style={{ color: 'var(--pico-muted-color)' }}>
+						Selected: {cityGmlFile.name} ({(cityGmlFile.size / 1024).toFixed(1)} KB)
+					</small>
+				)}
 			</label>
 
 			<div className="grid">

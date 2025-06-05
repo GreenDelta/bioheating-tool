@@ -13,9 +13,11 @@ export interface Project {
 	id: number;
 	name: string;
 	description: string;
+	cityGmlFileName?: string;
 }
 
 export interface ProjectData {
 	name: string;
 	description: string;
+	cityGmlFileName?: string;
 }

@@ -13,9 +13,11 @@ public class Project extends BaseEntity {
 
 	@Column(name = "name")
 	private String name;
-
 	@Column(name = "description")
 	private String description;
+
+	@Column(name = "citygml_filename")
+	private String cityGmlFileName;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "f_user")
@@ -33,9 +35,17 @@ public class Project extends BaseEntity {
 	public String description() {
 		return description;
 	}
-
 	public Project description(String description) {
 		this.description = description;
+		return this;
+	}
+
+	public String cityGmlFileName() {
+		return cityGmlFileName;
+	}
+
+	public Project cityGmlFileName(String cityGmlFileName) {
+		this.cityGmlFileName = cityGmlFileName;
 		return this;
 	}
 

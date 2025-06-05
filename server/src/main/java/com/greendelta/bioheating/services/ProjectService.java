@@ -37,7 +37,6 @@ public class ProjectService {
 			? Optional.of(p)
 			: Optional.empty();
 	}
-
 	public Res<Project> createProject(User user, ProjectData data) {
 		if (user == null || data == null)
 			return Res.error("no user or project data given");
@@ -47,6 +46,7 @@ public class ProjectService {
 		var project = new Project()
 			.name(data.name)
 			.description(data.description)
+			.cityGmlFileName(data.cityGmlFileName)
 			.user(user);
 		db.insert(project);
 		return Res.of(project);
@@ -63,14 +63,13 @@ public class ProjectService {
 		db.delete(project);
 		return Res.VOID;
 	}
-
 	public record ProjectData(
-		long id, String name, String description
+		long id, String name, String description, String cityGmlFileName
 	) {
 
 		public static ProjectData of(Project p) {
 			return new ProjectData(
-				p.id(), p.name(), p.description()
+				p.id(), p.name(), p.description(), p.cityGmlFileName()
 			);
 		}
 	}

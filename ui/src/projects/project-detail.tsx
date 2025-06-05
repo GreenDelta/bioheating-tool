@@ -31,12 +31,13 @@ export const ProjectDetail = () => {
           <h3>Description</h3>
           <p style={{ margin: 0 }}>{project.description}</p>
         </div>
-      )}
-
-      <div style={{ marginTop: '32px' }}>
+      )}      <div style={{ marginTop: '32px' }}>
         <h3>Project Details</h3>
         <p><strong>ID:</strong> {project.id}</p>
         <p><strong>Name:</strong> {project.name}</p>
+        {project.cityGmlFileName && (
+          <p><strong>CityGML File:</strong> {project.cityGmlFileName}</p>
+        )}
       </div>
     </div>
   );

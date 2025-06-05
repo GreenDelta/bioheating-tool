@@ -101,6 +101,29 @@ export async function createProject(data: ProjectData): Promise<Res<Project>> {
 	return Res.err(`failed to create project: ${r.status} | ${msg}`);
 }
 
+export async function createProjectWithFile(
+	name: string,
+	description: string,
+	cityGmlFile: File
+): Promise<Res<Project>> {
+	const formData = new FormData();
+	formData.append('name', name);
+	formData.append('description', description);
+	formData.append('cityGmlFile', cityGmlFile);
+
+	const r = await fetch("/api/projects/with-file", {
+		method: "POST",
+		body: formData,
+	});
+
+	if (r.status === 200) {
+		const project = await r.json();
+		return Res.ok(project);
+	}
+	const msg = await r.text();
+	return Res.err(`failed to create project: ${r.status} | ${msg}`);
+}
+
 export async function getProject(id: number): Promise<Res<Project>> {
 	const r = await fetch(`/api/projects/${id}`);
 	if (r.status === 200) {
