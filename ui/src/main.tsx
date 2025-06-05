@@ -124,9 +124,8 @@ function main() {
 						{
 							path: "projects/:id",
 							Component: ProjectDetail,
-							loader: async () => {
-								const { id } = useParams();
-								return api.getProject(parseInt(id || '0', 10));
+							loader: async ({ params }) => {
+								return api.getProject(parseInt(params.id || '0', 10));
 							}
 						}
 					]
