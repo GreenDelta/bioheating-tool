@@ -116,7 +116,7 @@ public class ProjectController {
 			Files.copy(cityGmlFile.getInputStream(), filePath);
 
 			// Create project without file first
-			var projectData = new ProjectData(0, name, description, null);
+			var projectData = new ProjectData(0, name, description);
 			var createResult = projects.createProject(user, projectData);
 
 			if (createResult.hasError()) {

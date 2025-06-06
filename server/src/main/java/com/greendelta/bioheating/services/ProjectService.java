@@ -46,7 +46,6 @@ public class ProjectService {
 		var project = new Project()
 			.name(data.name)
 			.description(data.description)
-			.cityGmlFileName(data.cityGmlFileName)
 			.user(user);
 		db.insert(project);
 		return Res.of(project);
@@ -64,12 +63,12 @@ public class ProjectService {
 		return Res.VOID;
 	}
 	public record ProjectData(
-		long id, String name, String description, String cityGmlFileName
+		long id, String name, String description
 	) {
 
 		public static ProjectData of(Project p) {
 			return new ProjectData(
-				p.id(), p.name(), p.description(), p.cityGmlFileName()
+				p.id(), p.name(), p.description()
 			);
 		}
 	}
