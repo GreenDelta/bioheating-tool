@@ -12,9 +12,13 @@ import org.xmlobjects.gml.model.geometry.primitives.Polygon;
 
 import com.greendelta.bioheating.util.Res;
 
-class PolygonReader {
+class GroundSurfaceReader {
 
-	private final GeometryFactory factory = new GeometryFactory();
+	private final GeometryFactory factory;
+
+	GroundSurfaceReader(GeometryFactory factory) {
+		this.factory = factory;
+	}
 
 	Res<org.locationtech.jts.geom.Polygon> read(Building building) {
 		var cs3d = coosOf(building);

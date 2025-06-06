@@ -72,7 +72,6 @@ public record GmlAddress(
 		return null;
 	}
 
-
 	private static String strOf(List<? extends Name<?>> names) {
 		if (names == null)
 			return null;
@@ -83,6 +82,5 @@ public record GmlAddress(
 		}
 		return null;
 	}
-
 }
 
