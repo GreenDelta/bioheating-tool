@@ -54,8 +54,9 @@ public class Database implements AutoCloseable {
 		}
 	}
 
-	public <T extends BaseEntity> void insert(T entity) {
+	public <T extends BaseEntity> T insert(T entity) {
 		withTransaction(em -> em.persist(entity));
+		return entity;
 	}
 
 	public <T extends BaseEntity> T update(T entity) {
