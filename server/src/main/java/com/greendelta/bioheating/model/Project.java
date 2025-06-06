@@ -1,10 +1,11 @@
 package com.greendelta.bioheating.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -13,13 +14,15 @@ public class Project extends BaseEntity {
 
 	@Column(name = "name")
 	private String name;
+
 	@Column(name = "description")
 	private String description;
 
-	@Column(name = "citygml_filename")
-	private String cityGmlFileName;
+	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "f_map")
+	private GeoMap map;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "f_user")
 	private User user;
 
@@ -37,15 +40,6 @@ public class Project extends BaseEntity {
 	}
 	public Project description(String description) {
 		this.description = description;
-		return this;
-	}
-
-	public String cityGmlFileName() {
-		return cityGmlFileName;
-	}
-
-	public Project cityGmlFileName(String cityGmlFileName) {
-		this.cityGmlFileName = cityGmlFileName;
 		return this;
 	}
 
