@@ -7,7 +7,11 @@ import org.xmlobjects.xal.model.Address;
 import org.xmlobjects.xal.model.types.Name;
 
 public record GmlAddress(
-	String country, String locality, String street, String number
+	String country,
+	String locality,
+	String postalCode,
+	String street,
+	String number
 ) {
 
 	static GmlAddress of(Building b) {
@@ -31,43 +35,63 @@ public record GmlAddress(
 		if (street == null)
 			return null;
 
-		var county = a.getCountry() != null
+		var country = a.getCountry() != null
 			? strOf(a.getCountry().getNameElements())
 			: null;
 		var locality = a.getLocality() != null
 			? strOf(a.getLocality().getNameElements())
 			: null;
+		var postalCode = postalCodeOf(a);
 		var number = numberOf(a);
 
-		return new GmlAddress(county, locality, street, number);
+		return new GmlAddress(
+			country, locality, postalCode, street, number);
 	}
 
 	private static String streetOf(Address a) {
 		var t = a.getThoroughfare();
 		if (t == null)
 			return null;
+		var name = new StringBuilder();
 		for (var e : t.getNameElementOrNumber()) {
 			var elem = e.getNameElement();
 			if (elem == null)
 				continue;
 			var s = elem.getContent();
-			if (s != null)
-				return s;
+			if (s == null)
+				continue;
+			if (!name.isEmpty()) {
+				name.append(", ");
+			}
+			name.append(s);
 		}
-		return null;
+		return name.isEmpty() ? null : name.toString();
 	}
 
 	private static String numberOf(Address a) {
 		var t = a.getThoroughfare();
 		if (t == null)
 			return null;
+		var number = new StringBuilder();
 		for (var e : t.getNameElementOrNumber()) {
 			var num = e.getNumber();
 			if (num == null)
 				continue;
 			var s = num.getContent();
-			if (s != null)
-				return s;
+			if (s == null)
+				continue;
+			number.append(s);
+		}
+		return number.isEmpty() ? null : number.toString();
+	}
+
+	private static String postalCodeOf(Address a) {
+		var code = a.getPostCode();
+		if (code == null)
+			return null;
+		for (var id : code.getIdentifiers()) {
+			if (id != null)
+				return id.getContent();
 		}
 		return null;
 	}

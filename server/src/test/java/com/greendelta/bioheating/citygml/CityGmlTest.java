@@ -52,9 +52,8 @@ public class CityGmlTest {
 		assertEquals("Germany", a.country());
 		assertEquals("Hamburg", a.locality());
 		assertEquals("Ohlenkamp", a.street());
-		assertEquals("8", a.number());
-		// assertEquals("8b", ...
-		// assertEquals("22607", a.postalCode());
+		assertEquals("8b", a.number());
+		assertEquals("22607", a.postalCode());
 	}
 
 	@Test
