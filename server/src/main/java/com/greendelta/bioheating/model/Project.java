@@ -52,6 +52,15 @@ public class Project extends BaseEntity {
 		return this;
 	}
 
+	public GeoMap map() {
+		return map;
+	}
+
+	public Project map(GeoMap map) {
+		this.map = map;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		return "Project [id=" + id() + ", name=" + name + "]";

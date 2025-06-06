@@ -17,4 +17,27 @@ public class Building extends BaseEntity {
 	@Column(name = "coordinates")
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
+
+	public String name() {
+		return name;
+	}
+
+	public Building name(String name) {
+		this.name = name;
+		return this;
+	}
+
+	public Coordinate[] coordinates() {
+		return coordinates;
+	}
+
+	public Building coordinates(Coordinate[] coordinates) {
+		this.coordinates = coordinates;
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		return "Building [id=" + id() + ", name=" + name + "]";
+	}
 }

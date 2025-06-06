@@ -1,14 +1,14 @@
 -- drop database if exists bioheating;
 -- create database bioheating;
 
-drop table if exists tbl_sequences;
+drop table if exists tbl_sequences cascade;
 create table tbl_sequences (
   seq_name varchar(255) not null primary key,
   seq_value bigint not null
 );
 insert into tbl_sequences(seq_name, seq_value) values('entity_seq', 0);
 
-drop table if exists tbl_users;
+drop table if exists tbl_users cascade;
 create table tbl_users (
     id int not null primary key,
     username varchar not null unique,
@@ -17,14 +17,25 @@ create table tbl_users (
     is_admin boolean
 );
 
+drop table if exists tbl_buildings cascade;
+create table tbl_buildings (
+    id int not null primary key,
+    name varchar,
+    coordinates bytea,
+    f_map int
+);
 
-drop table if exists tbl_projects;
+drop table if exists tbl_maps cascade;
+create table tbl_maps (
+    id int not null primary key,
+    crs varchar
+);
+
+drop table if exists tbl_projects cascade;
 create table tbl_projects (
     id int not null primary key,
     name varchar,
     description text,
-    citygml_filename varchar,
+    f_map int,
     f_user int
 );
-
-
