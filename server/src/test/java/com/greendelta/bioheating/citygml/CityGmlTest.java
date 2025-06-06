@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.Coordinate;
 
 public class CityGmlTest {
 
@@ -46,8 +47,43 @@ public class CityGmlTest {
 	}
 
 	@Test
-	public void testBuildingPolygon() {
-
+	public void testBuildingAddress() {
+		var a = model.buildings().getFirst().address();
+		assertEquals("Germany", a.country());
+		assertEquals("Hamburg", a.locality());
+		assertEquals("Ohlenkamp", a.street());
+		assertEquals("8", a.number());
+		// assertEquals("8b", ...
+		// assertEquals("22607", a.postalCode());
 	}
 
+	@Test
+	public void testBuildingAttributes() {
+		var m = model.buildings().getFirst().attributes();
+		assertEquals("02000000", m.get("Gemeindeschluessel"));
+		assertEquals("1000", m.get("DatenquelleDachhoehe"));
+		assertEquals("1000", m.get("DatenquelleLage"));
+		assertEquals("1300", m.get("DatenquelleBodenhoehe"));
+	}
+
+	@Test
+	public void testBuildingPolygon() {
+		var poly = model.buildings().getFirst().groundSurface();
+		var expectedCoords = new Coordinate[]{
+			new Coordinate(558459.101, 5935606.158, 28.598),
+			new Coordinate(558466.79, 5935606.053, 28.598),
+			new Coordinate(558466.67, 5935597.228, 28.598),
+			new Coordinate(558459.125, 5935597.332, 28.598),
+			new Coordinate(558459.101, 5935606.158, 28.598)
+		};
+		var coords = poly.getCoordinates();
+		assertEquals(expectedCoords.length, coords.length);
+		for (int i = 0; i < expectedCoords.length; i++) {
+			var e = expectedCoords[i];
+			var a = coords[i];
+			assertEquals(e.x, a.x, 1e-3);
+			assertEquals(e.y, a.y, 1e-3);
+			assertEquals(e.z, a.z, 1e-3);
+		}
+	}
 }
