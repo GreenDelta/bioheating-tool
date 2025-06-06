@@ -5,20 +5,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.List;
 
 import org.citygml4j.core.model.core.CityModel;
 import org.citygml4j.xml.CityGMLContext;
 import org.citygml4j.xml.reader.CityGMLReadException;
 import org.citygml4j.xml.reader.CityGMLReader;
+import org.xmlobjects.gml.model.basictypes.Code;
+import org.xmlobjects.gml.model.deprecated.StringOrRef;
 
 import com.greendelta.bioheating.util.Res;
 
-public class CityGML {
+class CityGML {
 
 	private CityGML() {
 	}
 
-	public static Res<CityModel> readModel(File file) {
+	static Res<CityModel> readModel(File file) {
 		try (var stream = new FileInputStream(file);
 				 var buffer = new BufferedInputStream(stream)) {
 			return readModel(buffer);
@@ -27,7 +30,7 @@ public class CityGML {
 		}
 	}
 
-	public static Res<CityModel> readModel(Reader reader) {
+	static Res<CityModel> readModel(Reader reader) {
 		if (reader == null)
 			return Res.error("Reader is null");
 		try {
@@ -40,7 +43,7 @@ public class CityGML {
 		}
 	}
 
-	public static Res<CityModel> readModel(InputStream stream) {
+	static Res<CityModel> readModel(InputStream stream) {
 		if (stream == null)
 			return Res.error("input stream is null");
 		try {
@@ -63,5 +66,21 @@ public class CityGML {
 				return Res.error("no CityModel found");
 			return Res.of(model);
 		}
+	}
+
+	static String stringOf(Code code) {
+		return code != null ? code.getValue() : null;
+	}
+
+	static String firstStringOf(List<Code> codes) {
+		return codes != null && !codes.isEmpty()
+			? stringOf(codes.getFirst())
+			: null;
+	}
+
+	static String stringOf(StringOrRef s) {
+		return s != null
+			? s.getValue()
+			: null;
 	}
 }
