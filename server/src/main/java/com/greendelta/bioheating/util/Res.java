@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.model;
+package com.greendelta.bioheating.util;
 
 import java.util.Objects;
 import java.util.function.Supplier;

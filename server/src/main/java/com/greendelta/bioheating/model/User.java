@@ -2,6 +2,8 @@ package com.greendelta.bioheating.model;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.greendelta.bioheating.util.Res;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
