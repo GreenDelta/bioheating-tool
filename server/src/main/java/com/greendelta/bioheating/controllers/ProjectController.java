@@ -1,9 +1,7 @@
 package com.greendelta.bioheating.controllers;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
@@ -13,31 +11,25 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.greendelta.bioheating.io.CityGmlImport;
-import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.ProjectService.ProjectData;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
+import com.greendelta.bioheating.util.Strings;
 
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-	private final Database db;
 	private final ProjectService projects;
 	private final UserService users;
 
-	public ProjectController(
-		Database db, ProjectService projects, UserService users
-	) {
-		this.db = db;
+	public ProjectController(ProjectService projects, UserService users) {
 		this.projects = projects;
 		this.users = users;
 	}
@@ -67,127 +59,47 @@ public class ProjectController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> createProject(
-		Authentication auth, @RequestBody ProjectData data
-	) {
-		var user = users.getUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-
-		var result = projects.createProject(user, data);
-		return result.hasError()
-			? Http.badRequest("failed to create project: " + result.error())
-			: Http.ok(result.value());
-	}
-
-	@PostMapping("/with-file")
 	public ResponseEntity<?> createProjectWithFile(
 		Authentication auth,
 		@RequestParam("name") String name,
 		@RequestParam("description") String description,
-		@RequestParam("cityGmlFile") MultipartFile cityGmlFile
+		@RequestParam("file") MultipartFile file
 	) {
+
+		// check input data
 		var user = users.getUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
-
-		// Validate file
-		if (cityGmlFile.isEmpty())
-			return Http.badRequest("CityGML file is required");
-
-		// Check file extension
-		String originalFilename = cityGmlFile.getOriginalFilename();
-		if (originalFilename == null || (!originalFilename.toLowerCase().endsWith(".gml") && !originalFilename.toLowerCase().endsWith(".xml")))
-			return Http.badRequest("Only .gml and .xml files are allowed");
+		if (Strings.isNil(name))
+			return Http.badRequest("a project name is required");
+		if (file.isEmpty())
+			return Http.badRequest("a CityGML file is required");
 
 		try {
-			// Create uploads directory if it doesn't exist
-			Path uploadDir = Paths.get("uploads");
+
+			// copy the uploaded file
+			var uploadDir = Paths.get("uploads");
 			if (!Files.exists(uploadDir)) {
 				Files.createDirectories(uploadDir);
 			}
-
-			// Generate unique filename
-			String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-			String uniqueFileName = UUID.randomUUID() + fileExtension;
-			Path filePath = uploadDir.resolve(uniqueFileName);
-
-			// Save file temporarily
-			Files.copy(cityGmlFile.getInputStream(), filePath);
-
-			// Create project without file first
-			var projectData = new ProjectData(0, name, description);
-			var createResult = projects.createProject(user, projectData);
-
-			if (createResult.hasError()) {
-				Files.deleteIfExists(filePath); // Clean up file
-				return Http.badRequest("failed to create project: " + createResult.error());
+			var path = uploadDir.resolve(UUID.randomUUID() + ".gml");
+			try (var stream = file.getInputStream()) {
+				Files.copy(stream, path);
 			}
 
-			// run the import
-			File file = filePath.toFile();
-			var res = new CityGmlImport(db, createResult.value(), file).call();
-			Files.deleteIfExists(filePath);
-			return res.hasError()
-				? Http.badRequest("failed to import CityGML: " + res.error())
-				: Http.ok(ProjectData.of(res.value()));
+			// create the project
+			var res = projects.createProject(
+				user, name, description, path.toFile());
+			if (res.hasError())
+				return Http.serverError(res.error());
+			var info = ProjectData.of(res.value());
+			return Http.ok(info);
 
 		} catch (IOException e) {
-			return Http.badRequest("failed to save file: " + e.getMessage());
+			return Http.serverError("project creation failed: " + e.getMessage());
 		}
 	}
 
-	@PostMapping("/{id}/import-citygml")
-	public ResponseEntity<?> importCityGml(
-		Authentication auth,
-		@PathVariable long id,
-		@RequestParam("cityGmlFile") MultipartFile cityGmlFile
-	) {
-		var user = users.getUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-
-		// Get the existing project
-		var project = projects.getProject(user, id).orElse(null);
-		if (project == null)
-			return Http.notFound("project not found: " + id);
-
-		// Validate file
-		if (cityGmlFile.isEmpty())
-			return Http.badRequest("CityGML file is required");
-
-		// Check file extension
-		String originalFilename = cityGmlFile.getOriginalFilename();
-		if (originalFilename == null || (!originalFilename.toLowerCase().endsWith(".gml") && !originalFilename.toLowerCase().endsWith(".xml")))
-			return Http.badRequest("Only .gml and .xml files are allowed");
-
-		try {
-			// Create uploads directory if it doesn't exist
-			Path uploadDir = Paths.get("uploads");
-			if (!Files.exists(uploadDir)) {
-				Files.createDirectories(uploadDir);
-			}
-
-			// Generate unique filename
-			String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
-			String uniqueFileName = UUID.randomUUID() + fileExtension;
-			Path filePath = uploadDir.resolve(uniqueFileName);
-
-			// Save file temporarily
-			Files.copy(cityGmlFile.getInputStream(), filePath);
-
-			// Import buildings from CityGML
-			File file = filePath.toFile();
-			var res = new CityGmlImport(db, project, file).call();
-			Files.deleteIfExists(filePath);
-			return res.hasError()
-				? Http.badRequest("failed to import CityGML: " + res.error())
-				: Http.ok(ProjectData.of(res.value()));
-
-		} catch (IOException e) {
-			return Http.badRequest("failed to process file: " + e.getMessage());
-		}
-	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteProject(

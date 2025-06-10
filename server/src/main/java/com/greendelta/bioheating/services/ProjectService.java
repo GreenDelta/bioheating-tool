@@ -1,11 +1,13 @@
 package com.greendelta.bioheating.services;
 
+import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.greendelta.bioheating.io.CityGmlImport;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
@@ -37,18 +39,27 @@ public class ProjectService {
 			? Optional.of(p)
 			: Optional.empty();
 	}
-	public Res<Project> createProject(User user, ProjectData data) {
-		if (user == null || data == null)
-			return Res.error("no user or project data given");
-		if (Strings.isNil(data.name))
-			return Res.error("project name is required");
 
-		var project = new Project()
-			.name(data.name)
-			.description(data.description)
-			.user(user);
-		db.insert(project);
-		return Res.of(project);
+	public Res<Project> createProject(
+		User user, String name, String description, File gml
+	) {
+		if (user == null)
+			return Res.error("a user is required");
+		if (Strings.isNil(name))
+			return Res.error("a project name is required");
+		if (gml == null || !gml.exists())
+			return Res.error("a CityGML file is required");
+
+		try {
+			var project = new Project()
+				.name(name)
+				.description(description)
+				.user(user);
+			db.insert(project);
+			return  new CityGmlImport(db, project, gml).call();
+		} catch (Exception e) {
+			return Res.error("project creation failed", e);
+		}
 	}
 
 	public Res<Void> deleteProject(User user, long projectId) {
@@ -62,6 +73,7 @@ public class ProjectService {
 		db.delete(project);
 		return Res.VOID;
 	}
+
 	public record ProjectData(
 		long id, String name, String description
 	) {
