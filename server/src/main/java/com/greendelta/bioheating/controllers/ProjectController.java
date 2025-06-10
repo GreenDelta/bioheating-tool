@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.greendelta.bioheating.io.GeoJsonConverter;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.ProjectService.ProjectData;
 import com.greendelta.bioheating.services.UserService;
@@ -98,6 +99,34 @@ public class ProjectController {
 		} catch (IOException e) {
 			return Http.serverError("project creation failed: " + e.getMessage());
 		}
+	}
+
+	@GetMapping("/{id}/map")
+	public ResponseEntity<?> getProjectMap(
+		Authentication auth, @PathVariable long id
+	) {
+		var user = users.getUser(auth).orElse(null);
+		if (user == null)
+			return Http.badRequest("not authenticated");
+
+		var project = projects.getProject(user, id).orElse(null);
+		if (project == null)
+			return Http.notFound("project not found: " + id);
+
+		var map = project.map();
+		if (map == null)
+			return Http.badRequest("project has no map");
+
+		// Convert map to GeoJSON
+		var converterResult = GeoJsonConverter.forMap(map);
+		if (converterResult.hasError())
+			return Http.serverError("failed to create GeoJSON converter: " + converterResult.error());
+
+		var geoJsonResult = converterResult.value().convert(map);
+		if (geoJsonResult.hasError())
+			return Http.serverError("failed to convert map to GeoJSON: " + geoJsonResult.error());
+
+		return Http.ok(geoJsonResult.value());
 	}
 
 
