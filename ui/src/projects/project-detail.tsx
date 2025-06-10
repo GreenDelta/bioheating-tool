@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
 import { Project } from '../model';
+import { Map } from '../components/Map';
 import * as api from '../api';
 
 export const ProjectDetail = () => {
@@ -31,7 +32,26 @@ export const ProjectDetail = () => {
           <h3>Description</h3>
           <p style={{ margin: 0 }}>{project.description}</p>
         </div>
-      )}      <div style={{ marginTop: '32px' }}>
+      )}
+
+      {/* Map Section */}
+      <div style={{ marginTop: '32px' }}>
+        <h3>Project Map</h3>
+        <div style={{
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          marginTop: '16px'
+        }}>
+          <Map
+            style={{ height: '500px', width: '100%' }}
+            center={[51.505, -0.09]} // Default center - will be dynamic later
+            zoom={13}
+          />
+        </div>
+      </div>
+
+      <div style={{ marginTop: '32px' }}>
         <h3>Project Details</h3>
         <p><strong>ID:</strong> {project.id}</p>
         <p><strong>Name:</strong> {project.name}</p>
