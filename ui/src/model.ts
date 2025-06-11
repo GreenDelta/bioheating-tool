@@ -9,38 +9,30 @@ export interface Credentials {
 	password: string;
 }
 
+export interface ProjectInfo {
+	id: number;
+	name: string;
+	description: string;
+}
+
 export interface Project {
 	id: number;
 	name: string;
 	description: string;
-	cityGmlFileName?: string;
+	map: GeoMap;
 }
 
-export interface ProjectData {
-	name: string;
-	description: string;
-	cityGmlFileName?: string;
+export interface GeoMap {
+	features: GeoFeature[];
 }
 
-// GeoJSON types
-export interface GeoJSONFeature {
-	type: 'Feature';
-	geometry: GeoJSONGeometry;
+export interface GeoFeature {
+	type: "Feature";
+	geometry: GeoPolygon;
 	properties: { [key: string]: any };
 }
 
-export interface GeoJSONFeatureCollection {
-	type: 'FeatureCollection';
-	features: GeoJSONFeature[];
-}
-
-export interface GeoJSONGeometry {
-	type: 'Point' | 'LineString' | 'Polygon' | 'MultiPoint' | 'MultiLineString' | 'MultiPolygon';
-	coordinates: number[] | number[][] | number[][][];
-}
-
-export interface BuildingProperties {
-	id: number;
-	name?: string;
-	type: 'building';
+export interface GeoPolygon {
+	type: "Polygon";
+	coordinates: number[][][];
 }

@@ -73,16 +73,4 @@ public class ProjectService {
 		db.delete(project);
 		return Res.VOID;
 	}
-
-	public record ProjectData(
-		long id, String name, String description
-	) {
-
-		public static ProjectData of(Project p) {
-			return new ProjectData(
-				p.id(), p.name(), p.description()
-			);
-		}
-	}
-
 }

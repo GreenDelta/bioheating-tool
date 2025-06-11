@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.greendelta.bioheating.io.MapConverter;
+import com.greendelta.bioheating.io.MapConverter.ClientMap;
+import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.services.ProjectService;
-import com.greendelta.bioheating.services.ProjectService.ProjectData;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
+import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
 
 @RestController
@@ -40,9 +42,7 @@ public class ProjectController {
 		var user = users.getUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
-		var data = projects.getProjects(user).stream()
-			.map(ProjectData::of)
-			.toList();
+		var data = projects.getProjects(user);
 		return Http.ok(data);
 	}
 
@@ -54,9 +54,12 @@ public class ProjectController {
 		if (user == null)
 			return Http.badRequest("not authenticated");
 		var project = projects.getProject(user, id).orElse(null);
-		return project == null
-			? Http.notFound("project not found: " + id)
-			: Http.ok(ProjectData.of(project));
+		if (project == null)
+			return Http.notFound("project not found: " + id);
+		var res = ClientProject.of(project);
+		return res.hasError()
+			? Http.serverError("failed to convert project: " + res.error())
+			: Http.ok(res.value());
 	}
 
 	@PostMapping
@@ -93,29 +96,12 @@ public class ProjectController {
 				user, name, description, path.toFile());
 			if (res.hasError())
 				return Http.serverError(res.error());
-			var info = ProjectData.of(res.value());
+			var info = ProjectInfo.of(res.value());
 			return Http.ok(info);
 
 		} catch (IOException e) {
 			return Http.serverError("project creation failed: " + e.getMessage());
 		}
-	}
-
-	@GetMapping("/{id}/map")
-	public ResponseEntity<?> getProjectMap(
-		Authentication auth, @PathVariable long id
-	) {
-		var user = users.getUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-		var project = projects.getProject(user, id).orElse(null);
-		if (project == null)
-			return Http.notFound("project not found: " + id);
-
-		var map = MapConverter.toClient(project.map());
-		return map.hasError()
-			? Http.serverError("could not convert map: " + map.error())
-			: Http.ok(map.value());
 	}
 
 	@DeleteMapping("/{id}")
@@ -130,5 +116,36 @@ public class ProjectController {
 		return result.hasError()
 			? Http.badRequest("failed to delete project: " + result.error())
 			: Http.ok("project deleted successfully");
+	}
+
+	public record ProjectInfo(
+		long id, String name, String description
+	) {
+
+		public static ProjectInfo of(Project p) {
+			return new ProjectInfo(
+				p.id(), p.name(), p.description()
+			);
+		}
+	}
+
+	private record ClientProject(
+		long id, String name, String description, ClientMap map
+	) {
+
+		public static Res<ClientProject> of(Project project) {
+			if (project == null)
+				return Res.error("project is null");
+			var map = MapConverter.toClient(project.map());
+			if (map.hasError())
+				return map.castError();
+			var p = new ClientProject(
+				project.id(),
+				project.name(),
+				project.description(),
+				map.value()
+			);
+			return Res.of(p);
+		}
 	}
 }

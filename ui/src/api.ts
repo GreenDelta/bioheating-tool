@@ -1,17 +1,17 @@
-import { Credentials, User, Project, ProjectData } from "./model";
+import { Credentials, User, ProjectInfo, Project } from "./model";
 
 export class Res<T> {
 
 	private constructor(
 		private readonly _val?: T,
 		private readonly _err?: string
-	) {}
+	) { }
 
 	static ok<T>(val: T): Res<T> {
 		return new Res(val, undefined);
 	}
 
-	static err<T>(err: string): Res<T>  {
+	static err<T>(err: string): Res<T> {
 		return new Res(undefined as T, err)
 	}
 
@@ -40,13 +40,13 @@ export class Res<T> {
 }
 
 export async function postLogin(credentials: Credentials): Promise<Res<boolean>> {
-  const r = await fetch("/api/users/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(credentials),
-  });
+	const r = await fetch("/api/users/login", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(credentials),
+	});
 	if (r.status === 200) {
 		return Res.ok(true);
 	}
@@ -75,7 +75,7 @@ export async function postLogout(): Promise<Res<boolean>> {
 	return Res.err(`failed to logout: ${r.status} | ${msg}`);
 }
 
-export async function getProjects(): Promise<Res<Project[]>> {
+export async function getProjects(): Promise<Res<ProjectInfo[]>> {
 	const r = await fetch("/api/projects");
 	if (r.status === 200) {
 		const projects = await r.json();
@@ -89,7 +89,7 @@ export async function createProject(
 	name: string,
 	description: string,
 	file: File
-): Promise<Res<Project>> {
+): Promise<Res<ProjectInfo>> {
 
 	const data = new FormData();
 	data.append('name', name);

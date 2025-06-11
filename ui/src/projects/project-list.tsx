@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link, useLoaderData, useNavigate } from 'react-router-dom';
-import { Project } from '../model';
+import { ProjectInfo } from '../model';
 import { AddIcon, DeleteIcon } from '../icons';
 import * as api from '../api';
 
 export const ProjectList = () => {
 
-	const res: api.Res<Project[]> = useLoaderData();
+	const res: api.Res<ProjectInfo[]> = useLoaderData();
 	const navigate = useNavigate();
 
 	if (res.isErr) {
@@ -19,7 +19,7 @@ export const ProjectList = () => {
 	}
 
 	const projects = res.value;
-	const [deletable, setDeletable] = React.useState<Project | null>(null);
+	const [deletable, setDeletable] = React.useState<ProjectInfo | null>(null);
 
 	const onDelete = (b: boolean) => {
 		if (!b || !deletable) {
@@ -55,9 +55,8 @@ export const ProjectList = () => {
 	)
 };
 
-const ProjectTable = ({ projects, onDelete }: {
-	projects: Project[],
-	onDelete: (p: Project) => void,
+const ProjectTable = ({ projects, onDelete }: {	projects: ProjectInfo[],
+	onDelete: (p: ProjectInfo) => void,
 }) => {
 	if (!projects || projects.length === 0) {
 		return <div>
@@ -97,7 +96,7 @@ const ProjectTable = ({ projects, onDelete }: {
 };
 
 const DeleteDialog = ({ project, doIt }: {
-	project: Project | null,
+	project: ProjectInfo | null,
 	doIt: (b: boolean) => void
 }) => {
 	if (!project) {
