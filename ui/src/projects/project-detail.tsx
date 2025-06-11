@@ -34,7 +34,6 @@ export const ProjectDetail = () => {
 				</div>
 			)}
 
-			{/* Map Section */}
 			<div style={{ marginTop: '32px' }}>
 				<h3>Project Map</h3>
 				<div style={{
@@ -42,14 +41,14 @@ export const ProjectDetail = () => {
 					borderRadius: '8px',
 					overflow: 'hidden',
 					marginTop: '16px'
-				}}>          <Map
+				}}>
+					<Map
 						style={{ height: '500px', width: '100%' }}
-						center={[51.505, -0.09]} // Default center - TODO: calculate from project.map data
-						zoom={13}
-					// TODO: Pass project.map.features to display buildings
+						features={project.map.features}
 					/>
 				</div>
-			</div>      <div style={{ marginTop: '32px' }}>
+			</div>
+			<div style={{ marginTop: '32px' }}>
 				<h3>Project Details</h3>
 				<p><strong>ID:</strong> {project.id}</p>
 				<p><strong>Name:</strong> {project.name}</p>

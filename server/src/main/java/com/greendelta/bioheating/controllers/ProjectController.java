@@ -42,7 +42,9 @@ public class ProjectController {
 		var user = users.getUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
-		var data = projects.getProjects(user);
+		var data = projects.getProjects(user).stream()
+			.map(ProjectInfo::of)
+			.toList();
 		return Http.ok(data);
 	}
 
