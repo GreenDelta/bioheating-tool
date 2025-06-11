@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
 import { Project } from '../model';
-import { Map } from '../components/Map';
+import { Map } from './map';
 import * as api from '../api';
 
 export const ProjectDetail = () => {
@@ -14,13 +14,8 @@ export const ProjectDetail = () => {
 
 	return (
 		<div>
-			<div style={{ marginBottom: '20px' }}>
-				<Link to="/ui/projects" style={{ color: '#007bff', textDecoration: 'none' }}>
-					← Back to Projects
-				</Link>
-			</div>
 
-			<h2>{project.name}</h2>
+			<h2>Project: {project.name}</h2>
 
 			{project.description && (
 				<div style={{
@@ -42,10 +37,7 @@ export const ProjectDetail = () => {
 					overflow: 'hidden',
 					marginTop: '16px'
 				}}>
-					<Map
-						style={{ height: '500px', width: '100%' }}
-						features={project.map.features}
-					/>
+					<Map data={project.map} />
 				</div>
 			</div>
 			<div style={{ marginTop: '32px' }}>
