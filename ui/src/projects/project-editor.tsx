@@ -28,40 +28,45 @@ export const ProjectEditor = () => {
 };
 
 
+class FeatureData {
+
+	name: string;
+	height: number;
+	storeys: number;
+	heatDemand: number;
+
+	constructor(f: GeoFeature) {
+		const props = f.properties || {};
+		this.name = typeof props.name === "string" ? props.name : "";
+		this.height = typeof props.height === "number" ? props.height : 0;
+		this.storeys = typeof props.storeys === "number" ? props.storeys : 0;
+		this.heatDemand = typeof props.heatDemand === "number" ? props.heatDemand : 0;
+	}
+
+	applyOn(f: GeoFeature) {
+		if (!f.properties) {
+			f.properties = {};
+		}
+		f.properties.name = this.name;
+		f.properties.height = this.height;
+		f.properties.storeys = this.storeys;
+		f.properties.heatDemand = this.heatDemand;
+	}
+
+	isValid(): boolean {
+		return (typeof this.name === "string") && this.name.trim().length > 0;
+	}
+}
+
+
 const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 	if (!feature) {
 		return <></>;
 	}
-	if (!feature.properties) {
-		feature.properties = {};
-	}
-	const props = feature.properties;
-
-	type Data = {
-		name: string,
-		height: number,
-		storeys: number,
-		heatDemand: number,
-	}
-
-	const [data, setData] = useState<Data>({
-		name: (typeof props.name === "string" ? props.name : ""),
-		height: (typeof props.height === "number" ? props.height : 0),
-		storeys: (typeof props.storeys === "number" ? props.storeys : 0),
-		heatDemand: (typeof props.heatDemand === "number" ? props.heatDemand : 0),
-	});
-
-	const handleUpdate = () => {
-		props.name = data.name;
-		props.height = data.height;
-		props.storeys = data.storeys;
-		props.heatDemand = data.heatDemand;
-	};
-
-	const handleChange = (field: keyof Data) => (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = field === 'name' ? e.target.value : parseFloat(e.target.value) || 0;
-		setData(prev => ({ ...prev, [field]: value }));
-	};
+	const [data, setData] = useState<FeatureData>(new FeatureData(feature));
+	useEffect(() => {
+		setData(new FeatureData(feature));
+	}, [feature]);
 
 	return <div style={{ paddingTop: 20 }}>
 		<h4>Building: {feature.properties?.name}</h4>
@@ -70,7 +75,10 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 				Name
 				<input
 					value={data.name}
-					onChange={handleChange('name')} />
+					onChange={e => {
+						data.name = e.target.value;
+						setData(data);
+					}} />
 			</label>
 
 			<label>
@@ -78,7 +86,10 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 				<input
 					type="number"
 					value={data.height}
-					onChange={handleChange('height')}
+					onChange={e => {
+						data.height = parseFloat(e.target.value);
+						setData(data);
+					}}
 					step="0.1" />
 			</label>
 
@@ -87,7 +98,10 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 				<input
 					type="number"
 					value={data.storeys}
-					onChange={handleChange('storeys')}
+					onChange={e => {
+						data.storeys = parseInt(e.target.value, 10);
+						setData(data);
+					}}
 					step="1" />
 			</label>
 			<label>
@@ -95,11 +109,15 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 				<input
 					type="number"
 					value={data.heatDemand}
-					onChange={handleChange('heatDemand')}
+					onChange={e => {
+						data.heatDemand = parseFloat(e.target.value);
+						setData(data);
+					}}
 					step="0.1" />
 			</label>
 		</fieldset>
-		<button onClick={handleUpdate} style={{ marginTop: 10 }}>
+		<button disabled={!data.isValid()}
+			onClick={() => data.applyOn(feature)} style={{ marginTop: 10 }}>
 			Update
 		</button>
 	</div>
