@@ -1,19 +1,20 @@
 import React, { useEffect, useRef } from 'react';
 import * as L from 'leaflet';
-import { GeoMap } from '../model';
+import { GeoFeature, GeoMap } from '../model';
 
 interface MapProps {
 	data: GeoMap;
+	onSelect: (f: GeoFeature) => void;
 }
 
-export const Map: React.FC<MapProps> = ({ data }) => {
+export const Map: React.FC<MapProps> = ({ data, onSelect}) => {
 
 	const divRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 
 	useEffect(() => {
 		if (divRef.current && !mapRef.current) {
-			mapRef.current = initMap(divRef.current, data);
+			mapRef.current = initMap(divRef.current, data, onSelect);
 		}
 
 		return () => {
@@ -26,7 +27,10 @@ export const Map: React.FC<MapProps> = ({ data }) => {
 	return <div ref={divRef} style={{width: "100%", height: 650}} />;
 };
 
-function initMap(div: HTMLDivElement, data: GeoMap): L.Map {
+function initMap(
+	div: HTMLDivElement, data: GeoMap, onSelect: (f: GeoFeature) => void
+): L.Map {
+
 	const map = L.map(div);
 
 	/*
@@ -47,6 +51,16 @@ function initMap(div: HTMLDivElement, data: GeoMap): L.Map {
 	const features = L.geoJSON(data.features).addTo(map);
 	const bounds = features.getBounds();
 	map.fitBounds(bounds, { padding: [20, 20] });
+
+	features.on("click", evt => {
+		if (!evt || !evt.propagatedFrom) {
+			return;
+		}
+		const feature: GeoFeature = evt.propagatedFrom.feature;
+		if (feature) {
+			onSelect(feature);
+		}
+	});
 
 	return map;
 }

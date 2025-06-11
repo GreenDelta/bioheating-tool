@@ -14,7 +14,7 @@ import {
 import { User } from './model';
 import * as api from './api';
 import { LoginPage } from './login';
-import { ProjectList, ProjectForm, ProjectDetail } from './projects';
+import { ProjectList, ProjectForm, ProjectEditor } from './projects';
 import { HomePage } from './home';
 import { ErrorPage } from './error-page';
 
@@ -123,7 +123,7 @@ function main() {
 						},
 						{
 							path: "projects/:id",
-							Component: ProjectDetail,
+							Component: ProjectEditor,
 							loader: async ({ params }) => {
 								return api.getProject(parseInt(params.id || '0', 10));
 							}
