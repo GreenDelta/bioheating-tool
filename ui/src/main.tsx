@@ -21,30 +21,31 @@ import { ErrorPage } from './error-page';
 
 const MainMenu = (props: { user: User | null, onLogout: () => void }) => {
 
+	let content: React.JSX.Element;
 	if (!props.user) {
-		return (
-			<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
-				<div className="container">
-					<Link className="navbar-brand" to="/">BIOHEATING</Link>
-					<div className="navbar-nav ms-auto">
-						<Link className="nav-link" to="/ui/login">Login</Link>
-					</div>
-				</div>
-			</nav>
-		);
+		content = <>
+			<div className="navbar-nav ms-auto">
+				<Link className="nav-link" to="/ui/login">Login</Link>
+			</div>
+		</>;
+	} else {
+		content = <>
+			<div className="navbar-nav me-auto">
+				<Link className="nav-link" to="/ui/projects">Projects</Link>
+				<Link className="nav-link" to="/ui/users">Users</Link>
+			</div>
+			<div className="navbar-nav">
+				<a className="nav-link" onClick={props.onLogout} style={{ cursor: 'pointer' }}>Logout</a>
+			</div>
+		</>;
 	}
 
 	return (
-		<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
-			<div className="container">
+		<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4"
+			style={{ paddingLeft: "2rem", paddingRight: "2rem" }}>
+			<div className="container-fluid">
 				<Link className="navbar-brand" to="/">BIOHEATING</Link>
-				<div className="navbar-nav me-auto">
-					<Link className="nav-link" to="/ui/projects">Projects</Link>
-					<Link className="nav-link" to="/ui/users">Users</Link>
-				</div>
-				<div className="navbar-nav">
-					<a className="nav-link" onClick={props.onLogout} style={{ cursor: 'pointer' }}>Logout</a>
-				</div>
+				{content}
 			</div>
 		</nav>
 	);

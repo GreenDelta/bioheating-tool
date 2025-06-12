@@ -45,48 +45,44 @@ export const LoginPage = () => {
 		navigate("/");
 	}
 
-	return <div className="row justify-content-center" style={{ paddingTop: "5%" }}>
-		<div className="col-md-4">
+	return <div className="row justify-content-center mt-5">
+		<div className="col-md-5">
 			<form>
 				<ErrorRow err={error} />
 
-				<div className="mb-3">
-					<label className="form-label">User</label>
-					<input
-						type="text"
-						className="form-control"
-						required
-						disabled={inProgress}
-						value={userName}
-						onChange={e => {
-							setUserName(e.target.value);
-							setError(null);
-						}}
-					/>
+				<div className="form-group row mt-3">
+					<label className="col-sm-3 col-form-label col-form-label-lg">User</label>
+					<div className="col-sm-9">
+						<input type="text" className="form-control form-control-lg" required
+							disabled={inProgress} value={userName}
+							onChange={e => {
+								setUserName(e.target.value);
+								setError(null);
+							}} />
+					</div>
 				</div>
 
-				<div className="mb-3">
-					<label className="form-label">Password</label>
-					<input
-						type="password"
-						className="form-control"
-						required
-						disabled={inProgress}
-						value={password}
-						onChange={e => {
-							setPassword(e.target.value);
-							setError(null);
-						}}
-					/>
+				<div className="form-group row mt-3">
+					<label className="col-sm-3 col-form-label col-form-label-lg">Password</label>
+					<div className="col-sm-9">
+						<input type="password" className="form-control form-control-lg" required
+							disabled={inProgress} value={password}
+							onChange={e => {
+								setPassword(e.target.value);
+								setError(null);
+							}} />
+					</div>
 				</div>
 
-				<button
-					type="button"
-					className="btn btn-primary"
-					onClick={() => onLogin()}
-					disabled={inProgress}>
-					Login
-				</button>
+				<div className="form-group row mt-3">
+					<div className="col-sm-3" />
+					<div className="col-sm-9">
+						<button type="button" className="btn btn-lg btn-primary"
+							onClick={() => onLogin()} disabled={inProgress}>
+							Login
+						</button>
+					</div>
+				</div>
 			</form>
 		</div>
 	</div>;
