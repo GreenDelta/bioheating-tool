@@ -48,30 +48,37 @@ export const ProjectForm = () => {
 
 			<ErrorRow err={error} />
 
-			<label>
-				Name
-				<input type="text"
-					value={data.name}
+			<div className="mb-3">
+				<label className="form-label">Name</label>
+				<input
+					type="text"
+					className="form-control"
+					value={data.name || ''}
 					onChange={(e) => {
 						setData({ ...data, name: e.target.value });
 						setError(null);
-					}} />
-			</label>
+					}}
+				/>
+			</div>
 
-			<label>
-				Description
+			<div className="mb-3">
+				<label className="form-label">Description</label>
 				<textarea
-					value={data.description}
+					className="form-control"
+					value={data.description || ''}
 					onChange={(e) => {
 						setData({ ...data, description: e.target.value });
 						setError(null);
 					}}
 					rows={2}
 				/>
-			</label>			<label>
-				CityGML
+			</div>
+
+			<div className="mb-3">
+				<label className="form-label">CityGML</label>
 				<input
 					type="file"
+					className="form-control"
 					accept=".gml,.xml"
 					onChange={(e) => {
 						const file = e.target.files?.[0] || null;
@@ -80,25 +87,25 @@ export const ProjectForm = () => {
 					}}
 				/>
 				{data.file && (
-					<small style={{ color: 'var(--pico-muted-color)' }}>
+					<div className="form-text">
 						Selected: {data.file.name} ({(data.file.size / (1024**2)).toFixed(1)} MB)
-					</small>
+					</div>
 				)}
-			</label>
+			</div>
 
-			<div className="grid">
-				<div />
-				<div />
-				<div className="grid">
-					<button
-						className="secondary"
-						disabled={loading}
-						onClick={() => navigate("/ui/projects")}>Cancel</button>
-					<button
-						disabled={loading || !isComplete(data)} onClick={handleCreate}>
-						Create project
-					</button>
-				</div>
+			<div className="d-flex gap-2">
+				<button
+					className="btn btn-secondary"
+					disabled={loading}
+					onClick={() => navigate("/ui/projects")}>
+					Cancel
+				</button>
+				<button
+					className="btn btn-primary"
+					disabled={loading || !isComplete(data)}
+					onClick={handleCreate}>
+					Create project
+				</button>
 			</div>
 		</div>
 	);
@@ -109,8 +116,8 @@ const ErrorRow = ({ err }: { err: string | null }) => {
 		return <></>;
 	}
 	return (
-		<div>
-			<p style={{ textAlign: "center", color: "var(--pico-del-color)" }}>{err}</p>
+		<div className="alert alert-danger" role="alert">
+			{err}
 		</div>
 	);
 };

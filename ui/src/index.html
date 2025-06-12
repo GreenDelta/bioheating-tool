@@ -4,27 +4,11 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="/pico.min.css">
+	<link rel="stylesheet" href="/bootstrap.min.css">
 	<link rel="stylesheet" href="/leaflet.css"/>
 	<link rel="icon" type="image/png" href="/favicon.png" />
 	<title>BIOHEATING - Tool</title>
-	<!-- see CSS variables: https://github.com/picocss/pico/blob/master/css/themes/default.css -->
 	<style>
-		:root {
-			--pico-form-element-spacing-vertical: 0.25rem;
-			--pico-form-element-spacing-horizontal: 0.25rem;
-			--pico-spacing: 0.5rem;
-		}
-
-		a {
-			cursor: pointer;
-			text-decoration: none;
-		}
-
-		h1 {
-			--pico-font-size: 1.2em;
-		}
-
 		body {
 			min-height: 100vh;
 			margin: 0;
@@ -32,31 +16,43 @@
 			flex-direction: column;
 		}
 
-		footer.container {
-			min-height: 50px;
-			padding: 10px 0px;
-		}
-
 		main {
 			flex: 1;
+		}
+
+		footer {
+			background-color: #f8f9fa;
+			border-top: 1px solid #dee2e6;
+			padding: 1rem 0;
+			margin-top: auto;
+		}
+
+		.form-control:focus {
+			border-color: #80bdff;
+			box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+		}
+
+		.btn:focus {
+			box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 		}
 	</style>
 </head>
 
 <body>
-	<main id="app" class="container"></main>
-	<footer class="container">
-		<nav>
-			<ul>
-				<li>
-					The BIOHEATING Project 2025
-				</li>
-			</ul>
-			<ul>
-				<li><a href="/ui/about">About</a></li>
-			</ul>
-		</nav>
+	<main id="app"></main>
+	<footer>
+		<div class="container">
+			<nav class="navbar navbar-expand">
+				<div class="navbar-nav me-auto">
+					<span class="navbar-text">The BIOHEATING Project 2025</span>
+				</div>
+				<div class="navbar-nav">
+					<a class="nav-link" href="/ui/about">About</a>
+				</div>
+			</nav>
+		</div>
 	</footer>
+	<script src="/bootstrap.bundle.min.js"></script>
 	<script src="/main.js"></script>
 </body>
 

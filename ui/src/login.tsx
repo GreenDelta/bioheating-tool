@@ -45,56 +45,51 @@ export const LoginPage = () => {
 		navigate("/");
 	}
 
-	return <form style={{ paddingTop: "5%" }}>
+	return <div className="row justify-content-center" style={{ paddingTop: "5%" }}>
+		<div className="col-md-4">
+			<form>
+				<ErrorRow err={error} />
 
-		<ErrorRow err={error} />
+				<div className="mb-3">
+					<label className="form-label">User</label>
+					<input
+						type="text"
+						className="form-control"
+						required
+						disabled={inProgress}
+						value={userName}
+						onChange={e => {
+							setUserName(e.target.value);
+							setError(null);
+						}}
+					/>
+				</div>
 
-		<div className="grid">
-			<div />
-			<label>
-				User
-				<input
-					type="text"
-					required
-					disabled={inProgress}
-					value={userName}
-					onChange={e => {
-						setUserName(e.target.value);
-						setError(null);
-					}}></input>
-			</label>
-			<div />
+				<div className="mb-3">
+					<label className="form-label">Password</label>
+					<input
+						type="password"
+						className="form-control"
+						required
+						disabled={inProgress}
+						value={password}
+						onChange={e => {
+							setPassword(e.target.value);
+							setError(null);
+						}}
+					/>
+				</div>
+
+				<button
+					type="button"
+					className="btn btn-primary"
+					onClick={() => onLogin()}
+					disabled={inProgress}>
+					Login
+				</button>
+			</form>
 		</div>
-
-		<div className="grid">
-			<div />
-			<label>
-				Password
-				<input
-					type="password"
-					required
-					disabled={inProgress}
-					value={password}
-					onChange={e => {
-						setPassword(e.target.value);
-						setError(null);
-					}}></input>
-			</label>
-			<div />
-		</div>
-
-		<div className="grid">
-			<div />
-			<button
-				type="button" onClick={() => onLogin()}
-				style={{ marginTop: 10, justifySelf: "start", width: "33%" }}
-				disabled={inProgress}>
-				Login
-			</button>
-			<div />
-		</div>
-
-	</form>;
+	</div>;
 }
 
 const ErrorRow = ({ err }: { err: string | null }) => {
@@ -102,8 +97,8 @@ const ErrorRow = ({ err }: { err: string | null }) => {
 		return <></>;
 	}
 	return (
-		<div>
-			<p style={{ textAlign: "center", color: "var(--pico-del-color)" }}>{err}</p>
+		<div className="alert alert-danger" role="alert">
+			{err}
 		</div>
 	);
 }

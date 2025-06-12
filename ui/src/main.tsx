@@ -23,30 +23,29 @@ const MainMenu = (props: { user: User | null, onLogout: () => void }) => {
 
 	if (!props.user) {
 		return (
-			<nav style={{ marginBottom: 30 }}>
-				<ul>
-					<li><Link to="/">BIOHEATING</Link></li>
-				</ul>
-				<ul>
-					<li><Link to="/ui/login">Login</Link></li>
-				</ul>
+			<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
+				<div className="container">
+					<Link className="navbar-brand" to="/">BIOHEATING</Link>
+					<div className="navbar-nav ms-auto">
+						<Link className="nav-link" to="/ui/login">Login</Link>
+					</div>
+				</div>
 			</nav>
 		);
 	}
 
 	return (
-		<nav style={{ marginBottom: 30 }}>
-			<ul>
-				<li><Link to="/">BIOHEATING</Link></li>
-				<li></li>
-				<li><Link to="/ui/projects">Projects</Link></li>
-				<li><Link to="/ui/users">Users</Link></li>
-			</ul>
-			<ul>
-				<li>
-					<a onClick={props.onLogout}>Logout</a>
-				</li>
-			</ul>
+		<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
+			<div className="container">
+				<Link className="navbar-brand" to="/">BIOHEATING</Link>
+				<div className="navbar-nav me-auto">
+					<Link className="nav-link" to="/ui/projects">Projects</Link>
+					<Link className="nav-link" to="/ui/users">Users</Link>
+				</div>
+				<div className="navbar-nav">
+					<a className="nav-link" onClick={props.onLogout} style={{ cursor: 'pointer' }}>Logout</a>
+				</div>
+			</div>
 		</nav>
 	);
 };
@@ -74,7 +73,9 @@ const Root = () => {
 
 	return <>
 		<MainMenu user={user} onLogout={onLogout} />
-		<Outlet context={[user, setUser]} />
+		<div className="container">
+			<Outlet context={[user, setUser]} />
+		</div>
 	</>;
 }
 

@@ -11,7 +11,7 @@
 	"author": "",
 	"license": "MPL-2.0",
 	"dependencies": {
-		"@picocss/pico": "^2.1.1",
+		"bootstrap": "^5.3.3",
 		"leaflet": "^1.9.4",
 		"leaflet-lasso": "^2.2.13",
 		"react": "^19.1.0",

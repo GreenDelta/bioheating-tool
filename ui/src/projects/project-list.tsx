@@ -59,39 +59,41 @@ const ProjectTable = ({ projects, onDelete }: {	projects: ProjectInfo[],
 	onDelete: (p: ProjectInfo) => void,
 }) => {
 	if (!projects || projects.length === 0) {
-		return <div>
-			<Link to="/ui/projects/new">Create your first project.</Link>
+		return <div className="text-center">
+			<Link to="/ui/projects/new" className="btn btn-primary">Create your first project</Link>
 		</div>;
 	}
 
 	const navigate = useNavigate();
 
 	const rows = projects.map(p => (
-		<tr>
+		<tr key={p.id}>
 			<td>
-				<Link to={`/ui/projects/${p.id}`}>
+				<Link to={`/ui/projects/${p.id}`} className="text-decoration-none">
 					{p.name}
 				</Link>
 			</td>
-			<td style={{ textAlign: "right" }}>
-				<DeleteIcon color="var(--pico-del-color)" onClick={() => onDelete(p)} />
+			<td className="text-end">
+				<DeleteIcon color="#dc3545" onClick={() => onDelete(p)} />
 			</td>
 		</tr>
 	));
 
 	return (
-		<table>
-			<tbody>
-				{rows}
-				<tr>
-					<td></td>
-					<td style={{ textAlign: "right" }}>
-						<AddIcon tooltip="Create a new project"
-							onClick={() => navigate("/ui/projects/new")} />
-					</td>
-				</tr>
-			</tbody>
-		</table>
+		<div>
+			<table className="table table-hover">
+				<tbody>
+					{rows}
+					<tr>
+						<td></td>
+						<td className="text-end">
+							<AddIcon tooltip="Create a new project"
+								onClick={() => navigate("/ui/projects/new")} />
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	);
 };
 
@@ -103,25 +105,28 @@ const DeleteDialog = ({ project, doIt }: {
 		return <></>;
 	}
 	return (
-		<dialog open={true}>
-			<article>
-				<header>
-					Delete project?
-				</header>
-				<p>
-					Do you really want to delete project <em>{project.name}</em>? Note
-					that this cannot be undone.
-				</p>
-				<footer>
-					<div className="grid">
-						<div />
-						<div className="grid">
-							<button className="secondary" onClick={() => doIt(false)}>Cancel</button>
-							<button onClick={() => doIt(true)}>OK</button>
-						</div>
+		<div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+			<div className="modal-dialog">
+				<div className="modal-content">
+					<div className="modal-header">
+						<h5 className="modal-title">Delete project?</h5>
 					</div>
-				</footer>
-			</article>
-		</dialog>
+					<div className="modal-body">
+						<p>
+							Do you really want to delete project <strong>{project.name}</strong>? Note
+							that this cannot be undone.
+						</p>
+					</div>
+					<div className="modal-footer">
+						<button type="button" className="btn btn-secondary" onClick={() => doIt(false)}>
+							Cancel
+						</button>
+						<button type="button" className="btn btn-danger" onClick={() => doIt(true)}>
+							Delete
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	)
 };
