@@ -41,9 +41,8 @@ const MainMenu = (props: { user: User | null, onLogout: () => void }) => {
 	}
 
 	return (
-		<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4"
-			style={{ paddingLeft: "2rem", paddingRight: "2rem" }}>
-			<div className="container-fluid">
+		<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
+			<div className="container-fluid px-5">
 				<Link className="navbar-brand" to="/">BIOHEATING</Link>
 				{content}
 			</div>
@@ -74,7 +73,7 @@ const Root = () => {
 
 	return <>
 		<MainMenu user={user} onLogout={onLogout} />
-		<div className="container">
+		<div className="container-fluid px-5">
 			<Outlet context={[user, setUser]} />
 		</div>
 	</>;

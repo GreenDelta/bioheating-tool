@@ -45,47 +45,63 @@ export const LoginPage = () => {
 		navigate("/");
 	}
 
-	return <div className="row justify-content-center mt-5">
-		<div className="col-md-5">
-			<form>
-				<ErrorRow err={error} />
+	return (
+		<div className="container-fluid">
+			<div className="row">
+				<div className="col-md-7">
+					<div className="row justify-content-center mt-5">
+						<div className="col-md-8">
+							<form>
+								<ErrorRow err={error} />
 
-				<div className="form-group row mt-3">
-					<label className="col-sm-3 col-form-label col-form-label-lg">User</label>
-					<div className="col-sm-9">
-						<input type="text" className="form-control form-control-lg" required
-							disabled={inProgress} value={userName}
-							onChange={e => {
-								setUserName(e.target.value);
-								setError(null);
-							}} />
+								<div className="form-group row mt-3">
+									<label className="col-sm-3 col-form-label col-form-label-lg">User</label>
+									<div className="col-sm-9">
+										<input type="text" className="form-control form-control-lg" required
+											disabled={inProgress} value={userName}
+											onChange={e => {
+												setUserName(e.target.value);
+												setError(null);
+											}} />
+									</div>
+								</div>
+
+								<div className="form-group row mt-3">
+									<label className="col-sm-3 col-form-label col-form-label-lg">Password</label>
+									<div className="col-sm-9">
+										<input type="password" className="form-control form-control-lg" required
+											disabled={inProgress} value={password}
+											onChange={e => {
+												setPassword(e.target.value);
+												setError(null);
+											}} />
+									</div>
+								</div>
+
+								<div className="form-group row mt-3">
+									<div className="col-sm-3" />
+									<div className="col-sm-9">
+										<button type="button" className="btn btn-lg btn-primary"
+											onClick={() => onLogin()} disabled={inProgress}>
+											Login
+										</button>
+									</div>
+								</div>
+							</form>
+						</div>
 					</div>
 				</div>
 
-				<div className="form-group row mt-3">
-					<label className="col-sm-3 col-form-label col-form-label-lg">Password</label>
-					<div className="col-sm-9">
-						<input type="password" className="form-control form-control-lg" required
-							disabled={inProgress} value={password}
-							onChange={e => {
-								setPassword(e.target.value);
-								setError(null);
-							}} />
-					</div>
+				<div className="col-md-5">
+					<img
+						src="/home.png"
+						alt="BIOHEATING"
+						className="img-fluid rounded shadow mb-3"
+					/>
 				</div>
-
-				<div className="form-group row mt-3">
-					<div className="col-sm-3" />
-					<div className="col-sm-9">
-						<button type="button" className="btn btn-lg btn-primary"
-							onClick={() => onLogin()} disabled={inProgress}>
-							Login
-						</button>
-					</div>
-				</div>
-			</form>
+			</div>
 		</div>
-	</div>;
+	);
 }
 
 const ErrorRow = ({ err }: { err: string | null }) => {
