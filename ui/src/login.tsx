@@ -48,8 +48,8 @@ export const LoginPage = () => {
 	return (
 		<div className="container-fluid">
 			<div className="row">
-				<div className="col-md-7">
-					<div className="row justify-content-center mt-5">
+				<div className="col-md-7 d-flex align-items-center">
+					<div className="row justify-content-center w-100">
 						<div className="col-md-8">
 							<form>
 								<ErrorRow err={error} />
