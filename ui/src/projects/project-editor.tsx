@@ -35,12 +35,21 @@ class FeatureData {
 	storeys: number;
 	heatDemand: number;
 
-	constructor(f: GeoFeature) {
-		const props = f.properties || {};
-		this.name = typeof props.name === "string" ? props.name : "";
-		this.height = typeof props.height === "number" ? props.height : 0;
-		this.storeys = typeof props.storeys === "number" ? props.storeys : 0;
-		this.heatDemand = typeof props.heatDemand === "number" ? props.heatDemand : 0;
+	constructor(f: GeoFeature | FeatureData) {
+		if (f instanceof FeatureData) {
+			// Copy constructor
+			this.name = f.name;
+			this.height = f.height;
+			this.storeys = f.storeys;
+			this.heatDemand = f.heatDemand;
+		} else {
+			// Original constructor from GeoFeature
+			const props = f.properties || {};
+			this.name = typeof props.name === "string" ? props.name : "";
+			this.height = typeof props.height === "number" ? props.height : 0;
+			this.storeys = typeof props.storeys === "number" ? props.storeys : 0;
+			this.heatDemand = typeof props.heatDemand === "number" ? props.heatDemand : 0;
+		}
 	}
 
 	applyOn(f: GeoFeature) {
@@ -76,8 +85,9 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 				<input
 					value={data.name}
 					onChange={e => {
-						data.name = e.target.value;
-						setData(data);
+						const newData = new FeatureData(data);
+						newData.name = e.target.value;
+						setData(newData);
 					}} />
 			</label>
 
@@ -87,8 +97,9 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 					type="number"
 					value={data.height}
 					onChange={e => {
-						data.height = parseFloat(e.target.value);
-						setData(data);
+						const newData = new FeatureData(data);
+						newData.height = parseFloat(e.target.value);
+						setData(newData);
 					}}
 					step="0.1" />
 			</label>
@@ -99,8 +110,9 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 					type="number"
 					value={data.storeys}
 					onChange={e => {
-						data.storeys = parseInt(e.target.value, 10);
-						setData(data);
+						const newData = new FeatureData(data);
+						newData.storeys = parseInt(e.target.value, 10);
+						setData(newData);
 					}}
 					step="1" />
 			</label>
@@ -110,8 +122,9 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 					type="number"
 					value={data.heatDemand}
 					onChange={e => {
-						data.heatDemand = parseFloat(e.target.value);
-						setData(data);
+						const newData = new FeatureData(data);
+						newData.heatDemand = parseFloat(e.target.value);
+						setData(newData);
 					}}
 					step="0.1" />
 			</label>
