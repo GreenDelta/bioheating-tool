@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import * as L from 'leaflet';
 import { GeoFeature, GeoMap } from '../model';
+import "leaflet-lasso";
 
 interface MapProps {
 	data: GeoMap;
 	onSelect: (f: GeoFeature) => void;
 }
 
-export const Map: React.FC<MapProps> = ({ data, onSelect}) => {
+export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 
 	const divRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
@@ -24,7 +25,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect}) => {
 			}
 		};
 	}, []);
-	return <div ref={divRef} style={{width: "100%", height: 650}} />;
+	return <div ref={divRef} style={{ width: "100%", height: 650 }} />;
 };
 
 function initMap(
@@ -60,6 +61,18 @@ function initMap(
 		if (feature) {
 			onSelect(feature);
 		}
+	});
+
+	// Add lasso control with visible UI button
+	(L.control as any).lasso({
+		intersect: true,
+		title: 'Select multiple features'
+	}).addTo(map);
+
+	// Listen for lasso selection events
+	map.on('lasso.finished', (event: any) => {
+		console.log('Lasso selection completed:', event.layers);
+		// You can add custom logic here to handle multiple selected features
 	});
 
 	return map;
