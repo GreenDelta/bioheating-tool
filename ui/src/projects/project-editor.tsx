@@ -3,6 +3,7 @@ import { Link, useLoaderData } from 'react-router-dom';
 import { GeoFeature, Project } from '../model';
 import { Map } from './map';
 import * as api from '../api';
+import { BuildingData } from './building-data';
 
 export const ProjectEditor = () => {
 
@@ -27,54 +28,13 @@ export const ProjectEditor = () => {
 	);
 };
 
-
-class FeatureData {
-
-	name: string;
-	height: number;
-	storeys: number;
-	heatDemand: number;
-
-	constructor(f: GeoFeature | FeatureData) {
-		if (f instanceof FeatureData) {
-			// Copy constructor
-			this.name = f.name;
-			this.height = f.height;
-			this.storeys = f.storeys;
-			this.heatDemand = f.heatDemand;
-		} else {
-			// Original constructor from GeoFeature
-			const props = f.properties || {};
-			this.name = typeof props.name === "string" ? props.name : "";
-			this.height = typeof props.height === "number" ? props.height : 0;
-			this.storeys = typeof props.storeys === "number" ? props.storeys : 0;
-			this.heatDemand = typeof props.heatDemand === "number" ? props.heatDemand : 0;
-		}
-	}
-
-	applyOn(f: GeoFeature) {
-		if (!f.properties) {
-			f.properties = {};
-		}
-		f.properties.name = this.name;
-		f.properties.height = this.height;
-		f.properties.storeys = this.storeys;
-		f.properties.heatDemand = this.heatDemand;
-	}
-
-	isValid(): boolean {
-		return (typeof this.name === "string") && this.name.trim().length > 0;
-	}
-}
-
-
 const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 	if (!feature) {
 		return <></>;
 	}
-	const [data, setData] = useState<FeatureData>(new FeatureData(feature));
+	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
 	useEffect(() => {
-		setData(new FeatureData(feature));
+		setData(BuildingData.of(feature));
 	}, [feature]);
 
 	return <div style={{ paddingTop: 20 }}>
@@ -82,52 +42,29 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 		<fieldset>
 			<label>
 				Name
-				<input
-					value={data.name}
-					onChange={e => {
-						const newData = new FeatureData(data);
-						newData.name = e.target.value;
-						setData(newData);
-					}} />
+				<input value={data.name}
+					onChange={e => setData(data.copyWith({ name: e.target.value }))} />
 			</label>
 
 			<label>
 				Height (m)
-				<input
-					type="number"
-					value={data.height}
-					onChange={e => {
-						const newData = new FeatureData(data);
-						newData.height = parseFloat(e.target.value);
-						setData(newData);
-					}}
-					step="0.1" />
+				<input type="number" step="0.1" value={data.height}
+					onChange={e => setData(data.copyWith({ height: e.target.value }))} />
 			</label>
 
 			<label>
 				Storeys
-				<input
-					type="number"
-					value={data.storeys}
-					onChange={e => {
-						const newData = new FeatureData(data);
-						newData.storeys = parseInt(e.target.value, 10);
-						setData(newData);
-					}}
-					step="1" />
+				<input type="number" step="1" value={data.storeys}
+					onChange={e => setData(data.copyWith({ storeys: e.target.value }))} />
 			</label>
+
 			<label>
 				Heat demand (kWh)
 				<input
-					type="number"
-					value={data.heatDemand}
-					onChange={e => {
-						const newData = new FeatureData(data);
-						newData.heatDemand = parseFloat(e.target.value);
-						setData(newData);
-					}}
-					step="0.1" />
+					type="number" step="0.1" value={data.heatDemand}
+					onChange={e => setData(data.copyWith({ heatDemand: e.target.value }))} />
 			</label>
+
 		</fieldset>
 		<button disabled={!data.isValid()}
 			onClick={() => data.applyOn(feature)} style={{ marginTop: 10 }}>
