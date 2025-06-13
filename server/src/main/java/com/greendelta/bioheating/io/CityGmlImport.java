@@ -87,9 +87,11 @@ public class CityGmlImport implements Callable<Res<Project>> {
 
 		// For now, assume heated area is 80% of ground area (this could be enhanced)
 		double heatedArea = groundArea * 0.8;
-
 		// Calculate volume using height and ground area
 		double volume = b.height() > 0 ? groundArea * b.height() : 0;
+
+		// Extract address information
+		var address = b.address();
 
 		return new Building()
 			.name(nameOf(b))
@@ -100,7 +102,12 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			.storeys(b.storeys())
 			.groundArea(groundArea)
 			.heatedArea(heatedArea)
-			.volume(volume);
+			.volume(volume)
+			.country(address != null ? address.country() : null)
+			.locality(address != null ? address.locality() : null)
+			.postalCode(address != null ? address.postalCode() : null)
+			.street(address != null ? address.street() : null)
+			.streetNumber(address != null ? address.number() : null);
 	}
 
 	private String nameOf(GmlBuilding b) {

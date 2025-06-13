@@ -38,6 +38,21 @@ public class Building extends BaseEntity {
 	@Column(name = "volume")
 	private double volume;
 
+	@Column(name = "country")
+	private String country;
+
+	@Column(name = "locality")
+	private String locality;
+
+	@Column(name = "postal_code")
+	private String postalCode;
+
+	@Column(name = "street")
+	private String street;
+
+	@Column(name = "street_number")
+	private String streetNumber;
+
 	public String name() {
 		return name;
 	}
@@ -116,6 +131,51 @@ public class Building extends BaseEntity {
 
 	public Building volume(double volume) {
 		this.volume = volume;
+		return this;
+	}
+
+	public String country() {
+		return country;
+	}
+
+	public Building country(String country) {
+		this.country = country;
+		return this;
+	}
+
+	public String locality() {
+		return locality;
+	}
+
+	public Building locality(String locality) {
+		this.locality = locality;
+		return this;
+	}
+
+	public String postalCode() {
+		return postalCode;
+	}
+
+	public Building postalCode(String postalCode) {
+		this.postalCode = postalCode;
+		return this;
+	}
+
+	public String street() {
+		return street;
+	}
+
+	public Building street(String street) {
+		this.street = street;
+		return this;
+	}
+
+	public String streetNumber() {
+		return streetNumber;
+	}
+
+	public Building streetNumber(String streetNumber) {
+		this.streetNumber = streetNumber;
 		return this;
 	}
 

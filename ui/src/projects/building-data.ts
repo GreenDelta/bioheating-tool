@@ -10,6 +10,11 @@ interface Props {
 	groundArea?: any;
 	heatedArea?: any;
 	volume?: any;
+	country?: any;
+	locality?: any;
+	postalCode?: any;
+	street?: any;
+	streetNumber?: any;
 }
 
 function stringOf(field: any): string {
@@ -51,12 +56,16 @@ export class BuildingData {
 	groundArea: number;
 	heatedArea: number;
 	volume: number;
+	country: string;
+	locality: string;
+	postalCode: string;
+	street: string;
+	streetNumber: string;
 
 	static of(f: GeoFeature): BuildingData {
 		const props = f.properties || {};
 		return new BuildingData(props);
-	}
-	constructor(d: BuildingData | Props) {
+	}	constructor(d: BuildingData | Props) {
 		if (d instanceof BuildingData) {
 			this.name = d.name;
 			this.height = d.height;
@@ -67,6 +76,11 @@ export class BuildingData {
 			this.groundArea = d.groundArea;
 			this.heatedArea = d.heatedArea;
 			this.volume = d.volume;
+			this.country = d.country;
+			this.locality = d.locality;
+			this.postalCode = d.postalCode;
+			this.street = d.street;
+			this.streetNumber = d.streetNumber;
 		} else {
 			this.name = stringOf(d.name);
 			this.height = floatOf(d.height);
@@ -77,6 +91,11 @@ export class BuildingData {
 			this.groundArea = floatOf(d.groundArea);
 			this.heatedArea = floatOf(d.heatedArea);
 			this.volume = floatOf(d.volume);
+			this.country = stringOf(d.country);
+			this.locality = stringOf(d.locality);
+			this.postalCode = stringOf(d.postalCode);
+			this.street = stringOf(d.street);
+			this.streetNumber = stringOf(d.streetNumber);
 		}
 	}
 	copyWith(props: Props): BuildingData {
@@ -104,9 +123,23 @@ export class BuildingData {
 		}
 		if (props.heatedArea) {
 			copy.heatedArea = props.heatedArea;
-		}
-		if (props.volume) {
+		}		if (props.volume) {
 			copy.volume = props.volume;
+		}
+		if (props.country) {
+			copy.country = props.country;
+		}
+		if (props.locality) {
+			copy.locality = props.locality;
+		}
+		if (props.postalCode) {
+			copy.postalCode = props.postalCode;
+		}
+		if (props.street) {
+			copy.street = props.street;
+		}
+		if (props.streetNumber) {
+			copy.streetNumber = props.streetNumber;
 		}
 		return copy;
 	}
@@ -119,10 +152,14 @@ export class BuildingData {
 		f.properties.storeys = this.storeys;
 		f.properties.heatDemand = this.heatDemand;
 		f.properties.roofType = this.roofType;
-		f.properties.function = this.function;
-		f.properties.groundArea = this.groundArea;
+		f.properties.function = this.function;		f.properties.groundArea = this.groundArea;
 		f.properties.heatedArea = this.heatedArea;
 		f.properties.volume = this.volume;
+		f.properties.country = this.country;
+		f.properties.locality = this.locality;
+		f.properties.postalCode = this.postalCode;
+		f.properties.street = this.street;
+		f.properties.streetNumber = this.streetNumber;
 	}
 
 	isValid(): boolean {

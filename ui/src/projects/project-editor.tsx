@@ -132,6 +132,54 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 					/>
 				</div>
 
+				<hr />
+				<h6>Address Information</h6>
+
+				<div className="mb-3">
+					<label className="form-label">Country</label>
+					<input
+						className="form-control"
+						value={data.country}
+						onChange={e => setData(data.copyWith({ country: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Locality/City</label>
+					<input
+						className="form-control"
+						value={data.locality}
+						onChange={e => setData(data.copyWith({ locality: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Postal Code</label>
+					<input
+						className="form-control"
+						value={data.postalCode}
+						onChange={e => setData(data.copyWith({ postalCode: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Street</label>
+					<input
+						className="form-control"
+						value={data.street}
+						onChange={e => setData(data.copyWith({ street: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Street Number</label>
+					<input
+						className="form-control"
+						value={data.streetNumber}
+						onChange={e => setData(data.copyWith({ streetNumber: e.target.value }))}
+					/>
+				</div>
+
 				<button
 					className="btn btn-primary"
 					disabled={!data.isValid()}

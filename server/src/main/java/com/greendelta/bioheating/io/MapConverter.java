@@ -53,10 +53,14 @@ public class MapConverter {
 		props.put("roofType", b.roofType());
 		props.put("function", b.function());
 		props.put("height", b.height());
-		props.put("storeys", b.storeys());
-		props.put("groundArea", b.groundArea());
+		props.put("storeys", b.storeys());		props.put("groundArea", b.groundArea());
 		props.put("heatedArea", b.heatedArea());
 		props.put("volume", b.volume());
+		props.put("country", b.country());
+		props.put("locality", b.locality());
+		props.put("postalCode", b.postalCode());
+		props.put("street", b.street());
+		props.put("streetNumber", b.streetNumber());
 		return new GeoFeature("Feature", polygon, props);
 	}
 

@@ -29,7 +29,12 @@ create table tbl_buildings (
     storeys int,
     ground_area double precision,
     heated_area double precision,
-    volume double precision
+    volume double precision,
+    country varchar,
+    locality varchar,
+    postal_code varchar,
+    street varchar,
+    street_number varchar
 );
 
 drop table if exists tbl_maps cascade;
