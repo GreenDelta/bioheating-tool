@@ -21,6 +21,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	private final Project project;
 	private final File file;
 	private final Mappings mappings;
+	private final BoostPredictor booster;
 
 	public CityGmlImport(
 		Database db, Project project, File file
@@ -29,6 +30,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		this.project = project;
 		this.file = file;
 		this.mappings = Mappings.read().orElse(null);
+		this.booster = BoostPredictor.getDefault();
 	}
 
 	@Override
@@ -54,6 +56,16 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			if (building != null) {
 				map.buildings().add(building);
 			}
+		}
+
+		try {
+			var buildings = map.buildings();
+			var demands = booster.predictAll(buildings);
+			for (int i = 0; i < demands.length; i++) {
+				buildings.get(i).heatDemand(demands[i]);
+			}
+		} catch (Exception e) {
+			return Res.error("failed to predict heat demands", e);
 		}
 
 		var next = project.id() == 0
@@ -96,7 +108,6 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		double totalArea = groundArea * storeys;
 		double heatedArea = heatedAreaOf(totalArea, b.function());
 		double volume = volumeOf(groundArea, height, b.roofType());
-
 		var building = new Building()
 			.name(nameOf(b))
 			.coordinates(cs)

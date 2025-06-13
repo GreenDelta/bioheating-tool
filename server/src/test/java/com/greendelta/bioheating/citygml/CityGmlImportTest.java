@@ -66,11 +66,13 @@ public class CityGmlImportTest {
 		assertEquals("Ohlenkamp", building.street());
 		assertEquals("8b", building.streetNumber());
 		assertEquals("22607", building.postalCode());
-
 		// check calculated areas and volume should be > 0
 		assertTrue(building.groundArea() > 0);
 		assertTrue(building.heatedArea() > 0);
 		assertTrue(building.volume() > 0);
+
+		// check heat demand prediction is calculated
+		assertTrue(building.heatDemand() >= 0);
 
 		db.delete(project);
 	}
