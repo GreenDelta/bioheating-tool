@@ -96,7 +96,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 		}
 	}, [selection]);
 
-	return <div ref={divRef} style={{ width: "100%", height: 650 }} />;
+	return <div ref={divRef} style={{ width: "100%", height: 750 }} />;
 };
 
 function styleOf(feature: any, ids: Set<any>) {
