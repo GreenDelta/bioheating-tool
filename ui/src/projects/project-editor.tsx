@@ -180,6 +180,17 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 					/>
 				</div>
 
+				<div className="mb-3">
+					<label className="form-label">Climate Zone</label>
+					<input
+						type="number"
+						step="1"
+						className="form-control"
+						value={data.climateZone}
+						onChange={e => setData(data.copyWith({ climateZone: e.target.value }))}
+					/>
+				</div>
+
 				<button
 					className="btn btn-primary"
 					disabled={!data.isValid()}

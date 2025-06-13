@@ -12,9 +12,9 @@ interface Props {
 	volume?: any;
 	country?: any;
 	locality?: any;
-	postalCode?: any;
-	street?: any;
+	postalCode?: any;	street?: any;
 	streetNumber?: any;
+	climateZone?: any;
 }
 
 function stringOf(field: any): string {
@@ -58,9 +58,9 @@ export class BuildingData {
 	volume: number;
 	country: string;
 	locality: string;
-	postalCode: string;
-	street: string;
+	postalCode: string;	street: string;
 	streetNumber: string;
+	climateZone: number;
 
 	static of(f: GeoFeature): BuildingData {
 		const props = f.properties || {};
@@ -78,9 +78,9 @@ export class BuildingData {
 			this.volume = d.volume;
 			this.country = d.country;
 			this.locality = d.locality;
-			this.postalCode = d.postalCode;
-			this.street = d.street;
+			this.postalCode = d.postalCode;			this.street = d.street;
 			this.streetNumber = d.streetNumber;
+			this.climateZone = d.climateZone;
 		} else {
 			this.name = stringOf(d.name);
 			this.height = floatOf(d.height);
@@ -93,9 +93,9 @@ export class BuildingData {
 			this.volume = floatOf(d.volume);
 			this.country = stringOf(d.country);
 			this.locality = stringOf(d.locality);
-			this.postalCode = stringOf(d.postalCode);
-			this.street = stringOf(d.street);
+			this.postalCode = stringOf(d.postalCode);			this.street = stringOf(d.street);
 			this.streetNumber = stringOf(d.streetNumber);
+			this.climateZone = intOf(d.climateZone);
 		}
 	}
 	copyWith(props: Props): BuildingData {
@@ -137,9 +137,11 @@ export class BuildingData {
 		}
 		if (props.street) {
 			copy.street = props.street;
-		}
-		if (props.streetNumber) {
+		}		if (props.streetNumber) {
 			copy.streetNumber = props.streetNumber;
+		}
+		if (props.climateZone) {
+			copy.climateZone = props.climateZone;
 		}
 		return copy;
 	}
@@ -157,9 +159,9 @@ export class BuildingData {
 		f.properties.volume = this.volume;
 		f.properties.country = this.country;
 		f.properties.locality = this.locality;
-		f.properties.postalCode = this.postalCode;
-		f.properties.street = this.street;
+		f.properties.postalCode = this.postalCode;		f.properties.street = this.street;
 		f.properties.streetNumber = this.streetNumber;
+		f.properties.climateZone = this.climateZone;
 	}
 
 	isValid(): boolean {

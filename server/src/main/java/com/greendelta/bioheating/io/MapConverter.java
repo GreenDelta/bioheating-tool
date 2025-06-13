@@ -58,9 +58,9 @@ public class MapConverter {
 		props.put("volume", b.volume());
 		props.put("country", b.country());
 		props.put("locality", b.locality());
-		props.put("postalCode", b.postalCode());
-		props.put("street", b.street());
+		props.put("postalCode", b.postalCode());		props.put("street", b.street());
 		props.put("streetNumber", b.streetNumber());
+		props.put("climateZone", b.climateZone());
 		return new GeoFeature("Feature", polygon, props);
 	}
 

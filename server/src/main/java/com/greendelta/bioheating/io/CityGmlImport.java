@@ -104,10 +104,10 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			.heatedArea(heatedArea)
 			.volume(volume)
 			.country(address != null ? address.country() : null)
-			.locality(address != null ? address.locality() : null)
-			.postalCode(address != null ? address.postalCode() : null)
+			.locality(address != null ? address.locality() : null)			.postalCode(address != null ? address.postalCode() : null)
 			.street(address != null ? address.street() : null)
-			.streetNumber(address != null ? address.number() : null);
+			.streetNumber(address != null ? address.number() : null)
+			.climateZone(1); // Default climate zone, could be enhanced based on location
 	}
 
 	private String nameOf(GmlBuilding b) {

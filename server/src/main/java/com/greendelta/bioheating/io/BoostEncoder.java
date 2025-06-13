@@ -27,7 +27,7 @@ class BoostEncoder {
 		return new float[] {
 			(float) b.height(),
 			(float) b.storeys(),
-			encodeClimateZone(b.weatherStation()),
+			encodeClimateZone(b.climateZone()),
 			(float) b.volume(),
 			(float) b.heatedArea(),
 		};

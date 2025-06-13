@@ -31,10 +31,10 @@ create table tbl_buildings (
     heated_area double precision,
     volume double precision,
     country varchar,
-    locality varchar,
-    postal_code varchar,
+    locality varchar,    postal_code varchar,
     street varchar,
-    street_number varchar
+    street_number varchar,
+    climate_zone int
 );
 
 drop table if exists tbl_maps cascade;
