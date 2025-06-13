@@ -70,9 +70,7 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 						value={data.storeys}
 						onChange={e => setData(data.copyWith({ storeys: e.target.value }))}
 					/>
-				</div>
-
-				<div className="mb-3">
+				</div>				<div className="mb-3">
 					<label className="form-label">Heat demand (kWh)</label>
 					<input
 						type="number"
@@ -80,6 +78,57 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 						className="form-control"
 						value={data.heatDemand}
 						onChange={e => setData(data.copyWith({ heatDemand: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Roof Type</label>
+					<input
+						className="form-control"
+						value={data.roofType}
+						onChange={e => setData(data.copyWith({ roofType: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Function</label>
+					<input
+						className="form-control"
+						value={data.function}
+						onChange={e => setData(data.copyWith({ function: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Ground Area (m²)</label>
+					<input
+						type="number"
+						step="0.1"
+						className="form-control"
+						value={data.groundArea}
+						onChange={e => setData(data.copyWith({ groundArea: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Heated Area (m²)</label>
+					<input
+						type="number"
+						step="0.1"
+						className="form-control"
+						value={data.heatedArea}
+						onChange={e => setData(data.copyWith({ heatedArea: e.target.value }))}
+					/>
+				</div>
+
+				<div className="mb-3">
+					<label className="form-label">Volume (m³)</label>
+					<input
+						type="number"
+						step="0.1"
+						className="form-control"
+						value={data.volume}
+						onChange={e => setData(data.copyWith({ volume: e.target.value }))}
 					/>
 				</div>
 

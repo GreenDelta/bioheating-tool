@@ -40,7 +40,6 @@ public class MapConverter {
 		}
 		return new ClientMap(features);
 	}
-
 	private GeoFeature convert(Building b) {
 		if (b == null)
 			return null;
@@ -51,6 +50,13 @@ public class MapConverter {
 		var props = new HashMap<String, Object>();
 		props.put("id", b.id());
 		props.put("name", b.name());
+		props.put("roofType", b.roofType());
+		props.put("function", b.function());
+		props.put("height", b.height());
+		props.put("storeys", b.storeys());
+		props.put("groundArea", b.groundArea());
+		props.put("heatedArea", b.heatedArea());
+		props.put("volume", b.volume());
 		return new GeoFeature("Feature", polygon, props);
 	}
 

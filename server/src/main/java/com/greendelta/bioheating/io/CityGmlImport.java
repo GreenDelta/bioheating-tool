@@ -75,16 +75,32 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		project.map(map);
 		return Res.of(map);
 	}
-
 	private Building convertBuilding(GmlBuilding b) {
 		if (b == null)
 			return null;
 		var cs = coordinatesOf(b);
 		if (cs == null)
 			return null;
+
+		// Calculate ground area from coordinates
+		double groundArea = calculateGroundArea(cs);
+
+		// For now, assume heated area is 80% of ground area (this could be enhanced)
+		double heatedArea = groundArea * 0.8;
+
+		// Calculate volume using height and ground area
+		double volume = b.height() > 0 ? groundArea * b.height() : 0;
+
 		return new Building()
 			.name(nameOf(b))
-			.coordinates(cs);
+			.coordinates(cs)
+			.roofType(b.roofType())
+			.function(b.function())
+			.height(b.height())
+			.storeys(b.storeys())
+			.groundArea(groundArea)
+			.heatedArea(heatedArea)
+			.volume(volume);
 	}
 
 	private String nameOf(GmlBuilding b) {
@@ -109,5 +125,22 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		return shell != null
 			? shell.getCoordinates()
 			: null;
+	}
+
+	private double calculateGroundArea(Coordinate[] coordinates) {
+		if (coordinates == null || coordinates.length < 3)
+			return 0.0;
+
+		// Using the shoelace formula to calculate polygon area
+		double area = 0.0;
+		int n = coordinates.length - 1; // Exclude the last coordinate if it's the same as first
+
+		for (int i = 0; i < n; i++) {
+			int j = (i + 1) % n;
+			area += coordinates[i].x * coordinates[j].y;
+			area -= coordinates[j].x * coordinates[i].y;
+		}
+
+		return Math.abs(area) / 2.0;
 	}
 }

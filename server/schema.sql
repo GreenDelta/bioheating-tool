@@ -22,7 +22,14 @@ create table tbl_buildings (
     id int not null primary key,
     name varchar,
     coordinates bytea,
-    f_map int
+    f_map int,
+    roof_type varchar,
+    function varchar,
+    height double precision,
+    storeys int,
+    ground_area double precision,
+    heated_area double precision,
+    volume double precision
 );
 
 drop table if exists tbl_maps cascade;
