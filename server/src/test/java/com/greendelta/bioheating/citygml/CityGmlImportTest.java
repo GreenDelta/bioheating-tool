@@ -55,6 +55,22 @@ public class CityGmlImportTest {
 		var cs = building.coordinates();
 		assertNotNull(cs);
 		assertEquals(5, cs.length);
+		assertEquals("31001_1010", building.function());
+		assertEquals("3100", building.roofType());
+		assertEquals(10.354, building.height(), 1e-3);
+		assertEquals(1, building.storeys());
+
+		// check address data
+		assertEquals("Germany", building.country());
+		assertEquals("Hamburg", building.locality());
+		assertEquals("Ohlenkamp", building.street());
+		assertEquals("8b", building.streetNumber());
+		assertEquals("22607", building.postalCode());
+
+		// check calculated areas and volume should be > 0
+		assertTrue(building.groundArea() > 0);
+		assertTrue(building.heatedArea() > 0);
+		assertTrue(building.volume() > 0);
 
 		db.delete(project);
 	}

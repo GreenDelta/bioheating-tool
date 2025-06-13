@@ -5,6 +5,7 @@ import java.util.concurrent.Callable;
 
 import org.locationtech.jts.geom.Coordinate;
 
+import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.model.Building;
@@ -19,6 +20,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	private final Database db;
 	private final Project project;
 	private final File file;
+	private final Mappings mappings;
 
 	public CityGmlImport(
 		Database db, Project project, File file
@@ -26,6 +28,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		this.db = db;
 		this.project = project;
 		this.file = file;
+		this.mappings = Mappings.read().orElse(null);
 	}
 
 	@Override
@@ -34,10 +37,12 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return Res.error("project cannot be null");
 		if (file == null || !file.exists())
 			return Res.error("file does not exist");
+		if (mappings == null)
+			return Res.error("failed to load mappings");
+
 		var res = GmlModel.readFrom(file);
 		if (res.hasError())
 			return res.castError();
-
 		var model = res.value();
 		var mapRes = initMap(model);
 		if (mapRes.hasError())
@@ -75,6 +80,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		project.map(map);
 		return Res.of(map);
 	}
+
 	private Building convertBuilding(GmlBuilding b) {
 		if (b == null)
 			return null;
@@ -82,32 +88,28 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		if (cs == null)
 			return null;
 
-		// Calculate ground area from coordinates
-		double groundArea = calculateGroundArea(cs);
+		double height = b.height();
+		int storeys = storeysOf(b, height);
+		double groundArea = b.groundSurface() != null
+			? b.groundSurface().getArea()
+			: 0;
+		double totalArea = groundArea * storeys;
+		double heatedArea = heatedAreaOf(totalArea, b.function());
+		double volume = volumeOf(groundArea, height, b.roofType());
 
-		// For now, assume heated area is 80% of ground area (this could be enhanced)
-		double heatedArea = groundArea * 0.8;
-		// Calculate volume using height and ground area
-		double volume = b.height() > 0 ? groundArea * b.height() : 0;
-
-		// Extract address information
-		var address = b.address();
-
-		return new Building()
+		var building = new Building()
 			.name(nameOf(b))
 			.coordinates(cs)
 			.roofType(b.roofType())
 			.function(b.function())
-			.height(b.height())
-			.storeys(b.storeys())
+			.height(height)
+			.storeys(storeys)
 			.groundArea(groundArea)
 			.heatedArea(heatedArea)
 			.volume(volume)
-			.country(address != null ? address.country() : null)
-			.locality(address != null ? address.locality() : null)			.postalCode(address != null ? address.postalCode() : null)
-			.street(address != null ? address.street() : null)
-			.streetNumber(address != null ? address.number() : null)
-			.climateZone(1); // Default climate zone, could be enhanced based on location
+			.climateZone(climateZoneOf(b));
+		mapAddress(b.address(), building);
+		return building;
 	}
 
 	private String nameOf(GmlBuilding b) {
@@ -134,20 +136,52 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			: null;
 	}
 
-	private double calculateGroundArea(Coordinate[] coordinates) {
-		if (coordinates == null || coordinates.length < 3)
-			return 0.0;
+	private int storeysOf(GmlBuilding b, double height) {
+		int storeys = b.storeys();
+		if (storeys > 0)
+			return storeys;
+		var function = b.function();
+		if (function == null || height == 0)
+			return 1;
+		var hs = mappings.defaultStoryHeight(function);
+		if (hs.isEmpty())
+			return 1;
+		storeys = (int) Math.round(height / hs.getAsDouble());
+		return Math.max(storeys, 1);
+	}
 
-		// Using the shoelace formula to calculate polygon area
-		double area = 0.0;
-		int n = coordinates.length - 1; // Exclude the last coordinate if it's the same as first
-
-		for (int i = 0; i < n; i++) {
-			int j = (i + 1) % n;
-			area += coordinates[i].x * coordinates[j].y;
-			area -= coordinates[j].x * coordinates[i].y;
+	private double heatedAreaOf(double totalArea, String function) {
+		var functionType = mappings.functionType(function);
+		if (functionType.isPresent()) {
+			var areaFactor = mappings.areaFactor(functionType.getAsInt());
+			if (areaFactor.isPresent())
+				return totalArea * areaFactor.getAsDouble();
 		}
+		return totalArea * 0.85;
+	}
 
-		return Math.abs(area) / 2.0;
+	private double volumeOf(
+		double groundArea, double height, String roofType
+	) {
+		double blockVolume = groundArea * height;
+		var f = mappings.roofTypeFactor(roofType).orElse(0.9);
+		return blockVolume * f;
+	}
+
+	private void mapAddress(GmlAddress a, Building b) {
+		if (a == null)
+			return;
+		b.country(a.country())
+			.locality(a.locality())
+			.postalCode(a.postalCode())
+			.street(a.street())
+			.streetNumber(a.number());
+	}
+
+	private int climateZoneOf(GmlBuilding building) {
+		var key = building.attributes().get("Gemeindeschluessel");
+		return key != null
+			? mappings.weatherStation(key).orElse(0)
+			: 0;
 	}
 }
