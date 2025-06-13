@@ -5,6 +5,8 @@ import { Map } from './map';
 import * as api from '../api';
 import { BuildingData } from './building-data';
 
+
+
 export const ProjectEditor = () => {
 
 	const [feature, setFeature] = useState<GeoFeature | null>(null);
@@ -36,160 +38,59 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 	useEffect(() => {
 		setData(BuildingData.of(feature));
 	}, [feature]);
-
 	return <div className="mt-4">
 		<h4>Building: {feature.properties?.name}</h4>
 		<div className="card">
 			<div className="card-body">
-				<div className="mb-3">
-					<label className="form-label">Name</label>
-					<input
-						className="form-control"
-						value={data.name}
-						onChange={e => setData(data.copyWith({ name: e.target.value }))}
-					/>
-				</div>
 
-				<div className="mb-3">
-					<label className="form-label">Height (m)</label>
-					<input
-						type="number"
-						step="0.1"
-						className="form-control"
-						value={data.height}
-						onChange={e => setData(data.copyWith({ height: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Name" value={data.name}
+					onChange={value => setData(data.copyWith({ name: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Storeys</label>
-					<input
-						type="number"
-						step="1"
-						className="form-control"
-						value={data.storeys}
-						onChange={e => setData(data.copyWith({ storeys: e.target.value }))}
-					/>
-				</div>				<div className="mb-3">
-					<label className="form-label">Heat demand (kWh)</label>
-					<input
-						type="number"
-						step="0.1"
-						className="form-control"
-						value={data.heatDemand}
-						onChange={e => setData(data.copyWith({ heatDemand: e.target.value }))}
-					/>
-				</div>
+				<NumberField label="Height (m)" value={data.height} step="0.1"
+					onChange={value => setData(data.copyWith({ height: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Roof Type</label>
-					<input
-						className="form-control"
-						value={data.roofType}
-						onChange={e => setData(data.copyWith({ roofType: e.target.value }))}
-					/>
-				</div>
+				<NumberField label="Storeys" value={data.storeys} step="1"
+					onChange={value => setData(data.copyWith({ storeys: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Function</label>
-					<input
-						className="form-control"
-						value={data.function}
-						onChange={e => setData(data.copyWith({ function: e.target.value }))}
-					/>
-				</div>
+				<NumberField label="Heat demand (kWh)" value={data.heatDemand} step="0.1"
+					onChange={value => setData(data.copyWith({ heatDemand: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Ground Area (m²)</label>
-					<input
-						type="number"
-						step="0.1"
-						className="form-control"
-						value={data.groundArea}
-						onChange={e => setData(data.copyWith({ groundArea: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Roof Type" value={data.roofType}
+					onChange={value => setData(data.copyWith({ roofType: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Heated Area (m²)</label>
-					<input
-						type="number"
-						step="0.1"
-						className="form-control"
-						value={data.heatedArea}
-						onChange={e => setData(data.copyWith({ heatedArea: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Function" value={data.function}
+					onChange={value => setData(data.copyWith({ function: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Volume (m³)</label>
-					<input
-						type="number"
-						step="0.1"
-						className="form-control"
-						value={data.volume}
-						onChange={e => setData(data.copyWith({ volume: e.target.value }))}
-					/>
-				</div>
+				<NumberField label="Ground Area (m²)" value={data.groundArea} step="0.1"
+					onChange={value => setData(data.copyWith({ groundArea: value }))} />
+
+				<NumberField label="Heated Area (m²)" value={data.heatedArea} step="0.1"
+					onChange={value => setData(data.copyWith({ heatedArea: value }))} />
+
+				<NumberField
+					label="Volume (m³)" value={data.volume} step="0.1"
+					onChange={value => setData(data.copyWith({ volume: value }))} />
 
 				<hr />
 				<h6>Address Information</h6>
 
-				<div className="mb-3">
-					<label className="form-label">Country</label>
-					<input
-						className="form-control"
-						value={data.country}
-						onChange={e => setData(data.copyWith({ country: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Country" value={data.country}
+					onChange={value => setData(data.copyWith({ country: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Locality/City</label>
-					<input
-						className="form-control"
-						value={data.locality}
-						onChange={e => setData(data.copyWith({ locality: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Locality/City" value={data.locality}
+					onChange={value => setData(data.copyWith({ locality: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Postal Code</label>
-					<input
-						className="form-control"
-						value={data.postalCode}
-						onChange={e => setData(data.copyWith({ postalCode: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Postal Code" value={data.postalCode}
+					onChange={value => setData(data.copyWith({ postalCode: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Street</label>
-					<input
-						className="form-control"
-						value={data.street}
-						onChange={e => setData(data.copyWith({ street: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Street" value={data.street}
+					onChange={value => setData(data.copyWith({ street: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Street Number</label>
-					<input
-						className="form-control"
-						value={data.streetNumber}
-						onChange={e => setData(data.copyWith({ streetNumber: e.target.value }))}
-					/>
-				</div>
+				<StringField label="Street Number" value={data.streetNumber}
+					onChange={value => setData(data.copyWith({ streetNumber: value }))} />
 
-				<div className="mb-3">
-					<label className="form-label">Climate Zone</label>
-					<input
-						type="number"
-						step="1"
-						className="form-control"
-						value={data.climateZone}
-						onChange={e => setData(data.copyWith({ climateZone: e.target.value }))}
-					/>
-				</div>
+				<NumberField label="Climate Zone" value={data.climateZone} step="1"
+					onChange={value => setData(data.copyWith({ climateZone: value }))} />
 
 				<button
 					className="btn btn-primary"
@@ -201,3 +102,36 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 		</div>
 	</div>
 }
+
+const StringField = ({ label, value, onChange }: {
+	label: string;
+	value: string;
+	onChange: (value: string) => void;
+}) => (
+	<div className="mb-3">
+		<label className="form-label">{label}</label>
+		<input
+			className="form-control"
+			value={value}
+			onChange={e => onChange(e.target.value)}
+		/>
+	</div>
+);
+
+const NumberField = ({ label, value, step, onChange }: {
+	label: string;
+	value: number;
+	step?: string;
+	onChange: (value: string) => void;
+}) => (
+	<div className="mb-3">
+		<label className="form-label">{label}</label>
+		<input
+			type="number"
+			step={step || "1"}
+			className="form-control"
+			value={value}
+			onChange={e => onChange(e.target.value)}
+		/>
+	</div>
+);
