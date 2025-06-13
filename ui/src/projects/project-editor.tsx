@@ -107,13 +107,15 @@ const StringField = ({ label, value, onChange }: {
 	value: string;
 	onChange: (value: string) => void;
 }) => (
-	<div className="mb-3">
-		<label className="form-label">{label}</label>
-		<input
-			className="form-control"
-			value={value}
-			onChange={e => onChange(e.target.value)}
-		/>
+	<div className="row mb-1">
+		<label className="col-sm-4 col-form-label">{label}</label>
+		<div className="col-sm-8">
+			<input
+				className="form-control"
+				value={value}
+				onChange={e => onChange(e.target.value)}
+			/>
+		</div>
 	</div>
 );
 
@@ -123,14 +125,16 @@ const NumberField = ({ label, value, step, onChange }: {
 	step?: string;
 	onChange: (value: string) => void;
 }) => (
-	<div className="mb-3">
-		<label className="form-label">{label}</label>
-		<input
-			type="number"
-			step={step || "1"}
-			className="form-control"
-			value={value}
-			onChange={e => onChange(e.target.value)}
-		/>
+	<div className="row mb-1">
+		<label className="col-sm-4 col-form-label">{label}</label>
+		<div className="col-sm-8">
+			<input
+				type="number"
+				step={step || "1"}
+				className="form-control"
+				value={value}
+				onChange={e => onChange(e.target.value)}
+			/>
+		</div>
 	</div>
 );
