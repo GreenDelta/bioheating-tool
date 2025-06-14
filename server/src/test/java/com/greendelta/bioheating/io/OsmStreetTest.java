@@ -8,19 +8,19 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class OverpassWayTest {
+public class OsmStreetTest {
 
-	private OverpassWay way;
+	private OsmStreet way;
 
 	@BeforeEach
 	public void setup() throws Exception {
-		var stream = getClass().getResourceAsStream("overpass-way.json");
+		var stream = getClass().getResourceAsStream("osm-street.json");
 		assertNotNull(stream);
 		try (stream) {
 			var obj = new ObjectMapper()
 				.createParser(stream)
 				.readValueAs(ObjectNode.class);
-			way = new OverpassWay(obj);
+			way = new OsmStreet(obj);
 		}
 	}
 
@@ -36,17 +36,17 @@ public class OverpassWayTest {
 
 	@Test
 	public void testCoordinates() {
-		var coords = way.geometry();
-		assertNotNull(coords);
-		assertEquals(4, coords.size());
+		var cs = way.geometry();
+		assertNotNull(cs);
+		assertEquals(4, cs.size());
 
 		// check first coordinate
-		assertEquals(11.4879310, coords.get(0).x, 0.0000001);
-		assertEquals(48.8306223, coords.get(0).y, 0.0000001);
+		assertEquals(11.4879310, cs.get(0).x, 0.0000001);
+		assertEquals(48.8306223, cs.get(0).y, 0.0000001);
 
 		// check last coordinate
-		assertEquals(11.4876697, coords.get(3).x, 0.0000001);
-		assertEquals(48.8304665, coords.get(3).y, 0.0000001);
+		assertEquals(11.4876697, cs.get(3).x, 0.0000001);
+		assertEquals(48.8304665, cs.get(3).y, 0.0000001);
 	}
 
 	@Test

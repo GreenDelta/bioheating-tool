@@ -10,9 +10,9 @@ import org.locationtech.jts.geom.Coordinate;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public record OverpassWay(ObjectNode object) {
+public record OsmStreet(ObjectNode object) {
 
-	public OverpassWay {
+	public OsmStreet {
 		Objects.requireNonNull(object);
 	}
 
