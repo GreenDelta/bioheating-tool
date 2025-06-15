@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class OsmStreetTest {
 
@@ -17,10 +16,8 @@ public class OsmStreetTest {
 		var stream = getClass().getResourceAsStream("osm-street.json");
 		assertNotNull(stream);
 		try (stream) {
-			var obj = new ObjectMapper()
-				.createParser(stream)
-				.readValueAs(ObjectNode.class);
-			way = new OsmStreet(obj);
+			way = new ObjectMapper().createParser(stream)
+				.readValueAs(OsmStreet.class);
 		}
 	}
 
@@ -35,18 +32,37 @@ public class OsmStreetTest {
 	}
 
 	@Test
-	public void testCoordinates() {
-		var cs = way.geometry();
-		assertNotNull(cs);
-		assertEquals(4, cs.size());
+	public void testBounds() {
+		var bounds = way.bounds();
+		assertNotNull(bounds);
+		assertEquals(48.8304665, bounds.minlat(), 0.0000001);
+		assertEquals(11.4876697, bounds.minlon(), 0.0000001);
+		assertEquals(48.8306223, bounds.maxlat(), 0.0000001);
+		assertEquals(11.4879310, bounds.maxlon(), 0.0000001);
+	}
+
+	@Test
+	public void testNodes() {
+		var nodes = way.nodes();
+		assertNotNull(nodes);
+		assertEquals(4, nodes.size());
+		assertEquals(1505676564L, nodes.get(0));
+		assertEquals(1505676555L, nodes.get(3));
+	}
+
+	@Test
+	public void testGeometry() {
+		var geometry = way.geometry();
+		assertNotNull(geometry);
+		assertEquals(4, geometry.size());
 
 		// check first coordinate
-		assertEquals(11.4879310, cs.get(0).x, 0.0000001);
-		assertEquals(48.8306223, cs.get(0).y, 0.0000001);
+		assertEquals(48.8306223, geometry.get(0).lat(), 0.0000001);
+		assertEquals(11.4879310, geometry.get(0).lon(), 0.0000001);
 
 		// check last coordinate
-		assertEquals(11.4876697, cs.get(3).x, 0.0000001);
-		assertEquals(48.8304665, cs.get(3).y, 0.0000001);
+		assertEquals(48.8304665, geometry.get(3).lat(), 0.0000001);
+		assertEquals(11.4876697, geometry.get(3).lon(), 0.0000001);
 	}
 
 	@Test

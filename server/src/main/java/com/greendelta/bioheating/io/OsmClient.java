@@ -6,12 +6,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
 
@@ -58,16 +56,7 @@ public class OsmClient implements AutoCloseable {
 
 			var mapper = new ObjectMapper();
 			var elements = mapper.readTree(response.body()).get("elements");
-			if (elements == null || !elements.isArray())
-				return Res.error("no elements array found");
-			var streets = new ArrayList<OsmStreet>();
-			for (var e : elements) {
-				if (e.isObject()) {
-					streets.add(new OsmStreet(mapper.treeToValue(e, ObjectNode.class)));
-				}
-			}
-			return Res.of(streets);
-
+			return OsmStreet.allFrom(elements, mapper);
 		} catch (Exception e) {
 			return Res.error("fetching OSM streets failed", e);
 		}
