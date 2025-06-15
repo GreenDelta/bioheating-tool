@@ -1,6 +1,5 @@
 package com.greendelta.bioheating.io;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -11,10 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.locationtech.jts.geom.Coordinate;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
 
@@ -39,71 +36,45 @@ public class OsmClient implements AutoCloseable {
 	}
 
 	public Res<List<OsmStreet>> queryStreets(
-		Coordinate southWest, Coordinate northEast
+		double south, double west, double north, double east
 	) {
-		if (southWest == null || northEast == null)
-			return Res.error("coordinates cannot be null");
-
-		// Extract bounding box coordinates
-		double south = southWest.y;
-		double west = southWest.x;
-		double north = northEast.y;
-		double east = northEast.x;
-
-		// Build the Overpass query
-		String query = String.format(
-			"[out:json];way[highway](%f,%f,%f,%f);out geom;",
-			south, west, north, east);
-
 		try {
-			// Prepare the request
-			String formData = "data=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
-			HttpRequest request = HttpRequest.newBuilder()
+
+			var query = String.format(
+				"[out:json];way[highway](%f,%f,%f,%f);out geom;",
+				south, west, north, east);
+			var formData = "data=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
+			var request = HttpRequest.newBuilder()
 				.uri(URI.create(api))
 				.header("Content-Type", "application/x-www-form-urlencoded")
 				.POST(HttpRequest.BodyPublishers.ofString(formData))
 				.build();
 
-			// Execute the request
-			HttpResponse<String> response = http.send(request,
-				HttpResponse.BodyHandlers.ofString());
-
-			// Process the response
+			var response = http.send(request, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() != 200) {
-				return Res.error("HTTP error: " + response.statusCode() + " - " + response.body());
+				return Res.error("HTTP error: " + response.statusCode()
+					+ " - " + response.body());
 			}
 
-			// Parse the JSON response
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode root = mapper.readTree(response.body());
-			JsonNode elements = root.get("elements");
-
-			if (elements == null || !elements.isArray()) {
-				return Res.error("Invalid response format: elements array not found");
-			}
-
-			// Convert to OsmStreet objects
-			List<OsmStreet> streets = new ArrayList<>();
-			for (JsonNode element : elements) {
-				if (element.isObject()) {
-					streets.add(new OsmStreet(mapper.treeToValue(element, ObjectNode.class)));
+			var mapper = new ObjectMapper();
+			var elements = mapper.readTree(response.body()).get("elements");
+			if (elements == null || !elements.isArray())
+				return Res.error("no elements array found");
+			var streets = new ArrayList<OsmStreet>();
+			for (var e : elements) {
+				if (e.isObject()) {
+					streets.add(new OsmStreet(mapper.treeToValue(e, ObjectNode.class)));
 				}
 			}
-
 			return Res.of(streets);
 
-		} catch (IOException e) {
-			return Res.error("IO error: " + e.getMessage(), e);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			return Res.error("Request interrupted: " + e.getMessage(), e);
 		} catch (Exception e) {
-			return Res.error("Unexpected error: " + e.getMessage(), e);
+			return Res.error("fetching OSM streets failed", e);
 		}
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		http.close();
 	}
 }

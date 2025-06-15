@@ -1,4 +1,4 @@
-package com.greendelta.bioheating;
+package com.greendelta.bioheating.examples;
 
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
@@ -7,7 +7,7 @@ public class DatabaseExample {
 
 	public static void main(String[] args) {
 		var db = Database.of("bioheating")
-			.withUser("postgres", "therm0s")
+			.withUser("postgres", "bioheating")
 			.withHost("localhost", 5432)
 			.connect();
 		try (db) {
