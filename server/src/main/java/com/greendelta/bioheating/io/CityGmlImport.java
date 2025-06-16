@@ -118,7 +118,8 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			.groundArea(groundArea)
 			.heatedArea(heatedArea)
 			.volume(volume)
-			.climateZone(climateZoneOf(b));
+			.climateZone(climateZoneOf(b))
+			.isHeated(b.address() != null);
 		mapAddress(b.address(), building);
 		return building;
 	}

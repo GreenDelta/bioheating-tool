@@ -13,6 +13,7 @@ public class Building extends BaseEntity {
 
 	@Column(name = "name")
 	private String name;
+
 	@Column(name = "coordinates")
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
@@ -57,6 +58,9 @@ public class Building extends BaseEntity {
 
 	@Column(name = "heat_demand")
 	private double heatDemand;
+
+	@Column(name = "is_heated")
+	private boolean isHeated;
 
 	public String name() {
 		return name;
@@ -198,6 +202,15 @@ public class Building extends BaseEntity {
 
 	public Building heatDemand(double heatDemand) {
 		this.heatDemand = heatDemand;
+		return this;
+	}
+
+	public boolean isHeated() {
+		return isHeated;
+	}
+
+	public Building isHeated(boolean isHeated) {
+		this.isHeated = isHeated;
 		return this;
 	}
 

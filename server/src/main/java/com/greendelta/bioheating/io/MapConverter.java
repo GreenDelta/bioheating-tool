@@ -63,6 +63,7 @@ public class MapConverter {
 		props.put("streetNumber", b.streetNumber());
 		props.put("climateZone", b.climateZone());
 		props.put("heatDemand", b.heatDemand());
+		props.put("isHeated", b.isHeated());
 		return new GeoFeature("Feature", polygon, props);
 	}
 

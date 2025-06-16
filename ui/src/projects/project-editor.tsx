@@ -52,7 +52,11 @@ const FeaturePanel = ({ feature }: { feature: GeoFeature | null }) => {
 			<NumberField label="Storeys" value={data.storeys} step="1"
 				onChange={value => setData(data.copyWith({ storeys: value }))} />
 
+			<CheckboxField label="Is heated" checked={data.isHeated}
+				onChange={checked => setData(data.copyWith({ isHeated: checked }))} />
+
 			<NumberField label="Heat demand (kWh)" value={data.heatDemand} step="0.1"
+				disabled={!data.isHeated}
 				onChange={value => setData(data.copyWith({ heatDemand: value }))} />
 
 			<StringField label="Roof Type" value={data.roofType}
@@ -119,10 +123,11 @@ const StringField = ({ label, value, onChange }: {
 	</div>
 );
 
-const NumberField = ({ label, value, step, onChange }: {
+const NumberField = ({ label, value, step, disabled, onChange }: {
 	label: string;
 	value: number;
 	step?: string;
+	disabled?: boolean;
 	onChange: (value: string) => void;
 }) => (
 	<div className="row mb-1">
@@ -132,9 +137,31 @@ const NumberField = ({ label, value, step, onChange }: {
 				type="number"
 				step={step || "1"}
 				className="form-control"
-				value={value}
+				value={disabled ? "" : value}
+				placeholder={disabled ? " - heating disabled - " : ""}
+				disabled={disabled || false}
 				onChange={e => onChange(e.target.value)}
 			/>
+		</div>
+	</div>
+);
+
+const CheckboxField = ({ label, checked, onChange }: {
+	label: string;
+	checked: boolean;
+	onChange: (checked: boolean) => void;
+}) => (
+	<div className="row mb-1">
+		<label className="col-sm-4 col-form-label">{label}</label>
+		<div className="col-sm-8">
+			<div className="form-check mt-2">
+				<input
+					type="checkbox"
+					className="form-check-input"
+					checked={checked}
+					onChange={e => onChange(e.target.checked)}
+				/>
+			</div>
 		</div>
 	</div>
 );
