@@ -47,10 +47,8 @@ public class Wsg84Transformer {
 
 		CoordinateReferenceSystem source;
 		try {
-			var n = mapNameOf(name);
-			if (n == null)
-				return Res.error("failed to determine source CRS: " + name);
-			source = crsFactory.createFromName(n);
+			var id = CrsId.parse(name);
+			source = crsFactory.createFromName(id.value());
 		} catch (Exception e) {
 			return Res.error("failed to create source CRS", e);
 		}
@@ -58,25 +56,6 @@ public class Wsg84Transformer {
 		var transformer = new CoordinateTransformFactory()
 			.createTransform(source, target);
 		return Res.of(new Wsg84Transformer(transformer));
-	}
-
-	private static String mapNameOf(String name) {
-		if (name == null || name.isBlank())
-			return null;
-		if (name.startsWith("EPSG:"))
-			return name;
-		if (name.startsWith("urn:")) {
-			var parts = name.split(":");
-			return mapNameOf(parts[parts.length - 1]);
-		}
-		if (name.contains("*"))
-			return mapNameOf(name.split("\\*")[0]);
-
-		return switch (name.strip().toLowerCase()) {
-			case "etrs89_utm32" -> "EPSG:25832";
-			case "etrs89_utm33" -> "EPSG:25833";
-			default -> name.strip();
-		};
 	}
 
 	public ProjCoordinate[] exteriorRingOf(Polygon polygon) {
