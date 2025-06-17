@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.io;
 
+import java.util.Objects;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
@@ -16,46 +18,59 @@ import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
 
 
-public class Wsg84Transformer {
+public class CoordinateTransformer {
 
 	private final CoordinateTransform fn;
+	private final CrsId targetId;
 	private GeometryFactory _factory;
 
-	private Wsg84Transformer(CoordinateTransform fn) {
-		this.fn = fn;
+	private CoordinateTransformer(CoordinateTransform fn,CrsId targetId) {
+		this.fn = Objects.requireNonNull(fn);
+		this.targetId = Objects.requireNonNull(targetId);
 	}
 
-	public static Res<Wsg84Transformer> getForModel(GeoMap map) {
+	public static Res<CoordinateTransformer> toWgs84From(GeoMap map) {
 		if (map == null)
 			return Res.error("map is null");
 		return Strings.isNil(map.crs())
 			? Res.error("CRS of model is not defined")
-			: getForName(map.crs());
+			: toWgs84From(map.crs());
 	}
 
-	public static Res<Wsg84Transformer> getForName(String name) {
-		if (name == null || name.isBlank())
-			return Res.error("CRS name is null or blank");
+	public static Res<CoordinateTransformer> toWgs84From(String sourceCrs) {
+		return Strings.isNil(sourceCrs)
+			? Res.error("empty ID of source CRS")
+			: of(CrsId.parse(sourceCrs), CrsId.wgs84());
+	}
 
-		var crsFactory = new CRSFactory();
-		CoordinateReferenceSystem target;
+	public static Res<CoordinateTransformer> fromWgs84To(String targetCrs) {
+		return Strings.isNil(targetCrs)
+			? Res.error("empty ID of target CRS")
+			: of(CrsId.wgs84(), CrsId.parse(targetCrs));
+	}
+
+	public static Res<CoordinateTransformer> of(CrsId sourceId, CrsId targetId) {
+		var factory = new CRSFactory();
+		var source = crsOf(sourceId, factory);
+		if (source.hasError())
+			return source.wrapError("failed to create source CRS");
+		var target = crsOf(targetId, factory);
+		if (target.hasError())
+			return target.wrapError("failed to create target CRS");
+		var transform = new CoordinateTransformFactory()
+			.createTransform(source.value(), target.value());
+		return Res.of(new CoordinateTransformer(transform, targetId));
+	}
+
+	private static Res<CoordinateReferenceSystem> crsOf(CrsId id, CRSFactory factory) {
+		if (id == null)
+			return Res.error("CRS ID is null");
 		try {
-			target = crsFactory.createFromName("EPSG:4326");
+			var crs = factory.createFromName(id.value());
+			return Res.of(crs);
 		} catch (Exception e) {
-			return Res.error("failed to create target CRS", e);
+			return Res.error("could not create CRS " + id.value(), e);
 		}
-
-		CoordinateReferenceSystem source;
-		try {
-			var id = CrsId.parse(name);
-			source = crsFactory.createFromName(id.value());
-		} catch (Exception e) {
-			return Res.error("failed to create source CRS", e);
-		}
-
-		var transformer = new CoordinateTransformFactory()
-			.createTransform(source, target);
-		return Res.of(new Wsg84Transformer(transformer));
 	}
 
 	public ProjCoordinate[] exteriorRingOf(Polygon polygon) {
@@ -69,7 +84,7 @@ public class Wsg84Transformer {
 
 	private GeometryFactory factory() {
 		if (_factory == null) {
-			_factory = new GeometryFactory(new PrecisionModel(), 4326);
+			_factory = new GeometryFactory(new PrecisionModel(), targetId.code());
 		}
 		return _factory;
 	}

@@ -14,16 +14,16 @@ import com.greendelta.bioheating.util.Res;
 
 public class MapConverter {
 
-	private final Wsg84Transformer transformer;
+	private final CoordinateTransformer transformer;
 	private final GeoMap map;
 
-	private MapConverter(Wsg84Transformer transformer, GeoMap map) {
+	private MapConverter(CoordinateTransformer transformer, GeoMap map) {
 		this.transformer = Objects.requireNonNull(transformer);
 		this.map = Objects.requireNonNull(map);
 	}
 
 	public static Res<ClientMap> toClient(GeoMap map) {
-		var res = Wsg84Transformer.getForModel(map);
+		var res = CoordinateTransformer.toWgs84From(map);
 		if (res.hasError())
 			return res.wrapError("failed to create transformer for map CRS");
 		var clientMap = new MapConverter(res.value(), map).convert();
