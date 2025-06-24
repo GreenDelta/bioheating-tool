@@ -3,10 +3,6 @@ package com.greendelta.bioheating.io;
 import java.util.Objects;
 
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
 import org.locationtech.proj4j.CoordinateTransform;
@@ -21,12 +17,9 @@ import com.greendelta.bioheating.util.Strings;
 public class CoordinateTransformer {
 
 	private final CoordinateTransform fn;
-	private final CrsId targetId;
-	private GeometryFactory _factory;
 
-	private CoordinateTransformer(CoordinateTransform fn,CrsId targetId) {
+	private CoordinateTransformer(CoordinateTransform fn) {
 		this.fn = Objects.requireNonNull(fn);
-		this.targetId = Objects.requireNonNull(targetId);
 	}
 
 	public static Res<CoordinateTransformer> toWgs84From(GeoMap map) {
@@ -59,10 +52,12 @@ public class CoordinateTransformer {
 			return target.wrapError("failed to create target CRS");
 		var transform = new CoordinateTransformFactory()
 			.createTransform(source.value(), target.value());
-		return Res.of(new CoordinateTransformer(transform, targetId));
+		return Res.of(new CoordinateTransformer(transform));
 	}
 
-	private static Res<CoordinateReferenceSystem> crsOf(CrsId id, CRSFactory factory) {
+	private static Res<CoordinateReferenceSystem> crsOf(
+		CrsId id, CRSFactory factory
+	) {
 		if (id == null)
 			return Res.error("CRS ID is null");
 		try {
@@ -73,69 +68,42 @@ public class CoordinateTransformer {
 		}
 	}
 
-	public ProjCoordinate[] exteriorRingOf(Polygon polygon) {
-		if (polygon == null)
-			return null;
-		var ring = polygon.getExteriorRing();
-		return ring != null
-			? project(ring.getCoordinates())
-			: null;
-	}
-
-	private GeometryFactory factory() {
-		if (_factory == null) {
-			_factory = new GeometryFactory(new PrecisionModel(), targetId.code());
-		}
-		return _factory;
-	}
-
-	public Polygon transform(Polygon polygon) {
-		if (polygon == null)
-			return null;
-		var exterior = transformRing(polygon.getExteriorRing());
-		if (exterior == null)
-			return null;
-		var holesCounts = polygon.getNumInteriorRing();
-		if (holesCounts == 0)
-			return factory().createPolygon(exterior);
-
-		var holes = new LinearRing[holesCounts];
-		for (int i = 0; i < polygon.getNumInteriorRing(); i++) {
-			holes[i] = transformRing(polygon.getInteriorRingN(i));
-		}
-		return factory().createPolygon(exterior, holes);
-	}
-
-	private LinearRing transformRing(LinearRing ring) {
-		if (ring == null)
-			return null;
-		var cs = transform(ring.getCoordinates());
-		return cs != null
-			? factory().createLinearRing(cs)
-			: null;
-	}
-
-	public Coordinate[] transform(Coordinate[] origin) {
-		var pcs = project(origin);
-		if (pcs == null)
-			return null;
+	public Res<Coordinate[]> transform(Coordinate[] origin) {
+		var res = project(origin);
+		if (res.hasError())
+			return res.castError();
+		var pcs = res.value();
 		var cs = new Coordinate[pcs.length];
 		for (int i = 0; i < pcs.length; i++) {
 			var pci = pcs[i];
 			cs[i] = new Coordinate(pci.x, pci.y);
 		}
-		return cs;
+		return Res.of(cs);
 	}
 
-	private ProjCoordinate[] project(Coordinate[] cs) {
+	private Res<ProjCoordinate[]> project(Coordinate[] cs) {
 		if (cs == null || cs.length == 0)
-			return null;
-		var pcs = new ProjCoordinate[cs.length];
-		for (int i = 0; i < cs.length; i++) {
-			// Proj4j can handle in-place transformations (?)
-			pcs[i] = new ProjCoordinate(cs[i].x, cs[i].y);
-			fn.transform(pcs[i], pcs[i]);
+			return Res.error("no coordinates provided");
+		try {
+			var pcs = new ProjCoordinate[cs.length];
+			for (int i = 0; i < cs.length; i++) {
+				// Proj4j can handle in-place transformations (?)
+				pcs[i] = new ProjCoordinate(cs[i].x, cs[i].y);
+				fn.transform(pcs[i], pcs[i]);
+			}
+			return Res.of(pcs);
+		} catch (Exception e) {
+			return Res.error("coordinate transform failed", e);
 		}
-		return pcs;
+	}
+
+	public Res<ProjCoordinate> project(double x, double y) {
+		try {
+			var pc = new ProjCoordinate(x, y);
+			fn.transform(pc, pc);
+			return Res.of(pc);
+		} catch (Exception e) {
+			return Res.error("coordinate transform failed", e);
+		}
 	}
 }

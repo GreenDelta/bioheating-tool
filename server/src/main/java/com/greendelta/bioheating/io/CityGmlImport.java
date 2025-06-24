@@ -22,6 +22,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	private final File file;
 	private final Mappings mappings;
 	private final BoostPredictor booster;
+	private boolean withOsmImport = false;
 
 	public CityGmlImport(
 		Database db, Project project, File file
@@ -31,6 +32,11 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		this.file = file;
 		this.mappings = Mappings.read().orElse(null);
 		this.booster = BoostPredictor.getDefault();
+	}
+
+	public CityGmlImport withOsmImport(boolean b) {
+		this.withOsmImport = b;
+		return this;
 	}
 
 	@Override
@@ -66,6 +72,12 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			}
 		} catch (Exception e) {
 			return Res.error("failed to predict heat demands", e);
+		}
+
+		if (withOsmImport) {
+			var err = OsmStreetFetch.into(map);
+			if (err.hasError())
+				return err.wrapError("OSM import failed");
 		}
 
 		var next = project.id() == 0

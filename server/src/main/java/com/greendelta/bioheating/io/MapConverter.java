@@ -44,9 +44,9 @@ public class MapConverter {
 		if (b == null)
 			return null;
 		var cs = transformer.transform(b.coordinates());
-		if (cs == null)
+		if (cs.hasError())
 			return null;
-		var polygon = GeoPolygon.of(cs);
+		var polygon = GeoPolygon.of(cs.value());
 		var props = new HashMap<String, Object>();
 		props.put("id", b.id());
 		props.put("name", b.name());
