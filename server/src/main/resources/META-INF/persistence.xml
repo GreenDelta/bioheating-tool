@@ -10,6 +10,7 @@
 		<class>com.greendelta.bioheating.model.CoordinateConverter</class>
 		<class>com.greendelta.bioheating.model.GeoMap</class>
 		<class>com.greendelta.bioheating.model.Project</class>
+		<class>com.greendelta.bioheating.model.Street</class>
 		<class>com.greendelta.bioheating.model.User</class>
 		<shared-cache-mode>ALL</shared-cache-mode>
 

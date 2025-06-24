@@ -40,6 +40,13 @@ create table tbl_buildings (
     is_heated boolean
 );
 
+drop table if exists tbl_streets cascade;
+create table tbl_streets (
+    id int not null primary key,
+    name varchar,
+    coordinates bytea
+);
+
 drop table if exists tbl_maps cascade;
 create table tbl_maps (
     id int not null primary key,

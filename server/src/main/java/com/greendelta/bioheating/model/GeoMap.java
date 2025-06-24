@@ -21,6 +21,10 @@ public class GeoMap extends BaseEntity {
 	@JoinColumn(name = "f_map")
 	private final List<Building> buildings = new ArrayList<>();
 
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@JoinColumn(name = "f_map")
+	private final List<Street> streets = new ArrayList<>();
+
 	public String crs() {
 		return crs;
 	}
@@ -32,5 +36,9 @@ public class GeoMap extends BaseEntity {
 
 	public List<Building> buildings() {
 		return buildings;
+	}
+
+	public List<Street> streets() {
+		return streets;
 	}
 }

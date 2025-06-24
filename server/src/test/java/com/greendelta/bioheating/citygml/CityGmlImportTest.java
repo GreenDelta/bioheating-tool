@@ -46,7 +46,7 @@ public class CityGmlImportTest {
 
 		var map = project.map();
 		assertNotNull(map);
-		assertEquals("urn:adv:crs:ETRS89_UTM32*DE_DHHN92_NH", map.crs());
+		assertEquals("EPSG:25832", map.crs());
 		assertEquals(1, map.buildings().size());
 
 		// check the building

@@ -20,6 +20,9 @@ public class OsmClientExample {
 				} else {
 					System.out.println("unnamed street: " + street.id());
 				}
+				for (var tag : street.tags().entrySet()) {
+					System.out.printf("  %s - %s%n", tag.getKey(), tag.getValue());
+				}
 			}
 		}
 	}

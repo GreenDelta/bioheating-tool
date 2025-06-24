@@ -80,15 +80,17 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		if (env == null || Strings.isNil(env.srs()))
 			return Res.error("no CRS defined for model");
 
+		var crsId = CrsId.parse(env.srs()).value();
+
 		var map = project.map();
 		if (map != null) {
-			return Strings.eq(env.srs(), map.crs())
+			return Strings.eq(crsId, map.crs())
 				? Res.of(map)
 				: Res.error("different CSR of model and current project map: "
-				+ map.crs() + " vs. " + env.srs());
+				+ map.crs() + " vs. " + crsId);
 		}
 
-		map = new GeoMap().crs(env.srs());
+		map = new GeoMap().crs(crsId);
 		project.map(map);
 		return Res.of(map);
 	}
