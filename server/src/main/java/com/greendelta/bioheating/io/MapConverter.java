@@ -10,6 +10,7 @@ import org.locationtech.jts.geom.Coordinate;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Street;
 import com.greendelta.bioheating.util.Res;
 
 public class MapConverter {
@@ -31,28 +32,43 @@ public class MapConverter {
 	}
 
 	private ClientMap convert() {
-		var features = new ArrayList<GeoFeature>(map.buildings().size());
+		var features = new ArrayList<GeoFeature>(
+			map.buildings().size() + map.streets().size());
+
+		// buildings as polygon features
 		for (var b : map.buildings()) {
 			var feature = convert(b);
 			if (feature != null) {
 				features.add(feature);
 			}
 		}
+
+		// streets as line-string features
+		for (var s : map.streets()) {
+			var feature = convert(s);
+			if (feature != null) {
+				features.add(feature);
+			}
+		}
+
 		return new ClientMap(features);
 	}
+
 	private GeoFeature convert(Building b) {
 		if (b == null)
 			return null;
 		var cs = transformer.transform(b.coordinates());
 		if (cs.hasError())
 			return null;
-		var polygon = GeoPolygon.of(cs.value());
+		var polygon = Geometry.polygonOf(cs.value());
 		var props = new HashMap<String, Object>();
+		props.put("@type", "building");
 		props.put("id", b.id());
 		props.put("name", b.name());
 		props.put("roofType", b.roofType());
 		props.put("function", b.function());
-		props.put("height", b.height());		props.put("storeys", b.storeys());
+		props.put("height", b.height());
+		props.put("storeys", b.storeys());
 		props.put("groundArea", b.groundArea());
 		props.put("heatedArea", b.heatedArea());
 		props.put("volume", b.volume());
@@ -67,22 +83,52 @@ public class MapConverter {
 		return new GeoFeature("Feature", polygon, props);
 	}
 
+	private GeoFeature convert(Street s) {
+		if (s == null)
+			return null;
+		var cs = transformer.transform(s.coordinates());
+		if (cs.hasError())
+			return null;
+		var line = Geometry.lineOf(cs.value());
+		var props = new HashMap<String, Object>();
+		props.put("@type", "street");
+		props.put("id", s.id());
+		props.put("name", s.name());
+		return new GeoFeature("Feature", line, props);
+	}
+
 	public record ClientMap(List<GeoFeature> features) {
 	}
 
 	public record GeoFeature(
-		String type, GeoPolygon geometry, Map<String, Object> properties
+		String type, Geometry geometry, Map<String, Object> properties
 	) {
 	}
 
-	public record GeoPolygon(String type, List<List<List<Double>>> coordinates) {
+	public sealed interface Geometry {
 
-		public static GeoPolygon of(Coordinate[] cs) {
+		static GeoPolygon polygonOf(Coordinate[] cs) {
 			var ring = new ArrayList<List<Double>>(cs.length);
 			for (var c : cs) {
 				ring.add(List.of(c.x, c.y));
 			}
 			return new GeoPolygon("Polygon", List.of(ring));
+		}
+
+		static GeoLine lineOf(Coordinate[] cs) {
+			var line = new ArrayList<List<Double>>(cs.length);
+			for (var c : cs) {
+				line.add(List.of(c.x, c.y));
+			}
+			return new GeoLine("LineString", line);
+		}
+
+		record GeoPolygon(String type, List<List<List<Double>>> coordinates)
+			implements Geometry {
+		}
+
+		record GeoLine(String type, List<List<Double>> coordinates)
+			implements Geometry {
 		}
 	}
 }
