@@ -46,35 +46,40 @@ class OsmStreetFetch {
 			var geometry = s.geometry();
 			if (geometry == null || geometry.isEmpty())
 				continue;
-
-			var cs = new Coordinate[geometry.size()];
-			for (int i = 0; i < geometry.size(); i++) {
-				var osmCoord = geometry.get(i);
-				cs[i] = new Coordinate(osmCoord.lon(), osmCoord.lat());
-			}
-
-			var transformed = trans.transform(cs);
-			if (transformed.hasError()) {
-				continue;  // TODO stop when a single street failed?
-			}
-
-			var streetName = s.tags() != null
-				? s.tags().get("name")
-				: null;
-			if (streetName == null) {
-				streetName = "Unnamed path " + s.id();
-			}
-
-			var street = new Street()
-				.name(streetName)
-				.coordinates(transformed.value());
-
-			map.streets().add(street);
+			var street = convert(s, trans);
+			if (street.hasError())
+				continue;  // we just skip conversion errors currently
+			map.streets().add(street.value());
 		}
 
-		return Res.of(null);
+		return Res.VOID;
 	}
 
+	private Res<Street> convert(OsmStreet s, CoordinateTransformer trans) {
+		if (s == null || s.geometry() == null || s.geometry().size() < 2)
+			return Res.error("not a street with valid geometry");
+		var geometry = s.geometry();
+		var cs = new Coordinate[geometry.size()];
+		for (int i = 0; i < geometry.size(); i++) {
+			var osmCoord = geometry.get(i);
+			cs[i] = new Coordinate(osmCoord.lon(), osmCoord.lat());
+		}
+		var transformed = trans.transform(cs);
+		if (transformed.hasError())
+			return transformed.castError();
+
+		var name = s.tags() != null
+			? s.tags().get("name")
+			: null;
+		if (name == null) {
+			name = "Unnamed path " + s.id();
+		}
+
+		var street = new Street()
+			.name(name)
+			.coordinates(transformed.value());
+		return Res.of(street);
+	}
 
 	private record Bounds(
 		double south, double west, double north, double east

@@ -19,6 +19,7 @@ import com.greendelta.bioheating.model.Project;
 
 public class CityGmlImportTest {
 
+	private static final boolean WITH_OSM = false;
 	private final Database db = Tests.db();
 	private File file;
 
@@ -40,7 +41,10 @@ public class CityGmlImportTest {
 	@Test
 	public void testImport() {
 		var project = new Project().name("test project");
-		var res = new CityGmlImport(db, project, file).call();
+
+		var res = new CityGmlImport(db, project, file)
+			.withOsmImport(WITH_OSM)
+			.call();
 		assertFalse(res.hasError());
 		project = res.value();
 
@@ -73,6 +77,10 @@ public class CityGmlImportTest {
 
 		// check heat demand prediction is calculated
 		assertTrue(building.heatDemand() >= 0);
+
+		if (WITH_OSM) {
+			assertFalse(map.streets().isEmpty());
+		}
 
 		db.delete(project);
 	}
