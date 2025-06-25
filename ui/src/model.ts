@@ -28,11 +28,24 @@ export interface GeoMap {
 
 export interface GeoFeature {
 	type: "Feature";
-	geometry: GeoPolygon;
+	geometry: GeoPolygon | GeoLine;
 	properties: { [key: string]: any };
 }
 
 export interface GeoPolygon {
 	type: "Polygon";
 	coordinates: number[][][];
+}
+
+export interface GeoLine {
+	type: "LineString";
+	coordinates: number[][];
+}
+
+export function isBuilding(f: GeoFeature): boolean {
+	return f.properties && f.properties["@type"] === "building";
+}
+
+export function isStreet(f: GeoFeature): boolean {
+	return f.properties && f.properties["@type"] == "street";
 }

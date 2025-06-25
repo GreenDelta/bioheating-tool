@@ -56,7 +56,9 @@ public class ProjectService {
 				.description(description)
 				.user(user);
 			db.insert(project);
-			return  new CityGmlImport(db, project, gml).call();
+			return new CityGmlImport(db, project, gml)
+				.withOsmImport(true)
+				.call();
 		} catch (Exception e) {
 			return Res.error("project creation failed", e);
 		}
