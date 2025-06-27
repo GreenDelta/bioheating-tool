@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { GeoFeature } from '../model';
+import { GeoFeature, Inclusion } from '../model';
 import { StreetData } from './panel-data';
-import { Inclusion } from '../model/inclusion';
 import { StringField, SelectField } from './fields';
 
 export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {

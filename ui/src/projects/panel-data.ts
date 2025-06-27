@@ -1,5 +1,5 @@
 import { GeoFeature } from "../model";
-import { Inclusion, inclusionFromString } from "../model/inclusion";
+import { Inclusion, inclusionFromString } from "../model";
 
 interface BuildingProps {
 	name?: any;
