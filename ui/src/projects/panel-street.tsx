@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GeoFeature } from '../model';
 import { StreetData } from './panel-data';
-import { StringField, CheckboxField } from './fields';
+import { Inclusion } from '../model/inclusion';
+import { StringField, SelectField } from './fields';
 
 export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
 	const [data, setData] = useState<StreetData>(StreetData.of(feature));
@@ -19,10 +20,15 @@ export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
 				onChange={value => setData(data.copyWith({ name: value }))}
 			/>
 
-			<CheckboxField
-				label="Is excluded"
-				checked={data.isExcluded}
-				onChange={checked => setData(data.copyWith({ isExcluded: checked }))}
+			<SelectField
+				label="Inclusion"
+				value={data.inclusion}
+				options={[
+					{ value: Inclusion.OPTIONAL, label: "Optional" },
+					{ value: Inclusion.REQUIRED, label: "Required" },
+					{ value: Inclusion.EXCLUDED, label: "Excluded" }
+				]}
+				onChange={value => setData(data.copyWith({ inclusion: value }))}
 			/>
 
 			<button

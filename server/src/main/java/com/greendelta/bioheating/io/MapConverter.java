@@ -95,7 +95,7 @@ public class MapConverter {
 		props.put("@type", "street");
 		props.put("id", s.id());
 		props.put("name", s.name());
-		props.put("isExcluded", s.isExcluded());
+		props.put("inclusion", s.inclusion());
 		return new GeoFeature("Feature", line, props);
 	}
 

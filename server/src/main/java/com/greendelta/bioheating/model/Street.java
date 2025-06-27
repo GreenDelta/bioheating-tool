@@ -18,8 +18,8 @@ public class Street extends BaseEntity {
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
 
-	@Column(name = "is_excluded")
-	private boolean isExcluded;
+	@Column(name = "inclusion")
+	private String inclusion;
 
 	public String name() {
 		return name;
@@ -39,12 +39,12 @@ public class Street extends BaseEntity {
 		return this;
 	}
 
-	public boolean isExcluded() {
-		return isExcluded;
+	public String inclusion() {
+		return inclusion;
 	}
 
-	public Street isExcluded(boolean isExcluded) {
-		this.isExcluded = isExcluded;
+	public Street inclusion(String inclusion) {
+		this.inclusion = inclusion;
 		return this;
 	}
 }

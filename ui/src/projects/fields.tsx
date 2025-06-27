@@ -59,3 +59,27 @@ export const CheckboxField = ({ label, checked, onChange }: {
 		</div>
 	</div>
 );
+
+export const SelectField = ({ label, value, options, onChange }: {
+	label: string;
+	value: string;
+	options: { value: string; label: string }[];
+	onChange: (value: string) => void;
+}) => (
+	<div className="row mb-1">
+		<label className="col-sm-4 col-form-label">{label}</label>
+		<div className="col-sm-8">
+			<select
+				className="form-control"
+				value={value}
+				onChange={e => onChange(e.target.value)}
+			>
+				{options.map(option => (
+					<option key={option.value} value={option.value}>
+						{option.label}
+					</option>
+				))}
+			</select>
+		</div>
+	</div>
+);
