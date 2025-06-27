@@ -1,22 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { GeoFeature } from '../model';
+import { StreetData } from './panel-data';
 import { StringField, CheckboxField } from './fields';
 
 export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
-	const [streetName, setStreetName] = useState(feature.properties?.name || '');
-	const [isExcluded, setIsExcluded] = useState(feature.properties?.isExcluded || false);
-
+	const [data, setData] = useState<StreetData>(StreetData.of(feature));
 	useEffect(() => {
-		setStreetName(feature.properties?.name || '');
-		setIsExcluded(feature.properties?.isExcluded || false);
+		setData(StreetData.of(feature));
 	}, [feature]);
-
-	const updateFeature = () => {
-		if (feature.properties) {
-			feature.properties.name = streetName;
-			feature.properties.isExcluded = isExcluded;
-		}
-	};
 
 	return <div className="card">
 		<div className="card-body">
@@ -24,19 +15,20 @@ export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
 
 			<StringField
 				label="Street Name"
-				value={streetName}
-				onChange={value => setStreetName(value)}
+				value={data.name}
+				onChange={value => setData(data.copyWith({ name: value }))}
 			/>
 
 			<CheckboxField
 				label="Is excluded"
-				checked={isExcluded}
-				onChange={checked => setIsExcluded(checked)}
+				checked={data.isExcluded}
+				onChange={checked => setData(data.copyWith({ isExcluded: checked }))}
 			/>
 
 			<button
 				className="btn btn-primary"
-				onClick={updateFeature}>
+				disabled={!data.isValid()}
+				onClick={() => data.applyOn(feature)}>
 				Update
 			</button>
 		</div>

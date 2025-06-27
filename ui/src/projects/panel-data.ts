@@ -1,6 +1,6 @@
 import { GeoFeature } from "../model";
 
-interface Props {
+interface BuildingProps {
 	name?: any;
 	height?: any;
 	storeys?: any;
@@ -80,7 +80,7 @@ export class BuildingData {
 	static of(f: GeoFeature): BuildingData {
 		const props = f.properties || {};
 		return new BuildingData(props);
-	}	constructor(d: BuildingData | Props) {
+	}	constructor(d: BuildingData | BuildingProps) {
 		if (d instanceof BuildingData) {
 			this.name = d.name;
 			this.height = d.height;
@@ -117,7 +117,8 @@ export class BuildingData {
 			this.isIncluded = boolOf(d.isIncluded);
 		}
 	}
-	copyWith(props: Props): BuildingData {
+
+	copyWith(props: BuildingProps): BuildingData {
 		const copy = new BuildingData(this);
 		if (props.name) {
 			copy.name = props.name;
@@ -170,6 +171,7 @@ export class BuildingData {
 		}
 		return copy;
 	}
+
 	applyOn(f: GeoFeature) {
 		if (!f.properties) {
 			f.properties = {};
@@ -189,6 +191,55 @@ export class BuildingData {
 		f.properties.climateZone = this.climateZone;
 		f.properties.isHeated = this.isHeated;
 		f.properties.isIncluded = this.isIncluded;
+	}
+
+	isValid(): boolean {
+		return (typeof this.name === "string") && this.name.trim().length > 0;
+	}
+}
+
+interface StreetProps {
+	name?: any;
+	isExcluded?: any;
+}
+
+export class StreetData {
+
+	name: string;
+	isExcluded: boolean;
+
+	static of(f: GeoFeature): StreetData {
+		const props = f.properties || {};
+		return new StreetData(props);
+	}
+
+	constructor(d: StreetData | StreetProps) {
+		if (d instanceof StreetData) {
+			this.name = d.name;
+			this.isExcluded = d.isExcluded;
+		} else {
+			this.name = stringOf(d.name);
+			this.isExcluded = boolOf(d.isExcluded);
+		}
+	}
+
+	copyWith(props: StreetProps): StreetData {
+		const copy = new StreetData(this);
+		if (props.name) {
+			copy.name = props.name;
+		}
+		if (props.isExcluded !== undefined) {
+			copy.isExcluded = props.isExcluded;
+		}
+		return copy;
+	}
+
+	applyOn(f: GeoFeature) {
+		if (!f.properties) {
+			f.properties = {};
+		}
+		f.properties.name = this.name;
+		f.properties.isExcluded = this.isExcluded;
 	}
 
 	isValid(): boolean {
