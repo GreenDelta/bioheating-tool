@@ -46,7 +46,8 @@ create table tbl_streets (
     id int not null primary key,
     name varchar,
     coordinates bytea,
-    f_map int
+    f_map int,
+    is_excluded boolean
 );
 
 drop table if exists tbl_maps cascade;

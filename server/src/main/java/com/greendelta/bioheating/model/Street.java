@@ -18,6 +18,9 @@ public class Street extends BaseEntity {
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
 
+	@Column(name = "is_excluded")
+	private boolean isExcluded;
+
 	public String name() {
 		return name;
 	}
@@ -33,6 +36,15 @@ public class Street extends BaseEntity {
 
 	public Street coordinates(Coordinate[] coordinates) {
 		this.coordinates = coordinates;
+		return this;
+	}
+
+	public boolean isExcluded() {
+		return isExcluded;
+	}
+
+	public Street isExcluded(boolean isExcluded) {
+		this.isExcluded = isExcluded;
 		return this;
 	}
 }
