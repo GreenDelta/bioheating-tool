@@ -62,6 +62,9 @@ public class Building extends BaseEntity {
 	@Column(name = "is_heated")
 	private boolean isHeated;
 
+	@Column(name = "is_included")
+	private boolean isIncluded;
+
 	public String name() {
 		return name;
 	}
@@ -211,6 +214,15 @@ public class Building extends BaseEntity {
 
 	public Building isHeated(boolean isHeated) {
 		this.isHeated = isHeated;
+		return this;
+	}
+
+	public boolean isIncluded() {
+		return isIncluded;
+	}
+
+	public Building isIncluded(boolean isIncluded) {
+		this.isIncluded = isIncluded;
 		return this;
 	}
 

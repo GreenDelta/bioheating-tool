@@ -24,6 +24,9 @@ export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
 			<CheckboxField label="Is heated" checked={data.isHeated}
 				onChange={checked => setData(data.copyWith({ isHeated: checked }))} />
 
+			<CheckboxField label="Is included" checked={data.isIncluded}
+				onChange={checked => setData(data.copyWith({ isIncluded: checked }))} />
+
 			<NumberField label="Heat demand (kWh)" value={data.heatDemand} step="0.1"
 				disabled={!data.isHeated}
 				onChange={value => setData(data.copyWith({ heatDemand: value }))} />

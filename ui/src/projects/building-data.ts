@@ -16,6 +16,7 @@ interface Props {
 	streetNumber?: any;
 	climateZone?: any;
 	isHeated?: any;
+	isIncluded?: any;
 }
 
 function stringOf(field: any): string {
@@ -74,6 +75,7 @@ export class BuildingData {
 	streetNumber: string;
 	climateZone: number;
 	isHeated: boolean;
+	isIncluded: boolean;
 
 	static of(f: GeoFeature): BuildingData {
 		const props = f.properties || {};
@@ -95,6 +97,7 @@ export class BuildingData {
 			this.streetNumber = d.streetNumber;
 			this.climateZone = d.climateZone;
 			this.isHeated = d.isHeated;
+			this.isIncluded = d.isIncluded;
 		} else {
 			this.name = stringOf(d.name);
 			this.height = floatOf(d.height);
@@ -111,6 +114,7 @@ export class BuildingData {
 			this.streetNumber = stringOf(d.streetNumber);
 			this.climateZone = intOf(d.climateZone);
 			this.isHeated = boolOf(d.isHeated);
+			this.isIncluded = boolOf(d.isIncluded);
 		}
 	}
 	copyWith(props: Props): BuildingData {
@@ -161,6 +165,9 @@ export class BuildingData {
 		if (props.isHeated !== undefined) {
 			copy.isHeated = props.isHeated;
 		}
+		if (props.isIncluded !== undefined) {
+			copy.isIncluded = props.isIncluded;
+		}
 		return copy;
 	}
 	applyOn(f: GeoFeature) {
@@ -181,6 +188,7 @@ export class BuildingData {
 		f.properties.streetNumber = this.streetNumber;
 		f.properties.climateZone = this.climateZone;
 		f.properties.isHeated = this.isHeated;
+		f.properties.isIncluded = this.isIncluded;
 	}
 
 	isValid(): boolean {
