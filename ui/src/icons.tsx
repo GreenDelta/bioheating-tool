@@ -62,7 +62,7 @@ const Icon = ({ tooltip, onClick, path, color }: {
   path: React.JSX.Element;
 }) => {
   const style: React.CSSProperties = {
-    color: color || "var(--pico-primary-background)"
+    color: color || "var(--bs-primary)"
   };
   if (onClick) {
     style.cursor = "pointer";
