@@ -1,7 +1,10 @@
 package com.greendelta.bioheating.examples;
 
+import java.io.File;
+
 import com.greendelta.bioheating.Tests;
 import com.greendelta.bioheating.calc.Solution;
+import com.greendelta.bioheating.io.SolutionImage;
 import com.greendelta.bioheating.model.Project;
 
 public class SolutionExample {
@@ -18,6 +21,8 @@ public class SolutionExample {
 				solution.buildings().size(),
 				solution.streets().size(),
 				solution.connectors().size());
+
+			SolutionImage.write(solution, new File("target/solution.png"), 8000);
 		}
 	}
 }

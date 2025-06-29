@@ -3,6 +3,8 @@ package com.greendelta.bioheating.calc;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.locationtech.jts.geom.Envelope;
+
 import com.greendelta.bioheating.model.GeoMap;
 
 public record Solution(
@@ -18,8 +20,8 @@ public record Solution(
 
 	public static Solution calculate(GeoMap map) {
 		if (map == null
-				|| map.buildings().isEmpty()
-				|| map.streets().isEmpty())
+			|| map.buildings().isEmpty()
+			|| map.streets().isEmpty())
 			return empty();
 
 		// create building polygons
@@ -60,5 +62,31 @@ public record Solution(
 
 	public boolean isEmpty() {
 		return buildings.isEmpty() || streets.isEmpty();
+	}
+
+	public Envelope getEnvelope() {
+
+		Envelope env = null;
+		for (var b : buildings()) {
+			var ei = b.polygon().getEnvelopeInternal();
+			if (env == null) {
+				env = ei;
+			} else {
+				env.expandToInclude(ei);
+			}
+		}
+
+		for (var s : streets()) {
+			var ei = s.line().getEnvelopeInternal();
+			if (env == null) {
+				env = ei;
+			} else {
+				env.expandToInclude(ei);
+			}
+		}
+
+		return env != null
+			? env
+			: new Envelope(0, 0, 0, 0);
 	}
 }
