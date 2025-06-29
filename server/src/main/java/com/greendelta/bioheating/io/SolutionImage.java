@@ -23,6 +23,7 @@ public class SolutionImage {
 	private final double scale;
 	private final Color STREET_COLOR = new Color(120, 144, 156);
 	private final Color BUILDING_COLOR = new Color(216, 27, 96);
+	private final Color CONNECTOR_COLOR = new Color(142,36,170);
 
 	private SolutionImage(
 		Solution solution, File file, int size
@@ -56,6 +57,7 @@ public class SolutionImage {
 
 			renderBuildings(g2d);
 			renderStreets(g2d);
+			renderConnectors(g2d);
 
 			ImageIO.write(image, "png", file);
 			g2d.dispose();
@@ -80,6 +82,12 @@ public class SolutionImage {
 		}
 	}
 
+	private void renderConnectors(Graphics2D g2d) {
+		for (var c : solution.connectors()) {
+			var shape = shapeOf(c.connectorLine());
+			shape.drawLine(g2d, CONNECTOR_COLOR);
+		}
+	}
 
 	private Shape shapeOf(Geometry g) {
 		var minX = envelope.getMinX();

@@ -1,6 +1,7 @@
 package com.greendelta.bioheating.calc;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.locationtech.jts.geom.Envelope;
@@ -48,13 +49,21 @@ public record Solution(
 
 		// create connectors
 		var cons = new ArrayList<Connector>(bps.size() * sls.size());
+		var buff = new ArrayList<Connector>(sls.size());
 		for (var bp : bps) {
 			for (var sl : sls) {
 				var con = fun.connectorOf(bp, sl);
 				if (!con.hasError()) {
-					cons.add(con.value());
+					buff.add(con.value());
 				}
 			}
+			buff.sort(Comparator.comparingDouble(Connector::length));
+			if (buff.size() > 3) {
+				cons.addAll(buff.subList(0, 3));
+			} else {
+				cons.addAll(buff);
+			}
+			buff.clear();
 		}
 
 		return new Solution(bps, sls, cons);

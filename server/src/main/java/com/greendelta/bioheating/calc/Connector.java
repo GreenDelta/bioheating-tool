@@ -8,7 +8,4 @@ public record Connector(
 	LineString connectorLine,
 	double length
 ) {
-
-
-
 }
