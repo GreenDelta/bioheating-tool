@@ -15,20 +15,20 @@ public class GeometryBuilder {
 
 	private final GeometryFactory factory;
 
-	private GeometryBuilder() {
-		factory = new GeometryFactory();
-	}
-
 	private GeometryBuilder(GeometryFactory factory) {
 		this.factory = factory;
 	}
 
-	public GeometryBuilder of(GeoMap map) {
+	public static GeometryBuilder getDefault() {
+		return new GeometryBuilder(new GeometryFactory());
+	}
+
+	public static GeometryBuilder of(GeoMap map) {
 		if (map == null || Strings.isNil(map.crs()))
-			return new GeometryBuilder();
+			return getDefault();
 		var crs = CrsId.parse(map.crs());
 		if (!crs.isValid())
-			return new GeometryBuilder();
+			return getDefault();
 		var factory = new GeometryFactory(
 			new PrecisionModel(), crs.code());
 		return new GeometryBuilder(factory);
@@ -57,7 +57,7 @@ public class GeometryBuilder {
 	}
 
 	public Res<Connector> connectorOf(BuildingPolygon bp, StreetLine sl) {
-		if (bp == null || sl == null )
+		if (bp == null || sl == null)
 			return Res.error("building polygon or street line is null");
 		try {
 			var points = DistanceOp.nearestPoints(bp.polygon(), sl.line());

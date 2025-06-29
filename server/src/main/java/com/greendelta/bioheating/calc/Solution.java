@@ -1,0 +1,64 @@
+package com.greendelta.bioheating.calc;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.greendelta.bioheating.model.GeoMap;
+
+public record Solution(
+	List<BuildingPolygon> buildings,
+	List<StreetLine> streets,
+	List<Connector> connectors
+) {
+
+	public static Solution empty() {
+		return new Solution(
+			List.of(), List.of(), List.of());
+	}
+
+	public static Solution calculate(GeoMap map) {
+		if (map == null
+				|| map.buildings().isEmpty()
+				|| map.streets().isEmpty())
+			return empty();
+
+		// create building polygons
+		var fun = GeometryBuilder.of(map);
+		var bps = new ArrayList<BuildingPolygon>(map.buildings().size());
+		for (var b : map.buildings()) {
+			// TODO: only include buildings with respective state
+			var res = fun.polygonOf(b);
+			if (!res.hasError()) {
+				// TODO: log errors
+				bps.add(res.value());
+			}
+		}
+
+		// create street lines
+		var sls = new ArrayList<StreetLine>(map.streets().size());
+		for (var s : map.streets()) {
+			// TODO: only include streets with respective state
+			var res = fun.lineOf(s);
+			if (!res.hasError()) {
+				sls.add(res.value());
+			}
+		}
+
+		// create connectors
+		var cons = new ArrayList<Connector>(bps.size() * sls.size());
+		for (var bp : bps) {
+			for (var sl : sls) {
+				var con = fun.connectorOf(bp, sl);
+				if (!con.hasError()) {
+					cons.add(con.value());
+				}
+			}
+		}
+
+		return new Solution(bps, sls, cons);
+	}
+
+	public boolean isEmpty() {
+		return buildings.isEmpty() || streets.isEmpty();
+	}
+}
