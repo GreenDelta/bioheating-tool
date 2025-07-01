@@ -75,4 +75,15 @@ public class ProjectService {
 		db.delete(project);
 		return Res.VOID;
 	}
+
+	public Res<Project> saveProject(Project project) {
+		if (project == null)
+			return Res.error("project is null");
+		try {
+			db.update(project);
+			return Res.of(project);
+		} catch (Exception e) {
+			return Res.error("failed to save project", e);
+		}
+	}
 }

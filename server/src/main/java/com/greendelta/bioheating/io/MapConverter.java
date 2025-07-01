@@ -99,6 +99,118 @@ public class MapConverter {
 		return new GeoFeature("Feature", line, props);
 	}
 
+	public static Res<Void> updateFromClient(GeoMap map, ClientMap clientMap) {
+		if (map == null || clientMap == null)
+			return Res.error("map or client map is null");
+		
+		for (var feature : clientMap.features()) {
+			var props = feature.properties();
+			if (props == null)
+				continue;
+				
+			var type = props.get("@type");
+			var id = props.get("id");
+			if (!(id instanceof Number))
+				continue;
+			
+			long entityId = ((Number) id).longValue();
+			
+			if ("building".equals(type)) {
+				updateBuilding(map, entityId, props);
+			} else if ("street".equals(type)) {
+				updateStreet(map, entityId, props);
+			}
+		}
+		
+		return Res.VOID;
+	}
+	
+	private static void updateBuilding(GeoMap map, long id, Map<String, Object> props) {
+		var building = map.buildings().stream()
+			.filter(b -> b.id() == id)
+			.findFirst()
+			.orElse(null);
+		if (building == null)
+			return;
+			
+		// Update building properties (coordinates never change)
+		updateStringProperty(props, "name", building::name);
+		updateStringProperty(props, "roofType", building::roofType);
+		updateStringProperty(props, "function", building::function);
+		updateDoubleProperty(props, "height", building::height);
+		updateIntProperty(props, "storeys", building::storeys);
+		updateDoubleProperty(props, "groundArea", building::groundArea);
+		updateDoubleProperty(props, "heatedArea", building::heatedArea);
+		updateDoubleProperty(props, "volume", building::volume);
+		updateStringProperty(props, "country", building::country);
+		updateStringProperty(props, "locality", building::locality);
+		updateStringProperty(props, "postalCode", building::postalCode);
+		updateStringProperty(props, "street", building::street);
+		updateStringProperty(props, "streetNumber", building::streetNumber);
+		updateIntProperty(props, "climateZone", building::climateZone);
+		updateDoubleProperty(props, "heatDemand", building::heatDemand);
+		updateBooleanProperty(props, "isHeated", building::isHeated);
+		updateInclusionProperty(props, "inclusion", building::inclusion);
+	}
+	
+	private static void updateStreet(GeoMap map, long id, Map<String, Object> props) {
+		var street = map.streets().stream()
+			.filter(s -> s.id() == id)
+			.findFirst()
+			.orElse(null);
+		if (street == null)
+			return;
+			
+		// Update street properties (coordinates never change)
+		updateStringProperty(props, "name", street::name);
+		updateInclusionProperty(props, "inclusion", street::inclusion);
+	}
+	
+	private static void updateStringProperty(Map<String, Object> props, String key, 
+			java.util.function.Function<String, ?> setter) {
+		var value = props.get(key);
+		if (value instanceof String) {
+			setter.apply((String) value);
+		}
+	}
+	
+	private static void updateDoubleProperty(Map<String, Object> props, String key,
+			java.util.function.Function<Double, ?> setter) {
+		var value = props.get(key);
+		if (value instanceof Number) {
+			setter.apply(((Number) value).doubleValue());
+		}
+	}
+	
+	private static void updateIntProperty(Map<String, Object> props, String key,
+			java.util.function.Function<Integer, ?> setter) {
+		var value = props.get(key);
+		if (value instanceof Number) {
+			setter.apply(((Number) value).intValue());
+		}
+	}
+	
+	private static void updateBooleanProperty(Map<String, Object> props, String key,
+			java.util.function.Function<Boolean, ?> setter) {
+		var value = props.get(key);
+		if (value instanceof Boolean) {
+			setter.apply((Boolean) value);
+		}
+	}
+	
+	private static void updateInclusionProperty(Map<String, Object> props, String key,
+			java.util.function.Function<com.greendelta.bioheating.model.Inclusion, ?> setter) {
+		var value = props.get(key);
+		if (value instanceof String) {
+			try {
+				var inclusion = com.greendelta.bioheating.model.Inclusion.valueOf((String) value);
+				setter.apply(inclusion);
+			} catch (IllegalArgumentException e) {
+				// Invalid inclusion value, ignore
+			}
+		}
+	}
+	
 	public record ClientMap(List<GeoFeature> features) {
 	}
 

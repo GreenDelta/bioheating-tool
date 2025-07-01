@@ -18,6 +18,8 @@ export const ProjectEditor = () => {
 		return <div style={{ color: 'red' }}>Error: {res.error}</div>;
 	}
 	const project = res.value;
+
+
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-3">

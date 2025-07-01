@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -118,6 +119,49 @@ public class ProjectController {
 		return result.hasError()
 			? Http.badRequest("failed to delete project: " + result.error())
 			: Http.ok("project deleted successfully");
+	}
+
+	@PostMapping("/{id}")
+	public ResponseEntity<?> updateProject(
+		Authentication auth,
+		@PathVariable long id,
+		@RequestBody ClientProject clientProject
+	) {
+		var user = users.getUser(auth).orElse(null);
+		if (user == null)
+			return Http.badRequest("not authenticated");
+
+		var project = projects.getProject(user, id).orElse(null);
+		if (project == null)
+			return Http.notFound("project not found: " + id);
+
+		// Update project basic properties
+		if (!Strings.isNil(clientProject.name())) {
+			project.name(clientProject.name());
+		}
+		if (!Strings.isNil(clientProject.description())) {
+			project.description(clientProject.description());
+		}
+
+		// Update map data from client
+		if (clientProject.map() != null) {
+			var updateRes = MapConverter.updateFromClient(project.map(), clientProject.map());
+			if (updateRes.hasError()) {
+				return Http.serverError("failed to update map: " + updateRes.error());
+			}
+		}
+
+		// Save the updated project
+		var saveRes = projects.saveProject(project);
+		if (saveRes.hasError()) {
+			return Http.serverError("failed to save project: " + saveRes.error());
+		}
+
+		// Return updated project
+		var res = ClientProject.of(saveRes.value());
+		return res.hasError()
+			? Http.serverError("failed to convert updated project: " + res.error())
+			: Http.ok(res.value());
 	}
 
 	public record ProjectInfo(

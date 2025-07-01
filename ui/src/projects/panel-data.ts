@@ -81,7 +81,9 @@ export class BuildingData {
 	static of(f: GeoFeature): BuildingData {
 		const props = f.properties || {};
 		return new BuildingData(props);
-	}	constructor(d: BuildingData | BuildingProps) {
+	}
+
+	constructor(d: BuildingData | BuildingProps) {
 		if (d instanceof BuildingData) {
 			this.name = d.name;
 			this.height = d.height;
