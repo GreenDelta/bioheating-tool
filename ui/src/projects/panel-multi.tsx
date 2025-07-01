@@ -1,81 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { GeoFeature, Inclusion, isBuilding, isStreet } from '../model';
-import { SelectField } from './fields';
+import { NumberField, SelectField } from './fields';
+import { BuildingData } from './panel-data';
 
 interface Props {
 	features: GeoFeature[];
 }
 
 export const MultiPanel: React.FC<Props> = ({ features }) => {
-	const [buildingInclusion, setBuildingInclusion] = useState<string>('');
-	const [streetInclusion, setStreetInclusion] = useState<string>('');
-
-	const buildings = features.filter(isBuilding);
-	const streets = features.filter(isStreet);
-
-	useEffect(() => {
-		// Reset selections when features change
-		setBuildingInclusion('');
-		setStreetInclusion('');
-	}, [features]);
-
-	const handleBuildingInclusionChange = (value: string) => {
-		setBuildingInclusion(value);
-
-		// Update all selected buildings
-		const updatedFeatures = features.map(feature => {
-			if (isBuilding(feature)) {
-				const updatedFeature = { ...feature };
-				if (!updatedFeature.properties) {
-					updatedFeature.properties = {};
-				}
-				updatedFeature.properties.inclusion = value;
-				return updatedFeature;
-			}
-			return feature;
-		});
-	};
-
-	const handleStreetInclusionChange = (value: string) => {
-		setStreetInclusion(value);
-
-		// Update all selected streets
-		const updatedFeatures = features.map(feature => {
-			if (isStreet(feature)) {
-				const updatedFeature = { ...feature };
-				if (!updatedFeature.properties) {
-					updatedFeature.properties = {};
-				}
-				updatedFeature.properties.inclusion = value;
-				return updatedFeature;
-			}
-			return feature;
-		});
-	};
-
 	return (
 		<div className="card">
 			<div className="card-body">
-
-				{buildings.length > 0 && (
-					<div className="mb-3">
-						<h6 className="text-muted">Buildings ({buildings.length})</h6>
-						<SelectField
-							label="Set inclusion"
-							value={buildingInclusion}
-							options={[
-								{ value: '', label: 'Select...' },
-								{ value: Inclusion.REQUIRED, label: 'Included' },
-								{ value: Inclusion.EXCLUDED, label: 'Excluded' }
-							]}
-							onChange={handleBuildingInclusionChange}
-						/>
-					</div>
-				)}
-
+				<BuildingSection features={features} />
 				<StreetSection features={features} />
-
 			</div>
+		</div>
+	);
+};
+
+const BuildingSection = ({ features }: Props) => {
+	const buildings = features.filter(isBuilding);
+	if (!buildings || buildings.length === 0)
+		return <></>;
+
+	const [inclusion, setInclusion] = useState(commonInclusionOf(buildings));
+	const stats = buildingStatsOf(buildings);
+	const onUpdate = (v: string) => {
+		const next = v === "" ? Inclusion.EXCLUDED : v;
+		putInclusion(buildings, next);
+		setInclusion(next);
+	};
+
+	return (
+		<div className="mb-3">
+			<h6 className="text-muted">
+				{buildings.length} Buildings, {stats.heatedCount} heated
+			</h6>
+			<NumberField
+				label="Total heat demand [kWh/a]"
+				readOnly
+				value={stats.totalDemand} />
+			<SelectField
+				label="Set inclusion"
+				value={inclusion}
+				options={[
+					{ value: '', label: 'Select...' },
+					{ value: Inclusion.REQUIRED, label: 'Included' },
+					{ value: Inclusion.EXCLUDED, label: 'Excluded' }
+				]}
+				onChange={onUpdate}
+			/>
 		</div>
 	);
 };
@@ -131,4 +105,27 @@ function commonInclusionOf(features: GeoFeature[]): string {
 		}
 	}
 	return v;
+}
+
+interface BuildingStats {
+	heatedCount: number;
+	totalDemand: number;
+}
+
+function buildingStatsOf(features: GeoFeature[]): BuildingStats {
+	let heatedCount = 0;
+	let totalDemand = 0;
+	if (!features || features.length === 0) {
+		return { heatedCount, totalDemand };
+	}
+	for (const f of features) {
+		const data = BuildingData.of(f);
+		if (!data.isHeated) {
+			continue;
+		}
+		totalDemand += data.heatDemand;
+		heatedCount++;
+	}
+	totalDemand = Math.round(totalDemand);
+	return { heatedCount, totalDemand };
 }

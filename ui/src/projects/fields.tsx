@@ -17,12 +17,13 @@ export const StringField = ({ label, value, onChange }: {
 	</div>
 );
 
-export const NumberField = ({ label, value, step, disabled, onChange }: {
+export const NumberField = ({ label, value, step, disabled, readOnly, onChange }: {
 	label: string;
 	value: number;
 	step?: string;
 	disabled?: boolean;
-	onChange: (value: string) => void;
+	readOnly?: boolean;
+	onChange?: (value: string) => void;
 }) => (
 	<div className="row mb-1">
 		<label className="col-sm-4 col-form-label">{label}</label>
@@ -34,7 +35,12 @@ export const NumberField = ({ label, value, step, disabled, onChange }: {
 				value={disabled ? "" : value}
 				placeholder={disabled ? " - heating disabled - " : ""}
 				disabled={disabled || false}
-				onChange={e => onChange(e.target.value)}
+				readOnly={readOnly}
+				onChange={e => {
+					if (onChange) {
+						onChange(e.target.value);
+					}
+				}}
 			/>
 		</div>
 	</div>
