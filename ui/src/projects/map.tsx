@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
-import { GeoFeature, GeoMap } from '../model';
+import { GeoFeature, GeoMap, isBuilding, isStreet } from '../model';
 import "leaflet-lasso";
 
 interface MapProps {
@@ -100,18 +100,43 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 };
 
 function styleOf(feature: any, ids: Set<any>) {
-	const id = feature.properties?.id;
+	const f = feature as GeoFeature;
+	const id = f.properties?.id;
 	const isSelected = id && ids.has(id);
-
+	const color = isSelected ? '#fff59d' : colorOf(f);
 	return {
-		fillColor: isSelected ? '#ff7800' : '#3388ff',
+		fillColor: color,
 		weight: isSelected ? 3 : 2,
 		opacity: 1,
-		color: isSelected ? '#ff7800' : '#3388ff',
+		color: color,
 		dashArray: '',
-		fillOpacity: isSelected ? 0.7 : 0.2
+		fillOpacity: isSelected ? 0.8 : 0.5
 	};
 };
+
+function colorOf(f: GeoFeature): string {
+	const props = f.properties || {};
+	const inclusion = props.inclusion;
+
+	// building
+	if (isBuilding(f)) {
+		if (!props.isHeated) {
+			return "#607d8b";
+		}
+		return inclusion === 'REQUIRED'
+			? "#ec407a"
+			: "#f8bbd0";
+	}
+
+	// street
+	if (inclusion === 'EXCLUDED') {
+		return "#607d8b";
+	}
+	if (inclusion === 'REQUIRED') {
+		return "#ec407a";
+	}
+	return '#1976d2';
+}
 
 function addTileLayer(map: L.Map) {
 	/*
