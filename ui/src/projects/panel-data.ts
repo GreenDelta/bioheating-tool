@@ -1,7 +1,7 @@
 import { GeoFeature } from "../model";
 import { Inclusion, inclusionFromString } from "../model";
 
-interface BuildingProps {
+export interface BuildingProps {
 	name?: any;
 	height?: any;
 	storeys?: any;
@@ -199,7 +199,7 @@ export class BuildingData {
 	}
 }
 
-interface StreetProps {
+export interface StreetProps {
 	name?: any;
 	inclusion?: any;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GeoFeature, Inclusion } from '../model';
-import { StreetData } from './panel-data';
+import { StreetData, StreetProps } from './panel-data';
 import { StringField, SelectField } from './fields';
 
 export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
@@ -9,6 +9,12 @@ export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
 		setData(StreetData.of(feature));
 	}, [feature]);
 
+	const put = (change: StreetProps) => {
+		const next = data.copyWith(change);
+		next.applyOn(feature);
+		setData(next);
+	};
+
 	return <div className="card">
 		<div className="card-body">
 			<h6>Street Information</h6>
@@ -16,7 +22,7 @@ export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
 			<StringField
 				label="Street Name"
 				value={data.name}
-				onChange={value => setData(data.copyWith({ name: value }))}
+				onChange={value => put({ name: value })}
 			/>
 
 			<SelectField
@@ -27,15 +33,9 @@ export const StreetPanel = ({ feature }: { feature: GeoFeature }) => {
 					{ value: Inclusion.REQUIRED, label: "Required" },
 					{ value: Inclusion.EXCLUDED, label: "Excluded" }
 				]}
-				onChange={value => setData(data.copyWith({ inclusion: value }))}
+				onChange={value => put({ inclusion: value })}
 			/>
 
-			<button
-				className="btn btn-primary"
-				disabled={!data.isValid()}
-				onClick={() => data.applyOn(feature)}>
-				Update
-			</button>
 		</div>
 	</div>
 };

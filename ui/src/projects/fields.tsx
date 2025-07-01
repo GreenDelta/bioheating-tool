@@ -60,9 +60,10 @@ export const CheckboxField = ({ label, checked, onChange }: {
 	</div>
 );
 
-export const SelectField = ({ label, value, options, onChange }: {
+export const SelectField = ({ label, value, disabled, options, onChange }: {
 	label: string;
 	value: string;
+	disabled?: boolean;
 	options: { value: string; label: string }[];
 	onChange: (value: string) => void;
 }) => (
@@ -70,6 +71,7 @@ export const SelectField = ({ label, value, options, onChange }: {
 		<label className="col-sm-4 col-form-label">{label}</label>
 		<div className="col-sm-8">
 			<select
+				disabled={disabled}
 				className="form-control"
 				value={value}
 				onChange={e => onChange(e.target.value)}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { GeoFeature, Inclusion } from '../model';
-import { BuildingData } from './panel-data';
+import { BuildingData, BuildingProps } from './panel-data';
 import { StringField, NumberField, CheckboxField, SelectField } from './fields';
 
 export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
@@ -9,78 +9,77 @@ export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
 		setData(BuildingData.of(feature));
 	}, [feature]);
 
+	const put = (change: BuildingProps) => {
+		const next = data.copyWith(change);
+		next.applyOn(feature);
+		setData(next);
+	};
+
 	return <div className="card">
 		<div className="card-body">
 
 			<StringField label="Building" value={data.name}
-				onChange={value => setData(data.copyWith({ name: value }))} />
+				onChange={value => put({ name: value })} />
 
-			<SelectField
-				label="Inclusion"
-				value={data.inclusion}
+			<CheckboxField label="Is heated" checked={data.isHeated}
+				onChange={checked => put({ isHeated: checked })} />
+
+			<NumberField label="Heat demand (kWh)" value={data.heatDemand} step="0.1"
+				disabled={!data.isHeated}
+				onChange={value => put({ heatDemand: value })} />
+
+			<SelectField label="Inclusion"
+				value={!data.isHeated ? "Excluded" : data.inclusion}
+				disabled={!data.isHeated}
 				options={[
 					{ value: Inclusion.EXCLUDED, label: "Excluded" },
 					{ value: Inclusion.REQUIRED, label: "Included" },
 				]}
-				onChange={value => setData(data.copyWith({ inclusion: value }))}
+				onChange={value => put({ inclusion: value })}
 			/>
 
 			<NumberField label="Height (m)" value={data.height} step="0.1"
-				onChange={value => setData(data.copyWith({ height: value }))} />
+				onChange={value => put({ height: value })} />
 
 			<NumberField label="Storeys" value={data.storeys} step="1"
-				onChange={value => setData(data.copyWith({ storeys: value }))} />
-
-			<CheckboxField label="Is heated" checked={data.isHeated}
-				onChange={checked => setData(data.copyWith({ isHeated: checked }))} />
-
-			<NumberField label="Heat demand (kWh)" value={data.heatDemand} step="0.1"
-				disabled={!data.isHeated}
-				onChange={value => setData(data.copyWith({ heatDemand: value }))} />
+				onChange={value => put({ storeys: value })} />
 
 			<StringField label="Roof Type" value={data.roofType}
-				onChange={value => setData(data.copyWith({ roofType: value }))} />
+				onChange={value => put({ roofType: value })} />
 
 			<StringField label="Function" value={data.function}
-				onChange={value => setData(data.copyWith({ function: value }))} />
+				onChange={value => put({ function: value })} />
 
 			<NumberField label="Ground Area (m²)" value={data.groundArea} step="0.1"
-				onChange={value => setData(data.copyWith({ groundArea: value }))} />
+				onChange={value => put({ groundArea: value })} />
 
 			<NumberField label="Heated Area (m²)" value={data.heatedArea} step="0.1"
-				onChange={value => setData(data.copyWith({ heatedArea: value }))} />
+				onChange={value => put({ heatedArea: value })} />
 
 			<NumberField
 				label="Volume (m³)" value={data.volume} step="0.1"
-				onChange={value => setData(data.copyWith({ volume: value }))} />
+				onChange={value => put({ volume: value })} />
 
 			<hr />
 			<h6>Address Information</h6>
 
 			<StringField label="Country" value={data.country}
-				onChange={value => setData(data.copyWith({ country: value }))} />
+				onChange={value => put({ country: value })} />
 
 			<StringField label="Locality/City" value={data.locality}
-				onChange={value => setData(data.copyWith({ locality: value }))} />
+				onChange={value => put({ locality: value })} />
 
 			<StringField label="Postal Code" value={data.postalCode}
-				onChange={value => setData(data.copyWith({ postalCode: value }))} />
+				onChange={value => put({ postalCode: value })} />
 
 			<StringField label="Street" value={data.street}
-				onChange={value => setData(data.copyWith({ street: value }))} />
+				onChange={value => put({ street: value })} />
 
 			<StringField label="Street Number" value={data.streetNumber}
-				onChange={value => setData(data.copyWith({ streetNumber: value }))} />
+				onChange={value => put({ streetNumber: value })} />
 
 			<NumberField label="Climate Zone" value={data.climateZone} step="1"
-				onChange={value => setData(data.copyWith({ climateZone: value }))} />
-
-			<button
-				className="btn btn-primary"
-				disabled={!data.isValid()}
-				onClick={() => data.applyOn(feature)}>
-				Update
-			</button>
+				onChange={value => put({ climateZone: value })} />
 		</div>
 	</div>
 };
