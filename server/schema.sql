@@ -38,7 +38,7 @@ create table tbl_buildings (
     climate_zone int,
     heat_demand double precision,
     is_heated boolean,
-    is_included boolean
+    inclusion varchar
 );
 
 drop table if exists tbl_streets cascade;

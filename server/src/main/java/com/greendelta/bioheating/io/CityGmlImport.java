@@ -11,6 +11,7 @@ import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
@@ -133,7 +134,8 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			.heatedArea(heatedArea)
 			.volume(volume)
 			.climateZone(climateZoneOf(b))
-			.isHeated(b.address() != null);
+			.isHeated(b.address() != null)
+			.inclusion(Inclusion.EXCLUDED);
 		mapAddress(b.address(), building);
 		return building;
 	}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { GeoFeature } from '../model';
+import { GeoFeature, Inclusion } from '../model';
 import { BuildingData } from './panel-data';
-import { StringField, NumberField, CheckboxField } from './fields';
+import { StringField, NumberField, CheckboxField, SelectField } from './fields';
 
 export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
 	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
@@ -15,6 +15,16 @@ export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
 			<StringField label="Building" value={data.name}
 				onChange={value => setData(data.copyWith({ name: value }))} />
 
+			<SelectField
+				label="Inclusion"
+				value={data.inclusion}
+				options={[
+					{ value: Inclusion.EXCLUDED, label: "Excluded" },
+					{ value: Inclusion.REQUIRED, label: "Included" },
+				]}
+				onChange={value => setData(data.copyWith({ inclusion: value }))}
+			/>
+
 			<NumberField label="Height (m)" value={data.height} step="0.1"
 				onChange={value => setData(data.copyWith({ height: value }))} />
 
@@ -23,9 +33,6 @@ export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
 
 			<CheckboxField label="Is heated" checked={data.isHeated}
 				onChange={checked => setData(data.copyWith({ isHeated: checked }))} />
-
-			<CheckboxField label="Is included" checked={data.isIncluded}
-				onChange={checked => setData(data.copyWith({ isIncluded: checked }))} />
 
 			<NumberField label="Heat demand (kWh)" value={data.heatDemand} step="0.1"
 				disabled={!data.isHeated}

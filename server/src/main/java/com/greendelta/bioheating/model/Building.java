@@ -5,6 +5,8 @@ import org.locationtech.jts.geom.Coordinate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
 @Entity
@@ -62,8 +64,9 @@ public class Building extends BaseEntity {
 	@Column(name = "is_heated")
 	private boolean isHeated;
 
-	@Column(name = "is_included")
-	private boolean isIncluded;
+	@Column(name = "inclusion")
+	@Enumerated(EnumType.STRING)
+	private Inclusion inclusion;
 
 	public String name() {
 		return name;
@@ -217,12 +220,12 @@ public class Building extends BaseEntity {
 		return this;
 	}
 
-	public boolean isIncluded() {
-		return isIncluded;
+	public Inclusion inclusion() {
+		return inclusion;
 	}
 
-	public Building isIncluded(boolean isIncluded) {
-		this.isIncluded = isIncluded;
+	public Building inclusion(Inclusion inclusion) {
+		this.inclusion = inclusion;
 		return this;
 	}
 

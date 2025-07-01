@@ -80,7 +80,7 @@ public class MapConverter {
 		props.put("climateZone", b.climateZone());
 		props.put("heatDemand", b.heatDemand());
 		props.put("isHeated", b.isHeated());
-		props.put("isIncluded", b.isIncluded());
+		props.put("inclusion", b.inclusion());
 		return new GeoFeature("Feature", polygon, props);
 	}
 

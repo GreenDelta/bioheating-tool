@@ -3,6 +3,7 @@ package com.greendelta.bioheating.io;
 import org.locationtech.jts.geom.Coordinate;
 
 import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Street;
 import com.greendelta.bioheating.util.Res;
 
@@ -77,6 +78,7 @@ class OsmStreetFetch {
 
 		var street = new Street()
 			.name(name)
+			.inclusion(Inclusion.OPTIONAL)
 			.coordinates(transformed.value());
 		return Res.of(street);
 	}
