@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as L from 'leaflet';
-import { GeoFeature, GeoMap, isBuilding, isStreet } from '../model';
+import { GeoFeature, GeoMap, isBuilding } from '../model';
 import "leaflet-lasso";
 
 interface MapProps {
 	data: GeoMap;
-	onSelect: (f: GeoFeature) => void;
+	onSelect: (fs: GeoFeature[]) => void;
 }
 
 export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
@@ -28,9 +28,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 			}
 		}
 		setSelection(nextIds);
-		if (features.length === 1) {
-			onSelect(features[0]);
-		}
+		onSelect(features);
 	};
 
 	useEffect(() => {

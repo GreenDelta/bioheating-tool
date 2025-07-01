@@ -4,12 +4,13 @@ import { GeoFeature, Project, isBuilding, isStreet } from '../model';
 import { Map } from './map';
 import { BuildingPanel } from './panel-building';
 import { StreetPanel } from './panel-street';
+import { MultiPanel } from './panel-multi';
 import { SaveIcon } from '../icons';
 import * as api from '../api';
 
 export const ProjectEditor = () => {
 
-	const [feature, setFeature] = useState<GeoFeature | null>(null);
+	const [selection, setSelection] = useState<GeoFeature[]>([]);
 	const [isDirty, setDirty] = useState(false);
 
 	const res: api.Res<Project> = useLoaderData();
@@ -27,13 +28,14 @@ export const ProjectEditor = () => {
 			<div className="container-fluid">
 				<div className="row">
 					<div className="col-md-8">
-						<Map data={project.map} onSelect={setFeature} />
+						<Map
+							data={project.map}
+							onSelect={setSelection}
+						/>
 					</div>
 
 					<div className="col-md-4">
-						{feature && isBuilding(feature) && <BuildingPanel feature={feature} />}
-						{feature && isStreet(feature) && <StreetPanel feature={feature} />}
-						{!feature && <div></div>}
+						{panelOf(selection)}
 					</div>
 				</div>
 			</div>
@@ -41,4 +43,16 @@ export const ProjectEditor = () => {
 	);
 };
 
+function panelOf(selection: GeoFeature[]): React.JSX.Element {
+	if (!selection || selection.length === 0) {
+		return <div></div>;
+	}
+	if (selection.length > 1) {
+		return <MultiPanel features={selection} />;
+	}
+	const f = selection[0];
+	return isBuilding(f)
+		? <BuildingPanel feature={f} />
+		: <StreetPanel feature={f} />
+}
 
