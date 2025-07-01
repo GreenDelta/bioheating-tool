@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { GeoFeature, Inclusion, isBuilding, isStreet } from '../model';
 import { SelectField } from './fields';
 
-interface MultiPanelProps {
+interface Props {
 	features: GeoFeature[];
 }
 
-export const MultiPanel: React.FC<MultiPanelProps> = ({ features }) => {
+export const MultiPanel: React.FC<Props> = ({ features }) => {
 	const [buildingInclusion, setBuildingInclusion] = useState<string>('');
 	const [streetInclusion, setStreetInclusion] = useState<string>('');
 
@@ -56,17 +56,16 @@ export const MultiPanel: React.FC<MultiPanelProps> = ({ features }) => {
 	return (
 		<div className="card">
 			<div className="card-body">
-				<h6>Multi-Selection ({features.length} items)</h6>
 
 				{buildings.length > 0 && (
 					<div className="mb-3">
 						<h6 className="text-muted">Buildings ({buildings.length})</h6>
 						<SelectField
-							label="Set Inclusion"
+							label="Set inclusion"
 							value={buildingInclusion}
 							options={[
 								{ value: '', label: 'Select...' },
-								{ value: Inclusion.REQUIRED, label: 'Required' },
+								{ value: Inclusion.REQUIRED, label: 'Included' },
 								{ value: Inclusion.EXCLUDED, label: 'Excluded' }
 							]}
 							onChange={handleBuildingInclusionChange}
@@ -74,29 +73,62 @@ export const MultiPanel: React.FC<MultiPanelProps> = ({ features }) => {
 					</div>
 				)}
 
-				{streets.length > 0 && (
-					<div className="mb-3">
-						<h6 className="text-muted">Streets ({streets.length})</h6>
-						<SelectField
-							label="Set Inclusion"
-							value={streetInclusion}
-							options={[
-								{ value: '', label: 'Select...' },
-								{ value: Inclusion.OPTIONAL, label: 'Optional' },
-								{ value: Inclusion.REQUIRED, label: 'Required' },
-								{ value: Inclusion.EXCLUDED, label: 'Excluded' }
-							]}
-							onChange={handleStreetInclusionChange}
-						/>
-					</div>
-				)}
+				<StreetSection features={features} />
 
-				<div className="mt-3">
-					<small className="text-muted">
-						Selected: {buildings.length} building{buildings.length !== 1 ? 's' : ''}, {streets.length} street{streets.length !== 1 ? 's' : ''}
-					</small>
-				</div>
 			</div>
 		</div>
 	);
 };
+
+const StreetSection = ({ features }: Props) => {
+	const streets = features.filter(isStreet);
+	if (!streets || streets.length === 0)
+		return <></>;
+
+	const [inclusion, setInclusion] = useState(commonInclusionOf(streets));
+	const onUpdate = (v: string) => {
+		const next = v === "" ? Inclusion.OPTIONAL : v;
+		putInclusion(streets, next);
+		setInclusion(next);
+	};
+
+	return (
+		<div className="mb-3">
+			<h6 className="text-muted">{streets.length} Streets</h6>
+			<SelectField
+				label="Set inclusion"
+				value={inclusion}
+				options={[
+					{ value: '', label: 'Select...' },
+					{ value: Inclusion.OPTIONAL, label: 'Optional' },
+					{ value: Inclusion.REQUIRED, label: 'Required' },
+					{ value: Inclusion.EXCLUDED, label: 'Excluded' }
+				]}
+				onChange={onUpdate}
+			/>
+		</div>
+	);
+}
+
+function putInclusion(features: GeoFeature[], value: string) {
+	for (const f of features) {
+		if (!f.properties) {
+			f.properties = {};
+		}
+		f.properties.inclusion = value;
+	}
+}
+
+function commonInclusionOf(features: GeoFeature[]): string {
+	if (!features || features.length === 0) {
+		return "";
+	}
+	let v = features[0].properties?.inclusion || "";
+	for (let i = 1; i < features.length; i++) {
+		const vi = features[i].properties?.inclusion;
+		if (vi !== v) {
+			return "";
+		}
+	}
+	return v;
+}
