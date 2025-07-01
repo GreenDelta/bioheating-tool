@@ -1,13 +1,11 @@
-package com.greendelta.bioheating.io;
+package com.greendelta.bioheating.model.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.locationtech.jts.geom.Coordinate;
-
+import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
@@ -102,29 +100,29 @@ public class MapConverter {
 	public static Res<Void> updateFromClient(GeoMap map, ClientMap clientMap) {
 		if (map == null || clientMap == null)
 			return Res.error("map or client map is null");
-		
+
 		for (var feature : clientMap.features()) {
 			var props = feature.properties();
 			if (props == null)
 				continue;
-				
+
 			var type = props.get("@type");
 			var id = props.get("id");
 			if (!(id instanceof Number))
 				continue;
-			
+
 			long entityId = ((Number) id).longValue();
-			
+
 			if ("building".equals(type)) {
 				updateBuilding(map, entityId, props);
 			} else if ("street".equals(type)) {
 				updateStreet(map, entityId, props);
 			}
 		}
-		
+
 		return Res.VOID;
 	}
-	
+
 	private static void updateBuilding(GeoMap map, long id, Map<String, Object> props) {
 		var building = map.buildings().stream()
 			.filter(b -> b.id() == id)
@@ -132,7 +130,7 @@ public class MapConverter {
 			.orElse(null);
 		if (building == null)
 			return;
-			
+
 		// Update building properties (coordinates never change)
 		updateStringProperty(props, "name", building::name);
 		updateStringProperty(props, "roofType", building::roofType);
@@ -152,7 +150,7 @@ public class MapConverter {
 		updateBooleanProperty(props, "isHeated", building::isHeated);
 		updateInclusionProperty(props, "inclusion", building::inclusion);
 	}
-	
+
 	private static void updateStreet(GeoMap map, long id, Map<String, Object> props) {
 		var street = map.streets().stream()
 			.filter(s -> s.id() == id)
@@ -160,20 +158,20 @@ public class MapConverter {
 			.orElse(null);
 		if (street == null)
 			return;
-			
+
 		// Update street properties (coordinates never change)
 		updateStringProperty(props, "name", street::name);
 		updateInclusionProperty(props, "inclusion", street::inclusion);
 	}
-	
-	private static void updateStringProperty(Map<String, Object> props, String key, 
+
+	private static void updateStringProperty(Map<String, Object> props, String key,
 			java.util.function.Function<String, ?> setter) {
 		var value = props.get(key);
 		if (value instanceof String) {
 			setter.apply((String) value);
 		}
 	}
-	
+
 	private static void updateDoubleProperty(Map<String, Object> props, String key,
 			java.util.function.Function<Double, ?> setter) {
 		var value = props.get(key);
@@ -181,7 +179,7 @@ public class MapConverter {
 			setter.apply(((Number) value).doubleValue());
 		}
 	}
-	
+
 	private static void updateIntProperty(Map<String, Object> props, String key,
 			java.util.function.Function<Integer, ?> setter) {
 		var value = props.get(key);
@@ -189,7 +187,7 @@ public class MapConverter {
 			setter.apply(((Number) value).intValue());
 		}
 	}
-	
+
 	private static void updateBooleanProperty(Map<String, Object> props, String key,
 			java.util.function.Function<Boolean, ?> setter) {
 		var value = props.get(key);
@@ -197,7 +195,7 @@ public class MapConverter {
 			setter.apply((Boolean) value);
 		}
 	}
-	
+
 	private static void updateInclusionProperty(Map<String, Object> props, String key,
 			java.util.function.Function<com.greendelta.bioheating.model.Inclusion, ?> setter) {
 		var value = props.get(key);
@@ -210,39 +208,5 @@ public class MapConverter {
 			}
 		}
 	}
-	
-	public record ClientMap(List<GeoFeature> features) {
-	}
 
-	public record GeoFeature(
-		String type, Geometry geometry, Map<String, Object> properties
-	) {
-	}
-
-	public sealed interface Geometry {
-
-		static GeoPolygon polygonOf(Coordinate[] cs) {
-			var ring = new ArrayList<List<Double>>(cs.length);
-			for (var c : cs) {
-				ring.add(List.of(c.x, c.y));
-			}
-			return new GeoPolygon("Polygon", List.of(ring));
-		}
-
-		static GeoLine lineOf(Coordinate[] cs) {
-			var line = new ArrayList<List<Double>>(cs.length);
-			for (var c : cs) {
-				line.add(List.of(c.x, c.y));
-			}
-			return new GeoLine("LineString", line);
-		}
-
-		record GeoPolygon(String type, List<List<List<Double>>> coordinates)
-			implements Geometry {
-		}
-
-		record GeoLine(String type, List<List<Double>> coordinates)
-			implements Geometry {
-		}
-	}
 }
