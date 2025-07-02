@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
-import com.greendelta.bioheating.model.client.MapSync;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
@@ -52,16 +52,12 @@ public class ProjectController {
 	public ResponseEntity<?> getProject(
 		Authentication auth, @PathVariable long id
 	) {
-		var user = users.getUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-		var project = projects.getProject(user, id).orElse(null);
-		if (project == null)
-			return Http.notFound("project not found: " + id);
-		var res = ClientProject.of(project);
-		return res.hasError()
-			? Http.serverError("failed to convert project: " + res.error())
-			: Http.ok(res.value());
+		return withProject(auth, id, project -> {
+			var res = ClientProject.of(project);
+			return res.hasError()
+				? Http.serverError("failed to convert project: " + res.error())
+				: Http.ok(res.value());
+		});
 	}
 
 	@PostMapping
@@ -110,55 +106,37 @@ public class ProjectController {
 	public ResponseEntity<?> deleteProject(
 		Authentication auth, @PathVariable long id
 	) {
-		var user = users.getUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-
-		var result = projects.deleteProject(user, id);
-		return result.hasError()
-			? Http.badRequest("failed to delete project: " + result.error())
-			: Http.ok("project deleted successfully");
+		return withProject(auth, id, project -> {
+			var err = projects.delete(project);
+			return err.hasError()
+				? Http.badRequest("failed to delete project: " + err.error())
+				: Http.ok("project deleted successfully");
+		});
 	}
 
 	@PostMapping("/{id}")
 	public ResponseEntity<?> updateProject(
-		Authentication auth,
-		@PathVariable long id,
-		@RequestBody ClientProject clientProject
+		Authentication auth, @PathVariable long id, @RequestBody ClientProject data
 	) {
+		return withProject(auth, id, project -> {
+			data.writeUpdatesTo(project);
+			var res = projects.updateProject(project);
+			return res.hasError()
+				? Http.serverError("failed to save project: " + res.error())
+				: Http.ok(ProjectInfo.of(project));
+		});
+	}
 
+	private ResponseEntity<?> withProject(
+		Authentication auth, long id, Function<Project, ResponseEntity<?>> fn
+	) {
 		var user = users.getUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
-
 		var project = projects.getProject(user, id).orElse(null);
-		if (project == null)
-			return Http.notFound("project not found: " + id);
-
-		// Update project basic properties
-		if (!Strings.isNil(clientProject.name())) {
-			project.name(clientProject.name());
-		}
-		if (!Strings.isNil(clientProject.description())) {
-			project.description(clientProject.description());
-		}
-
-		// Update map data from client
-		if (clientProject.map() != null) {
-			MapSync.updateFromClient(project.map(), clientProject.map());
-		}
-
-		// Save the updated project
-		var saveRes = projects.saveProject(project);
-		if (saveRes.hasError()) {
-			return Http.serverError("failed to save project: " + saveRes.error());
-		}
-
-		// Return updated project
-		var res = ClientProject.of(saveRes.value());
-		return res.hasError()
-			? Http.serverError("failed to convert updated project: " + res.error())
-			: Http.ok(res.value());
+		return project == null
+			? Http.notFound("project not found: " + id)
+			: fn.apply(project);
 	}
 
 	public record ProjectInfo(

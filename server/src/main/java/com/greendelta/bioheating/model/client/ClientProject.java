@@ -21,4 +21,15 @@ public record ClientProject(
 		);
 		return Res.of(p);
 	}
+
+	public void writeUpdatesTo(Project project) {
+		if (project == null)
+			return;
+		project.name(name);
+		project.description(description);
+		if (project.map() != null && map != null) {
+			MapSync.updateFromClient(project.map(), map);
+		}
+	}
+
 }

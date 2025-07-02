@@ -64,19 +64,18 @@ public class ProjectService {
 		}
 	}
 
-	public Res<Void> deleteProject(User user, long projectId) {
-		if (user == null)
-			return Res.error("no user given");
-		var project = db.getForId(Project.class, projectId);
+	public Res<Void> delete(Project project) {
 		if (project == null)
-			return Res.error("project not found");
-		if (!Objects.equals(user, project.user()))
-			return Res.error("not authorized to delete this project");
-		db.delete(project);
-		return Res.VOID;
+			return Res.error("no project given");
+		try {
+			db.delete(project);
+			return Res.VOID;
+		} catch (Exception e) {
+			return Res.error("failed to delete project", e);
+		}
 	}
 
-	public Res<Project> saveProject(Project project) {
+	public Res<Project> updateProject(Project project) {
 		if (project == null)
 			return Res.error("project is null");
 		try {
