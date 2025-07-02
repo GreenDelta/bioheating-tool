@@ -10,7 +10,7 @@ public record ClientProject(
 	public static Res<ClientProject> of(Project project) {
 		if (project == null)
 			return Res.error("project is null");
-		var map = MapConverter.toClient(project.map());
+		var map = ClientMap.of(project.map());
 		if (map.hasError())
 			return map.castError();
 		var p = new ClientProject(

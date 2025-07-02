@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
-import com.greendelta.bioheating.model.client.MapConverter;
+import com.greendelta.bioheating.model.client.MapSync;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
@@ -126,6 +126,7 @@ public class ProjectController {
 		@PathVariable long id,
 		@RequestBody ClientProject clientProject
 	) {
+
 		var user = users.getUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
@@ -144,10 +145,7 @@ public class ProjectController {
 
 		// Update map data from client
 		if (clientProject.map() != null) {
-			var updateRes = MapConverter.updateFromClient(project.map(), clientProject.map());
-			if (updateRes.hasError()) {
-				return Http.serverError("failed to update map: " + updateRes.error());
-			}
+			MapSync.updateFromClient(project.map(), clientProject.map());
 		}
 
 		// Save the updated project
