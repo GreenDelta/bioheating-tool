@@ -19,7 +19,7 @@ export const ProjectEditor = () => {
 	if (res.isErr) {
 		return <div style={{ color: 'red' }}>Error: {res.error}</div>;
 	}
-	const [project, setProject] = useState(res.value);
+	const project = res.value;
 
 	const handlePanelChange = () => {
 		setDirty(true);
@@ -33,15 +33,16 @@ export const ProjectEditor = () => {
 		setSaveError(null);
 
 		try {
-			const updateRes = await api.updateProject(project);
-			if (updateRes.isOk) {
-				setProject(updateRes.value);
+			const res = await api.updateProject(project);
+			if (res.isOk) {
 				setDirty(false);
 			} else {
-				setSaveError(updateRes.error);
+				setSaveError(res.error);
 			}
 		} catch (error) {
-			setSaveError(error instanceof Error ? error.message : 'Unknown error occurred');
+			setSaveError(error instanceof Error
+				? error.message
+				: 'Unknown error occurred');
 		} finally {
 			setIsSaving(false);
 		}

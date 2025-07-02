@@ -3,7 +3,12 @@ import { GeoFeature, Inclusion } from '../model';
 import { StreetData, StreetProps } from './panel-data';
 import { StringField, SelectField } from './fields';
 
-export const StreetPanel = ({ feature, onChange }: { feature: GeoFeature; onChange?: () => void }) => {
+interface Props {
+	feature: GeoFeature;
+	onChange: () => void;
+}
+
+export const StreetPanel = ({ feature, onChange }: Props) => {
 	const [data, setData] = useState<StreetData>(StreetData.of(feature));
 	useEffect(() => {
 		setData(StreetData.of(feature));
@@ -13,7 +18,7 @@ export const StreetPanel = ({ feature, onChange }: { feature: GeoFeature; onChan
 		const next = data.copyWith(change);
 		next.applyOn(feature);
 		setData(next);
-		onChange?.();
+		onChange();
 	};
 
 	return <div className="card">

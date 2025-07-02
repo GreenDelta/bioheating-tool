@@ -5,7 +5,7 @@ import { BuildingData } from './panel-data';
 
 interface Props {
 	features: GeoFeature[];
-	onChange?: () => void;
+	onChange: () => void;
 }
 
 export const MultiPanel: React.FC<Props> = ({ features, onChange }) => {
@@ -30,7 +30,7 @@ const BuildingSection = ({ features, onChange }: Props) => {
 		const next = v === "" ? Inclusion.EXCLUDED : v;
 		putInclusion(buildings, next);
 		setInclusion(next);
-		onChange?.();
+		onChange();
 	};
 
 	return (
@@ -66,7 +66,7 @@ const StreetSection = ({ features, onChange }: Props) => {
 		const next = v === "" ? Inclusion.OPTIONAL : v;
 		putInclusion(streets, next);
 		setInclusion(next);
-		onChange?.();
+		onChange();
 	};
 
 	return (
