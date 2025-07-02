@@ -26,7 +26,7 @@ public sealed interface Geometry {
 		for (var c : cs) {
 			ring.add(List.of(c.x, c.y));
 		}
-		return new GeoPolygon("Polygon", List.of(ring));
+		return new GeoPolygon(List.of(ring));
 	}
 
 	static GeoLine lineOf(Coordinate[] cs) {
@@ -34,14 +34,14 @@ public sealed interface Geometry {
 		for (var c : cs) {
 			line.add(List.of(c.x, c.y));
 		}
-		return new GeoLine("LineString", line);
+		return new GeoLine(line);
 	}
 
-	record GeoPolygon(String type, List<List<List<Double>>> coordinates)
+	record GeoPolygon(List<List<List<Double>>> coordinates)
 		implements Geometry {
 	}
 
-	record GeoLine(String type, List<List<Double>> coordinates)
+	record GeoLine(List<List<Double>> coordinates)
 		implements Geometry {
 	}
 }
