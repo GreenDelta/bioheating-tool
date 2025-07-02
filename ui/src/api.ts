@@ -133,3 +133,19 @@ export async function deleteProject(id: number): Promise<Res<boolean>> {
 	return Res.err(`failed to delete project: ${r.status} | ${msg}`);
 }
 
+export async function updateProject(project: Project): Promise<Res<Project>> {
+	const r = await fetch(`/api/projects/${project.id}`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(project),
+	});
+	if (r.status === 200) {
+		const updatedProject = await r.json();
+		return Res.ok(updatedProject);
+	}
+	const msg = await r.text();
+	return Res.err(`failed to update project: ${r.status} | ${msg}`);
+}
+

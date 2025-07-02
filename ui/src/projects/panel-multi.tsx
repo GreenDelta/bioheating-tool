@@ -5,20 +5,21 @@ import { BuildingData } from './panel-data';
 
 interface Props {
 	features: GeoFeature[];
+	onChange?: () => void;
 }
 
-export const MultiPanel: React.FC<Props> = ({ features }) => {
+export const MultiPanel: React.FC<Props> = ({ features, onChange }) => {
 	return (
 		<div className="card">
 			<div className="card-body">
-				<BuildingSection features={features} />
-				<StreetSection features={features} />
+				<BuildingSection features={features} onChange={onChange} />
+				<StreetSection features={features} onChange={onChange} />
 			</div>
 		</div>
 	);
 };
 
-const BuildingSection = ({ features }: Props) => {
+const BuildingSection = ({ features, onChange }: Props) => {
 	const buildings = features.filter(isBuilding);
 	if (!buildings || buildings.length === 0)
 		return <></>;
@@ -29,6 +30,7 @@ const BuildingSection = ({ features }: Props) => {
 		const next = v === "" ? Inclusion.EXCLUDED : v;
 		putInclusion(buildings, next);
 		setInclusion(next);
+		onChange?.();
 	};
 
 	return (
@@ -54,7 +56,7 @@ const BuildingSection = ({ features }: Props) => {
 	);
 };
 
-const StreetSection = ({ features }: Props) => {
+const StreetSection = ({ features, onChange }: Props) => {
 	const streets = features.filter(isStreet);
 	if (!streets || streets.length === 0)
 		return <></>;
@@ -64,6 +66,7 @@ const StreetSection = ({ features }: Props) => {
 		const next = v === "" ? Inclusion.OPTIONAL : v;
 		putInclusion(streets, next);
 		setInclusion(next);
+		onChange?.();
 	};
 
 	return (

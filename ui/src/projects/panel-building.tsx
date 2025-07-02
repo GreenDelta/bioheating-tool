@@ -3,7 +3,7 @@ import { GeoFeature, Inclusion } from '../model';
 import { BuildingData, BuildingProps } from './panel-data';
 import { StringField, NumberField, CheckboxField, SelectField } from './fields';
 
-export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
+export const BuildingPanel = ({ feature, onChange }: { feature: GeoFeature; onChange?: () => void }) => {
 	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
 	useEffect(() => {
 		setData(BuildingData.of(feature));
@@ -13,6 +13,7 @@ export const BuildingPanel = ({ feature }: { feature: GeoFeature }) => {
 		const next = data.copyWith(change);
 		next.applyOn(feature);
 		setData(next);
+		onChange?.();
 	};
 
 	return <div className="card">
