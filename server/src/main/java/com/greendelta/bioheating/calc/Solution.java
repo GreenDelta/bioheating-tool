@@ -7,6 +7,7 @@ import java.util.List;
 import org.locationtech.jts.geom.Envelope;
 
 import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Inclusion;
 
 public record Solution(
 	List<BuildingPolygon> buildings,
@@ -29,7 +30,8 @@ public record Solution(
 		var fun = GeometryBuilder.of(map);
 		var bps = new ArrayList<BuildingPolygon>(map.buildings().size());
 		for (var b : map.buildings()) {
-			// TODO: only include buildings with respective state
+			if (b.inclusion() == Inclusion.EXCLUDED)
+				continue;
 			var res = fun.polygonOf(b);
 			if (!res.hasError()) {
 				// TODO: log errors
@@ -40,7 +42,8 @@ public record Solution(
 		// create street lines
 		var sls = new ArrayList<StreetLine>(map.streets().size());
 		for (var s : map.streets()) {
-			// TODO: only include streets with respective state
+			if (s.inclusion() == Inclusion.EXCLUDED)
+				continue;
 			var res = fun.lineOf(s);
 			if (!res.hasError()) {
 				sls.add(res.value());
