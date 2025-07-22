@@ -1,10 +1,16 @@
 package com.greendelta.bioheating.config;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.User;
 
@@ -27,7 +33,7 @@ public class DataConfig {
 			.withUser(user, password)
 			.withHost(host, port)
 			.connect();
-		ensureAdmin(db);
+		ensureBaseData(db);
 		return db;
 	}
 
@@ -38,7 +44,7 @@ public class DataConfig {
 		}
 	}
 
-	private void ensureAdmin(Database db) {
+	private void ensureBaseData(Database db) {
 		var log = LoggerFactory.getLogger(getClass());
 
 		log.info("check that there is at least one admin in the database");
@@ -49,12 +55,44 @@ public class DataConfig {
 			}
 		}
 
+		log.info("create default `admin`");
+		createDefaultAdmin(db);
+
+		int regionCount = importClimateRegions(db);
+		if (regionCount >= 0) {
+			log.info("import {} climate regions", regionCount);
+		} else {
+			log.error("failed to import climate regions");
+		}
+	}
+
+	private void createDefaultAdmin(Database db) {
 		var hash = User.hashPassword("admin").orElseThrow();
 		var admin = new User()
 			.name("admin")
 			.password(hash)
 			.isAdmin(true);
 		db.insert(admin);
-		log.info("created default `admin`");
+	}
+
+	private int importClimateRegions(Database db) {
+		var stream = getClass().getResourceAsStream("climate-regions.json");
+		if (stream == null)
+			return -1;
+
+		try (stream) {
+			var mapper = new ObjectMapper();
+			var typeRef = new TypeReference<List<ClimateRegion>>() {
+			};
+			var regions = mapper.readValue(stream, typeRef);
+			for (var data : regions) {
+				db.insert(data);
+			}
+			return regions.size();
+		} catch (IOException e) {
+			LoggerFactory.getLogger(getClass())
+				.error("failed to import climate regions", e);
+			return -1;
+		}
 	}
 }

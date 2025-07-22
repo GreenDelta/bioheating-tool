@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -8,15 +10,19 @@ import jakarta.persistence.Table;
 @Table(name = "tbl_climate_regions")
 public class ClimateRegion extends BaseEntity {
 
+	@JsonProperty
 	@Column(name = "number")
 	private int number;
 
+	@JsonProperty
 	@Column(name = "name")
 	private String name;
 
+	@JsonProperty
 	@Column(name = "station_name")
 	private String stationName;
 
+	@JsonProperty
 	@Column(name = "station_id")
 	private String stationId;
 
