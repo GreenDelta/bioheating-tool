@@ -85,16 +85,22 @@ export async function getProjects(): Promise<Res<ProjectInfo[]>> {
 	return Res.err(`failed to get projects: ${r.status} | ${msg}`);
 }
 
-export async function createProject(
+interface NewProjectData {
+	climateRegion: number,
 	name: string,
-	description: string,
-	file: File
-): Promise<Res<ProjectInfo>> {
+	description?: string,
+	file: File,
+}
+
+export async function createProject(d: NewProjectData): Promise<Res<ProjectInfo>> {
 
 	const data = new FormData();
-	data.append('name', name);
-	data.append('description', description);
-	data.append('file', file);
+	data.append('climateRegion', d.climateRegion.toString());
+	data.append('name', d.name);
+	data.append('file', d.file);
+	if (d.description) {
+		data.append('description', d.description);
+	}
 
 	const r = await fetch("/api/projects", {
 		method: "POST",

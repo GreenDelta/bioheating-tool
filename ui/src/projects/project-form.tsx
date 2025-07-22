@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLoaderData, useNavigate } from 'react-router-dom';
 import * as api from '../api';
+import { ClimateRegion } from '../model';
 
 interface FormData {
 	name?: string;
@@ -22,6 +23,16 @@ export const ProjectForm = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	const res: api.Res<ClimateRegion[]> = useLoaderData();
+	if (res.isErr) {
+		return <div style={{ color: "red" }}>Error: {res.error}</div>;
+	}
+	const regions = res.value;
+	if(regions.length === 0) {
+		return <div style={{ color: "red" }}>Failed to load regions from server</div>;
+	}
+	const [region, setRegion] = useState<ClimateRegion>(regions[0]);
+
 	const handleCreate = async () => {
 		if (!isComplete(data)) {
 			return;
@@ -30,8 +41,12 @@ export const ProjectForm = () => {
 		setLoading(true);
 		setError(null);
 
-		const res = await api.createProject(
-			data.name!, data.description || "", data.file!);
+		const res = await api.createProject({
+			climateRegion: region.id,
+			name: data.name!,
+			file: data.file!,
+			description: data.description,
+		});
 		setLoading(false);
 
 		if (res.isErr) {
@@ -40,7 +55,6 @@ export const ProjectForm = () => {
 		}
 		navigate("/ui/projects");
 	};
-
 
 	return (
 		<div className="container-fluid">
@@ -77,6 +91,30 @@ export const ProjectForm = () => {
 					</div>
 
 					<div className="mb-3">
+						<label className="form-label">Climate Region</label>
+						<select
+							className="form-select"
+							value={region.id}
+							onChange={(e) => {
+								const selectedId = parseInt(e.target.value);
+								const selectedRegion = regions.find(r => r.id === selectedId);
+								if (selectedRegion) {
+									setRegion(selectedRegion);
+									setError(null);
+								}
+							}}>
+							{regions.map(r => (
+								<option key={r.id} value={r.id}>
+									{r.number}. {r.name} ({r.stationName})
+								</option>
+							))}
+						</select>
+						<div className="form-text">
+							Weather station: {region.stationName} (ID: {region.stationId})
+						</div>
+					</div>
+
+					<div className="mb-3">
 						<label className="form-label">CityGML</label>
 						<input
 							type="file"
@@ -84,13 +122,13 @@ export const ProjectForm = () => {
 							accept=".gml,.xml"
 							onChange={(e) => {
 								const file = e.target.files?.[0] || null;
-								setData({...data, file});
+								setData({ ...data, file });
 								setError(null);
 							}}
 						/>
 						{data.file && (
 							<div className="form-text">
-								Selected: {data.file.name} ({(data.file.size / (1024**2)).toFixed(1)} MB)
+								Selected: {data.file.name} ({(data.file.size / (1024 ** 2)).toFixed(1)} MB)
 							</div>
 						)}
 					</div>

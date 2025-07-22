@@ -120,7 +120,10 @@ function main() {
 						},
 						{
 							path: "projects/new",
-							element: <ProjectForm />
+							element: <ProjectForm />,
+							loader: async () => {
+								return api.getClimateRegions();
+							}
 						},
 						{
 							path: "projects/:id",
