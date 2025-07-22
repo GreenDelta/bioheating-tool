@@ -55,6 +55,7 @@ public class Building extends BaseEntity {
 
 	@Column(name = "street_number")
 	private String streetNumber;
+
 	@Column(name = "climate_zone")
 	private int climateZone;
 

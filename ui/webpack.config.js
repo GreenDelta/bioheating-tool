@@ -28,7 +28,7 @@ module.exports = {
 				{ from: 'node_modules/bootstrap/dist/js/bootstrap.bundle.min.js', to: './' },
 				{ from: 'node_modules/leaflet/dist/leaflet.css', to: './' },
 				{ from: 'src/index.html', to: './' },
-				{ from: 'img/home.png', to: './' },
+				{ from: 'img/', to: './img' },
 			]
 		})
 	],

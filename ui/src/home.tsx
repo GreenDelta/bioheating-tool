@@ -56,7 +56,7 @@ export const HomePage = () => {
 
 				<div className="col-md-5">
 					<img
-						src="/home.png"
+						src="/img/home.png"
 						alt="BIOHEATING"
 						className="img-fluid rounded shadow mb-3"
 					/>
