@@ -56,11 +56,21 @@ create table tbl_maps (
     crs varchar
 );
 
+drop table if exists tbl_climate_regions cascade;
+create table tbl_climate_regions (
+    id int not null primary key,
+    number int,
+    name varchar,
+    station_name varchar,
+    station_id varchar
+);
+
 drop table if exists tbl_projects cascade;
 create table tbl_projects (
     id int not null primary key,
     name varchar,
     description text,
     f_map int,
-    f_user int
+    f_user int,
+    f_climate_region int
 );

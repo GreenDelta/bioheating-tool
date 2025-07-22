@@ -26,6 +26,10 @@ public class Project extends BaseEntity {
 	@JoinColumn(name = "f_user")
 	private User user;
 
+	@ManyToOne
+	@JoinColumn(name = "f_climate_region")
+	private ClimateRegion climateRegion;
+
 	public String name() {
 		return name;
 	}
@@ -58,6 +62,15 @@ public class Project extends BaseEntity {
 
 	public Project map(GeoMap map) {
 		this.map = map;
+		return this;
+	}
+
+	public ClimateRegion climateRegion() {
+		return climateRegion;
+	}
+
+	public Project climateRegion(ClimateRegion climateRegion) {
+		this.climateRegion = climateRegion;
 		return this;
 	}
 
