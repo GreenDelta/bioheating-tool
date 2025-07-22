@@ -15,6 +15,14 @@ export interface ProjectInfo {
 	description: string;
 }
 
+export interface ClimateRegion {
+	id: number;
+	number: number;
+	name: string;
+	stationName: string;
+	stationId: string;
+}
+
 export interface Project {
 	id: number;
 	name: string;
