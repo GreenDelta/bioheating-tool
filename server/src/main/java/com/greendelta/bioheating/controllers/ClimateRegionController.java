@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.controllers;
 
+import java.util.Comparator;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +23,7 @@ public class ClimateRegionController {
 	@GetMapping
 	public ResponseEntity<?> getClimateRegions() {
 		var regions = db.getAll(ClimateRegion.class);
+		regions.sort(Comparator.comparingInt(ClimateRegion::number));
 		return ResponseEntity.ok(regions);
 	}
 }

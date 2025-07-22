@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
 import com.greendelta.bioheating.services.ProjectService;
@@ -29,10 +30,14 @@ import com.greendelta.bioheating.util.Strings;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
+	private final Database db;
 	private final ProjectService projects;
 	private final UserService users;
 
-	public ProjectController(ProjectService projects, UserService users) {
+	public ProjectController(
+		Database db, ProjectService projects, UserService users
+	) {
+		this.db = db;
 		this.projects = projects;
 		this.users = users;
 	}
@@ -64,6 +69,7 @@ public class ProjectController {
 	public ResponseEntity<?> createProject(
 		Authentication auth,
 		@RequestParam("name") String name,
+		@RequestParam("climateRegion") int climateRegionId,
 		@RequestParam("description") String description,
 		@RequestParam("file") MultipartFile file
 	) {
@@ -76,6 +82,8 @@ public class ProjectController {
 			return Http.badRequest("a project name is required");
 		if (file.isEmpty())
 			return Http.badRequest("a CityGML file is required");
+
+
 
 		try {
 

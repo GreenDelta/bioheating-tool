@@ -91,7 +91,7 @@ export const ProjectForm = () => {
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Climate Region</label>
+						<label className="form-label">Climate region</label>
 						<select
 							className="form-select"
 							value={region.id}
@@ -109,9 +109,6 @@ export const ProjectForm = () => {
 								</option>
 							))}
 						</select>
-						<div className="form-text">
-							Weather station: {region.stationName} (ID: {region.stationId})
-						</div>
 					</div>
 
 					<div className="mb-3">
