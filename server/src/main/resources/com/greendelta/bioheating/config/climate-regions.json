@@ -1,0 +1,92 @@
+[
+	{
+		"number": 1,
+		"name": "Nordseeküste",
+		"stationName": "Bremerhaven",
+		"stationId": "df9b08f4-6484-4b62-8cce-60051d29b8e4"
+	},
+	{
+		"number": 2,
+		"name": "Ostseeküste",
+		"stationName": "Rostock",
+		"stationId": "acb6ad51-33cb-4eee-a169-e8b215311982"
+	},
+	{
+		"number": 3,
+		"name": "Nordwestdeutsches Tiefland",
+		"stationName": "Hamburg",
+		"stationId": "3f07f30d-8edd-4424-8835-3370b7c6cec4"
+	},
+	{
+		"number": 4,
+		"name": "Nordostdeutsches Tiefland",
+		"stationName": "Potsdam",
+		"stationId": "2526d4d1-d208-49c2-97f8-6252120f5bbf"
+	},
+	{
+		"number": 5,
+		"name": "Niederrheinisch-westfälische Bucht und Emsland",
+		"stationName": "Essen",
+		"stationId": "a0248997-24fe-4bcc-ba96-275960d91d7d"
+	},
+  {
+    "number": 6,
+    "name": "Nördliche und westliche Mittelgebirge, Randgebiete",
+    "stationName": "Bad Marienberg",
+    "stationId": "f8662693-cc4f-4db4-b4a6-4019280dc33b"
+  },
+	{
+		"number": 7,
+		"name": "Nördliche und westliche Mittelgebirge, zentrale Bereiche",
+		"stationName": "Kassel",
+		"stationId": "32dd200b-d04a-4b13-9609-83dd400d75fb"
+	},
+  {
+    "number": 8,
+    "name": "Oberharz und Schwarzwald (mittlere Lagen)",
+    "stationName": "Braunlage",
+    "stationId": "00da1b2a-bde0-45a6-8025-6d3c68f36e7c"
+  },
+  {
+    "number": 9,
+    "name": "Thüringer Becken und Sächsisches Hügelland",
+    "stationName": "Chemnitz",
+    "stationId": "c6121150-6a82-460d-802c-72ac2f8bbfa9"
+  },
+	{
+		"number": 10,
+		"name": "Südöstliche Mittelgebirge bis 1000 m",
+		"stationName": "Hof",
+		"stationId": "6e72b591-a4b8-4ed0-97e7-50a37f33ed93"
+	},
+  {
+    "number": 11,
+    "name": "Erzgebirge, Böhmer- und Schwarzwald über 1000 m",
+    "stationName": "Fichtelberg",
+    "stationId": "f1ad3cde-a8e7-4077-a7a9-eef9e342baf8"
+  },
+	{
+		"number": 12,
+		"name": "Oberrheingraben und unteres Neckartal",
+		"stationName": "Mannheim",
+		"stationId": "5d9d241a-75d0-4d54-aedd-b6302a64b270"
+	},
+	{
+		"number": 13,
+		"name": "Schwäbisch-fränkisches Stufenland/Alpenvorland",
+		"stationName": "Passau",
+		"stationId": "bfe49bf5-f17e-4810-98f4-979ffd59bdff"
+	},
+	{
+		"number": 14,
+		"name": "Schwäbische Alb / Baar",
+		"stationName": "Stötten",
+		"stationId": "d085827b-3775-4eee-80a5-d01f332c6dfc"
+	},
+  {
+    "number": 15,
+    "name": "Alpenrand /–täler",
+    "stationName": "Garmisch_Partenkirchen",
+    "stationId": "3a13e478-2d6d-4d89-838a-d79f1ee43c63"
+  }
+]
