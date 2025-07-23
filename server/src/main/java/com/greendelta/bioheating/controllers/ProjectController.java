@@ -73,7 +73,7 @@ public class ProjectController {
 		Authentication auth,
 		@RequestParam("name") String name,
 		@RequestParam("climateRegionId") int climateRegionId,
-		@RequestParam("description") String description,
+		@RequestParam(value = "description", required = false) String description,
 		@RequestParam("file") MultipartFile file
 	) {
 
@@ -93,7 +93,7 @@ public class ProjectController {
 
 		var project = new Project()
 			.name(name)
-			.description( description)
+			.description(description)
 			.climateRegion(region)
 			.user(user);
 

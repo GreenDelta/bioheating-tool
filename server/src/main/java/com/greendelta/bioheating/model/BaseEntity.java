@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +22,7 @@ public abstract class BaseEntity {
 		pkColumnValue = "entity_seq",
 		allocationSize = 150,
 		table = "tbl_sequences")
+	@JsonProperty
 	private long id;
 
 	public long id() {
