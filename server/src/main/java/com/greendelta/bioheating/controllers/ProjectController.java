@@ -1,9 +1,5 @@
 package com.greendelta.bioheating.controllers;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.UUID;
 import java.util.function.Function;
 
 import org.springframework.http.ResponseEntity;
@@ -18,10 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
 import com.greendelta.bioheating.services.ProjectService;
+import com.greendelta.bioheating.services.UploadService;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
 import com.greendelta.bioheating.util.Strings;
@@ -33,13 +31,18 @@ public class ProjectController {
 	private final Database db;
 	private final ProjectService projects;
 	private final UserService users;
+	private final UploadService upload;
 
 	public ProjectController(
-		Database db, ProjectService projects, UserService users
+		Database db,
+		ProjectService projects,
+		UserService users,
+		UploadService upload
 	) {
 		this.db = db;
 		this.projects = projects;
 		this.users = users;
+		this.upload = upload;
 	}
 
 	@GetMapping
@@ -69,7 +72,7 @@ public class ProjectController {
 	public ResponseEntity<?> createProject(
 		Authentication auth,
 		@RequestParam("name") String name,
-		@RequestParam("climateRegion") int climateRegionId,
+		@RequestParam("climateRegionId") int climateRegionId,
 		@RequestParam("description") String description,
 		@RequestParam("file") MultipartFile file
 	) {
@@ -83,31 +86,22 @@ public class ProjectController {
 		if (file.isEmpty())
 			return Http.badRequest("a CityGML file is required");
 
+		var region = db.getForId(ClimateRegion.class, climateRegionId);
+		if (region == null)
+			return Http.badRequest(
+				"no climate region found for ID=" + climateRegionId);
 
+		var project = new Project()
+			.name(name)
+			.description( description)
+			.climateRegion(region)
+			.user(user);
 
-		try {
-
-			// copy the uploaded file
-			var uploadDir = Paths.get("uploads");
-			if (!Files.exists(uploadDir)) {
-				Files.createDirectories(uploadDir);
-			}
-			var path = uploadDir.resolve(UUID.randomUUID() + ".gml");
-			try (var stream = file.getInputStream()) {
-				Files.copy(stream, path);
-			}
-
-			// create the project
-			var res = projects.createProject(
-				user, name, description, path.toFile());
-			if (res.hasError())
-				return Http.serverError(res.error());
-			var info = ProjectInfo.of(res.value());
-			return Http.ok(info);
-
-		} catch (IOException e) {
-			return Http.serverError("project creation failed: " + e.getMessage());
-		}
+		var res = upload.useFile(file, (gml) -> projects.addMap(project, gml));
+		if (res.hasError())
+			return Http.serverError(res.error());
+		var info = ProjectInfo.of(res.value());
+		return Http.ok(info);
 	}
 
 	@DeleteMapping("/{id}")

@@ -42,7 +42,7 @@ export const ProjectForm = () => {
 		setError(null);
 
 		const res = await api.createProject({
-			climateRegion: region.id,
+			climateRegionId: region.id,
 			name: data.name!,
 			file: data.file!,
 			description: data.description,

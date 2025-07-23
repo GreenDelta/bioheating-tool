@@ -12,7 +12,6 @@ import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
 import com.greendelta.bioheating.util.Res;
-import com.greendelta.bioheating.util.Strings;
 
 @Service
 public class ProjectService {
@@ -40,22 +39,10 @@ public class ProjectService {
 			: Optional.empty();
 	}
 
-	public Res<Project> createProject(
-		User user, String name, String description, File gml
-	) {
-		if (user == null)
-			return Res.error("a user is required");
-		if (Strings.isNil(name))
-			return Res.error("a project name is required");
-		if (gml == null || !gml.exists())
-			return Res.error("a CityGML file is required");
-
+	public Res<Project> addMap(Project project, File gml) {
+		if (project == null || gml == null)
+			return Res.error("no project or gml file provided");
 		try {
-			var project = new Project()
-				.name(name)
-				.description(description)
-				.user(user);
-			db.insert(project);
 			return new CityGmlImport(db, project, gml)
 				.withOsmImport(true)
 				.call();

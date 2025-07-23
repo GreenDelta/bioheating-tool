@@ -86,7 +86,7 @@ export async function getProjects(): Promise<Res<ProjectInfo[]>> {
 }
 
 interface NewProjectData {
-	climateRegion: number,
+	climateRegionId: number,
 	name: string,
 	description?: string,
 	file: File,
@@ -95,7 +95,7 @@ interface NewProjectData {
 export async function createProject(d: NewProjectData): Promise<Res<ProjectInfo>> {
 
 	const data = new FormData();
-	data.append('climateRegion', d.climateRegion.toString());
+	data.append('climateRegionId', d.climateRegionId.toString());
 	data.append('name', d.name);
 	data.append('file', d.file);
 	if (d.description) {
