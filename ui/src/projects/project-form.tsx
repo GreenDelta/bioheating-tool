@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import * as api from '../api';
-import { ClimateRegion } from '../model';
+import { ClimateRegion, Fuel } from '../model';
+
+interface FormInput {
+	regions: ClimateRegion[];
+	fuels: Fuel[];
+}
 
 interface FormData {
 	name?: string;
 	description?: string;
 	region: ClimateRegion;
+	fuel: Fuel;
 	file?: File | null;
 	error?: string | null;
 }
 
-function useFormData(regions: ClimateRegion[]) {
 
+function useFormData() {
+
+	const { regions, fuels }: FormInput = useLoaderData();
 	const [data, setData] = useState<FormData>({
 		name: "New project",
 		region: regions[0],
+		fuel: fuels[0],
 	});
 
 	const update = (diff: Partial<FormData>) => {
@@ -26,7 +35,7 @@ function useFormData(regions: ClimateRegion[]) {
 		}
 	}
 
-	return { data, update }
+	return { regions, fuels, data, update };
 }
 
 function isComplete(data: FormData): boolean {
@@ -39,10 +48,9 @@ function isComplete(data: FormData): boolean {
 export const ProjectForm = () => {
 
 	const navigate = useNavigate();
-	const regions: ClimateRegion[] = useLoaderData();
-	const { data, update } = useFormData(regions);
-	const [loading, setLoading] = useState(false);
 
+	const { regions, fuels, data, update } = useFormData();
+	const [loading, setLoading] = useState(false);
 
 	const onOk = async () => {
 		if (!isComplete(data)) {
@@ -52,6 +60,7 @@ export const ProjectForm = () => {
 		setLoading(true);
 		const res = await api.createProject({
 			climateRegionId: data.region.id,
+			fuelId: data.fuel.id,
 			name: data.name!,
 			file: data.file!,
 			description: data.description,
@@ -95,25 +104,9 @@ export const ProjectForm = () => {
 						/>
 					</div>
 
-					<div className="mb-3">
-						<label className="form-label">Climate region</label>
-						<select
-							className="form-select"
-							value={data.region.id}
-							onChange={(e) => {
-								const id = parseInt(e.target.value);
-								const region = regions.find(r => r.id === id);
-								if (region) {
-									update({ region })
-								}
-							}}>
-							{regions.map(r => (
-								<option key={r.id} value={r.id}>
-									{r.number}. {r.name} ({r.stationName})
-								</option>
-							))}
-						</select>
-					</div>
+					<RegionCombo data={data} regions={regions} update={update} />
+
+					<FuelCombo data={data} fuels={fuels} update={update} />
 
 					<div className="mb-3">
 						<label className="form-label">CityGML</label>
@@ -168,6 +161,62 @@ const ErrorRow = ({ err }: { err: string | null }) => {
 	return (
 		<div className="alert alert-danger" role="alert">
 			{err}
+		</div>
+	);
+};
+
+const RegionCombo = ({data, regions, update}: {
+	data: FormData,
+	regions: ClimateRegion[],
+	update: (fd: Partial<FormData>) => void
+}) => {
+	return (
+		<div className="mb-3">
+			<label className="form-label">Climate region</label>
+			<select
+				className="form-select"
+				value={data.region.id}
+				onChange={(e) => {
+					const id = parseInt(e.target.value);
+					const region = regions.find(r => r.id === id);
+					if (region) {
+						update({ region })
+					}
+				}}>
+				{regions.map(r => (
+					<option key={r.id} value={r.id}>
+						{r.number}. {r.name} ({r.stationName})
+					</option>
+				))}
+			</select>
+		</div>
+	);
+};
+
+const FuelCombo = ({data, fuels, update}: {
+	data: FormData,
+	fuels: Fuel[],
+	update: (fd: Partial<FormData>) => void
+}) => {
+	return (
+		<div className="mb-3">
+			<label className="form-label">Default fuel</label>
+			<select
+				className="form-select"
+				value={data.fuel.id}
+				onChange={(e) => {
+					const id = parseInt(e.target.value);
+					const fuel = fuels.find(f => f.id === id);
+					if (fuel) {
+						update({ fuel })
+					}
+				}}>
+				{fuels.map(f => (
+					<option key={f.id} value={f.id}>
+						{f.name} ({f.unit})
+					</option>
+				))}
+			</select>
 		</div>
 	);
 };

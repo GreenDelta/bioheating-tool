@@ -122,13 +122,7 @@ function main() {
 						{
 							path: "projects/new",
 							element: <ProjectForm />,
-							loader: async () => {
-								const res = await api.getClimateRegions();
-								if (res.isErr || res.value.length === 0) {
-									return redirect("/ui/projects?error=climate-regions-unavailable");
-								}
-								return res.value;
-							},
+							loader: loadProjectFormData,
 						},
 						{
 							path: "projects/:id",
@@ -149,6 +143,20 @@ function main() {
 			<RouterProvider router={router} />
 		</React.StrictMode>
 	);
+}
+
+async function loadProjectFormData() {
+	const regRes = await api.getClimateRegions();
+	if (regRes.isErr || regRes.value.length === 0) {
+		return redirect("/ui/projects?error=climate-regions-unavailable");
+	}
+	const fuelRes = await api.getFuels();
+	if (fuelRes.isErr || fuelRes.value.length === 0) {
+		return redirect("/ui/projects?error=fuels-unavailable");
+	}
+	return {
+		regions: regRes.value, fuels: fuelRes.value
+	}
 }
 
 main();

@@ -26,40 +26,6 @@ public class Fuel extends BaseEntity {
 	@Column(name = "calorific_value")
 	private double calorificValue;
 
-	// Standard getters and setters for Jackson
-	public String getRefId() {
-		return refId;
-	}
-
-	public void setRefId(String refId) {
-		this.refId = refId;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getUnit() {
-		return unit;
-	}
-
-	public void setUnit(String unit) {
-		this.unit = unit;
-	}
-
-	public double getCalorificValue() {
-		return calorificValue;
-	}
-
-	public void setCalorificValue(double calorificValue) {
-		this.calorificValue = calorificValue;
-	}
-
-	// Fluent API methods
 	public String refId() {
 		return refId;
 	}
