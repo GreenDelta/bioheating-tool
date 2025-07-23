@@ -1,5 +1,6 @@
 package com.greendelta.bioheating.model.client;
 
+import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.util.Res;
 
@@ -22,13 +23,13 @@ public record ClientProject(
 		return Res.of(p);
 	}
 
-	public void writeUpdatesTo(Project project) {
+	public void writeUpdatesTo(Database db, Project project) {
 		if (project == null)
 			return;
 		project.name(name);
 		project.description(description);
 		if (project.map() != null && map != null) {
-			MapSync.updateFromClient(project.map(), map);
+			MapSync.updateFromClient(db, project.map(), map);
 		}
 	}
 
