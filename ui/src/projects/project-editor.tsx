@@ -8,7 +8,7 @@ import { MultiPanel } from './panel-multi';
 import { SaveIcon } from '../icons';
 import * as api from '../api';
 
-interface ProjectEditorData {
+interface InputData {
 	project: Project;
 	fuels: Fuel[];
 }
@@ -19,12 +19,7 @@ export const ProjectEditor = () => {
 	const [isDirty, setDirty] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
-
-	const res: api.Res<ProjectEditorData> = useLoaderData();
-	if (res.isErr) {
-		return <div style={{ color: 'red' }}>Error: {res.error}</div>;
-	}
-	const { project, fuels } = res.value;
+	const { project, fuels }: InputData = useLoaderData();
 
 	const handlePanelChange = () => {
 		setDirty(true);
@@ -99,7 +94,7 @@ export const ProjectEditor = () => {
 	);
 };
 
-function panelOf(selection: GeoFeature[], fuels: Fuel[], onChange: () => void): React.JSX.Element {
+function panelOf(selection: GeoFeature[], fuels: Fuel[], onChange: () => void) {
 	if (!selection || selection.length === 0) {
 		return <div></div>;
 	}

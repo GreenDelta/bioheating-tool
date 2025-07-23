@@ -39,7 +39,7 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 				value={data.fuelId ? data.fuelId.toString() : ""}
 				disabled={!data.isHeated}
 				options={[
-					{ value: "", label: "No fuel selected" },
+					{ value: "", label: "" },
 					...fuels.map(fuel => ({
 						value: fuel.id.toString(),
 						label: `${fuel.name} (${fuel.unit})`

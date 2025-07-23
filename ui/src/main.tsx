@@ -9,7 +9,8 @@ import {
 	useParams,
 	useOutletContext,
 	Navigate,
-	redirect
+	redirect,
+	LoaderFunctionArgs
 } from 'react-router-dom';
 
 import { User } from './model';
@@ -127,25 +128,7 @@ function main() {
 						{
 							path: "projects/:id",
 							Component: ProjectEditor,
-							loader: async ({ params }) => {
-								const projectId = parseInt(params.id || '0', 10);
-								const [projectRes, fuelsRes] = await Promise.all([
-									api.getProject(projectId),
-									api.getFuels()
-								]);
-
-								if (projectRes.isErr) {
-									return projectRes;
-								}
-								if (fuelsRes.isErr) {
-									return api.Res.err(`Failed to load fuels: ${fuelsRes.error}`);
-								}
-
-								return api.Res.ok({
-									project: projectRes.value,
-									fuels: fuelsRes.value
-								});
-							}
+							loader: loadProjectData,
 						}
 					]
 				}
@@ -170,9 +153,24 @@ async function loadProjectFormData() {
 	if (fuelRes.isErr || fuelRes.value.length === 0) {
 		return redirect("/ui/projects?error=fuels-unavailable");
 	}
-	return {
-		regions: regRes.value, fuels: fuelRes.value
+	return { regions: regRes.value, fuels: fuelRes.value }
+}
+
+async function loadProjectData({ params }: LoaderFunctionArgs) {
+	const projectId = parseInt(params.id || '0', 10);
+	const [projectRes, fuelsRes] = await Promise.all([
+		api.getProject(projectId),
+		api.getFuels()
+	]);
+
+	if (projectRes.isErr) {
+		return redirect(`/ui/projects?error=project-error-${projectId}`);
 	}
+	if (fuelsRes.isErr || fuelsRes.value.length === 0) {
+		return redirect("/ui/projects?error=fuels-unavailable");
+	}
+
+	return { project: projectRes.value, fuels: fuelsRes.value };
 }
 
 main();
