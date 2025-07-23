@@ -1,0 +1,14 @@
+[
+	{
+		"refId": "60c329a3-cee9-460d-9c21-ae39701b6e07",
+		"name": "Erdgas",
+		"unit": "m3",
+		"calorificValue": 10.0
+	},
+	{
+		"refId": "7c206ce9-caf4-4390-8958-6d42822ac282",
+		"name": "Heizöl",
+		"unit": "l",
+		"calorificValue": 10
+	}
+]

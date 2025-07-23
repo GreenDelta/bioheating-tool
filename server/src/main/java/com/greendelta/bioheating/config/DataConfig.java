@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.User;
 
 import jakarta.annotation.PreDestroy;
@@ -64,6 +65,13 @@ public class DataConfig {
 		} else {
 			log.error("failed to import climate regions");
 		}
+
+		int fuelCount = importFuels(db);
+		if (fuelCount >= 0) {
+			log.info("import {} fuels", fuelCount);
+		} else {
+			log.error("failed to import fuels");
+		}
 	}
 
 	private void createDefaultAdmin(Database db) {
@@ -92,6 +100,27 @@ public class DataConfig {
 		} catch (IOException e) {
 			LoggerFactory.getLogger(getClass())
 				.error("failed to import climate regions", e);
+			return -1;
+		}
+	}
+
+	private int importFuels(Database db) {
+		var stream = getClass().getResourceAsStream("fuels.json");
+		if (stream == null)
+			return -1;
+
+		try (stream) {
+			var mapper = new ObjectMapper();
+			var typeRef = new TypeReference<List<Fuel>>() {
+			};
+			var fuels = mapper.readValue(stream, typeRef);
+			for (var data : fuels) {
+				db.insert(data);
+			}
+			return fuels.size();
+		} catch (IOException e) {
+			LoggerFactory.getLogger(getClass())
+				.error("failed to import fuels", e);
 			return -1;
 		}
 	}

@@ -23,6 +23,14 @@ export interface ClimateRegion {
 	stationId: string;
 }
 
+export interface Fuel {
+	id: number;
+	refId: string;
+	name: string;
+	unit: string;
+	calorificValue: number;
+}
+
 export interface Project {
 	id: number;
 	name: string;

@@ -30,6 +30,10 @@ public class Project extends BaseEntity {
 	@JoinColumn(name = "f_climate_region")
 	private ClimateRegion climateRegion;
 
+	@ManyToOne
+	@JoinColumn(name = "f_default_fuel")
+	private Fuel defaultFuel;
+
 	public String name() {
 		return name;
 	}
@@ -71,6 +75,15 @@ public class Project extends BaseEntity {
 
 	public Project climateRegion(ClimateRegion climateRegion) {
 		this.climateRegion = climateRegion;
+		return this;
+	}
+
+	public Fuel defaultFuel() {
+		return defaultFuel;
+	}
+
+	public Project defaultFuel(Fuel defaultFuel) {
+		this.defaultFuel = defaultFuel;
 		return this;
 	}
 

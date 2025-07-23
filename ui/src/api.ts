@@ -1,4 +1,4 @@
-import { Credentials, User, ProjectInfo, Project, ClimateRegion } from "./model";
+import { Credentials, User, ProjectInfo, Project, ClimateRegion, Fuel } from "./model";
 
 export class Res<T> {
 
@@ -163,5 +163,15 @@ export async function getClimateRegions(): Promise<Res<ClimateRegion[]>> {
 	}
 	const msg = await r.text();
 	return Res.err(`failed to get climate regions: ${r.status} | ${msg}`);
+}
+
+export async function getFuels(): Promise<Res<Fuel[]>> {
+	const r = await fetch("/api/fuels");
+	if (r.status === 200) {
+		const fuels = await r.json();
+		return Res.ok(fuels);
+	}
+	const msg = await r.text();
+	return Res.err(`failed to get fuels: ${r.status} | ${msg}`);
 }
 

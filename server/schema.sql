@@ -38,7 +38,8 @@ create table tbl_buildings (
     climate_zone int,
     heat_demand double precision,
     is_heated boolean,
-    inclusion varchar
+    inclusion varchar,
+    f_fuel int
 );
 
 drop table if exists tbl_streets cascade;
@@ -65,6 +66,15 @@ create table tbl_climate_regions (
     station_id varchar
 );
 
+drop table if exists tbl_fuels cascade;
+create table tbl_fuels (
+    id int not null primary key,
+    ref_id varchar,
+    name varchar,
+    unit varchar,
+    calorific_value double precision
+);
+
 drop table if exists tbl_projects cascade;
 create table tbl_projects (
     id int not null primary key,
@@ -72,5 +82,6 @@ create table tbl_projects (
     description text,
     f_map int,
     f_user int,
-    f_climate_region int
+    f_climate_region int,
+    f_default_fuel int
 );
