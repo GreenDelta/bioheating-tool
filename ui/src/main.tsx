@@ -8,7 +8,8 @@ import {
 	createBrowserRouter,
 	useParams,
 	useOutletContext,
-	Navigate
+	Navigate,
+	redirect
 } from 'react-router-dom';
 
 import { User } from './model';
@@ -122,8 +123,12 @@ function main() {
 							path: "projects/new",
 							element: <ProjectForm />,
 							loader: async () => {
-								return api.getClimateRegions();
-							}
+								const res = await api.getClimateRegions();
+								if (res.isErr || res.value.length === 0) {
+									return redirect("/ui/projects?error=climate-regions-unavailable");
+								}
+								return res.value;
+							},
 						},
 						{
 							path: "projects/:id",

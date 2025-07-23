@@ -6,11 +6,31 @@ import { ClimateRegion } from '../model';
 interface FormData {
 	name?: string;
 	description?: string;
+	region: ClimateRegion;
 	file?: File | null;
+	error?: string | null;
+}
+
+function useFormData(regions: ClimateRegion[]) {
+
+	const [data, setData] = useState<FormData>({
+		name: "New project",
+		region: regions[0],
+	});
+
+	const update = (diff: Partial<FormData>) => {
+		if (diff.error) {
+			setData(prev => ({ ...prev, error: diff.error }));
+		} else {
+			setData(prev => ({ ...prev, ...diff, error: null }));
+		}
+	}
+
+	return { data, update }
 }
 
 function isComplete(data: FormData): boolean {
-	if (!data || !data.name || !data.file)
+	if (!data || !data.name || !data.file || !data.region)
 		return false;
 	var name = data.name.trim();
 	return name.length > 0;
@@ -19,30 +39,19 @@ function isComplete(data: FormData): boolean {
 export const ProjectForm = () => {
 
 	const navigate = useNavigate();
-	const [data, setData] = useState<FormData>({});
+	const regions: ClimateRegion[] = useLoaderData();
+	const { data, update } = useFormData(regions);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
 
-	const res: api.Res<ClimateRegion[]> = useLoaderData();
-	if (res.isErr) {
-		return <div style={{ color: "red" }}>Error: {res.error}</div>;
-	}
-	const regions = res.value;
-	if(regions.length === 0) {
-		return <div style={{ color: "red" }}>Failed to load regions from server</div>;
-	}
-	const [region, setRegion] = useState<ClimateRegion>(regions[0]);
 
-	const handleCreate = async () => {
+	const onOk = async () => {
 		if (!isComplete(data)) {
 			return;
 		}
 
 		setLoading(true);
-		setError(null);
-
 		const res = await api.createProject({
-			climateRegionId: region.id,
+			climateRegionId: data.region.id,
 			name: data.name!,
 			file: data.file!,
 			description: data.description,
@@ -50,10 +59,10 @@ export const ProjectForm = () => {
 		setLoading(false);
 
 		if (res.isErr) {
-			setError(res.error);
-			return;
+			update({ error: res.error });
+		} else {
+			navigate("/ui/projects");
 		}
-		navigate("/ui/projects");
 	};
 
 	return (
@@ -62,7 +71,9 @@ export const ProjectForm = () => {
 				<div className="col-md-7">
 					<h1>New project</h1>
 
-					<ErrorRow err={error} />
+					{data.error
+						? <ErrorRow err={data.error} />
+						: <></>}
 
 					<div className="mb-3">
 						<label className="form-label">Name</label>
@@ -70,10 +81,7 @@ export const ProjectForm = () => {
 							type="text"
 							className="form-control"
 							value={data.name || ''}
-							onChange={(e) => {
-								setData({ ...data, name: e.target.value });
-								setError(null);
-							}}
+							onChange={(e) => update({ name: e.target.value })}
 						/>
 					</div>
 
@@ -82,10 +90,7 @@ export const ProjectForm = () => {
 						<textarea
 							className="form-control"
 							value={data.description || ''}
-							onChange={(e) => {
-								setData({ ...data, description: e.target.value });
-								setError(null);
-							}}
+							onChange={(e) => update({ description: e.target.value })}
 							rows={2}
 						/>
 					</div>
@@ -94,13 +99,12 @@ export const ProjectForm = () => {
 						<label className="form-label">Climate region</label>
 						<select
 							className="form-select"
-							value={region.id}
+							value={data.region.id}
 							onChange={(e) => {
-								const selectedId = parseInt(e.target.value);
-								const selectedRegion = regions.find(r => r.id === selectedId);
-								if (selectedRegion) {
-									setRegion(selectedRegion);
-									setError(null);
+								const id = parseInt(e.target.value);
+								const region = regions.find(r => r.id === id);
+								if (region) {
+									update({ region })
 								}
 							}}>
 							{regions.map(r => (
@@ -119,8 +123,7 @@ export const ProjectForm = () => {
 							accept=".gml,.xml"
 							onChange={(e) => {
 								const file = e.target.files?.[0] || null;
-								setData({ ...data, file });
-								setError(null);
+								update({ file });
 							}}
 						/>
 						{data.file && (
@@ -140,7 +143,7 @@ export const ProjectForm = () => {
 						<button
 							className="btn btn-primary"
 							disabled={loading || !isComplete(data)}
-							onClick={handleCreate}>
+							onClick={onOk}>
 							Create project
 						</button>
 					</div>
