@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { GeoFeature, Inclusion } from '../model';
+import { GeoFeature, Inclusion, Fuel } from '../model';
 import { BuildingData, BuildingProps } from './panel-data';
 import { StringField, NumberField, CheckboxField, SelectField } from './fields';
 
 interface Props {
 	feature: GeoFeature;
+	fuels: Fuel[];
 	onChange: () => void;
 }
 
-export const BuildingPanel = ({ feature, onChange }: Props) => {
+export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
 	useEffect(() => {
 		setData(BuildingData.of(feature));
@@ -33,6 +34,19 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 			<NumberField label="Heat demand (kWh)" value={data.heatDemand} step="0.1"
 				disabled={!data.isHeated}
 				onChange={value => put({ heatDemand: value })} />
+
+			<SelectField label="Fuel"
+				value={data.fuelId ? data.fuelId.toString() : ""}
+				disabled={!data.isHeated}
+				options={[
+					{ value: "", label: "No fuel selected" },
+					...fuels.map(fuel => ({
+						value: fuel.id.toString(),
+						label: `${fuel.name} (${fuel.unit})`
+					}))
+				]}
+				onChange={value => put({ fuelId: value === "" ? undefined : parseInt(value) })}
+			/>
 
 			<SelectField label="Inclusion"
 				value={!data.isHeated ? "Excluded" : data.inclusion}

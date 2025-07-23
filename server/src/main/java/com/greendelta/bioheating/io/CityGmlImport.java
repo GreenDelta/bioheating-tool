@@ -61,6 +61,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		for (var b : model.buildings()) {
 			var building = convertBuilding(b);
 			if (building != null) {
+				building.fuel(project.defaultFuel());
 				map.buildings().add(building);
 			}
 		}

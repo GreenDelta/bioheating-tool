@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useLoaderData } from 'react-router-dom';
-import { GeoFeature, Project, isBuilding, isStreet } from '../model';
+import { GeoFeature, Project, Fuel, isBuilding, isStreet } from '../model';
 import { Map } from './map';
 import { BuildingPanel } from './panel-building';
 import { StreetPanel } from './panel-street';
 import { MultiPanel } from './panel-multi';
 import { SaveIcon } from '../icons';
 import * as api from '../api';
+
+interface ProjectEditorData {
+	project: Project;
+	fuels: Fuel[];
+}
 
 export const ProjectEditor = () => {
 
@@ -15,11 +20,11 @@ export const ProjectEditor = () => {
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
 
-	const res: api.Res<Project> = useLoaderData();
+	const res: api.Res<ProjectEditorData> = useLoaderData();
 	if (res.isErr) {
 		return <div style={{ color: 'red' }}>Error: {res.error}</div>;
 	}
-	const project = res.value;
+	const { project, fuels } = res.value;
 
 	const handlePanelChange = () => {
 		setDirty(true);
@@ -86,7 +91,7 @@ export const ProjectEditor = () => {
 					</div>
 
 					<div className="col-md-4">
-						{panelOf(selection, handlePanelChange)}
+						{panelOf(selection, fuels, handlePanelChange)}
 					</div>
 				</div>
 			</div>
@@ -94,7 +99,7 @@ export const ProjectEditor = () => {
 	);
 };
 
-function panelOf(selection: GeoFeature[], onChange: () => void): React.JSX.Element {
+function panelOf(selection: GeoFeature[], fuels: Fuel[], onChange: () => void): React.JSX.Element {
 	if (!selection || selection.length === 0) {
 		return <div></div>;
 	}
@@ -103,7 +108,7 @@ function panelOf(selection: GeoFeature[], onChange: () => void): React.JSX.Eleme
 	}
 	const f = selection[0];
 	return isBuilding(f)
-		? <BuildingPanel feature={f} onChange={onChange} />
+		? <BuildingPanel feature={f} fuels={fuels} onChange={onChange} />
 		: <StreetPanel feature={f} onChange={onChange} />
 }
 

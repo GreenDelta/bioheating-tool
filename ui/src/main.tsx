@@ -128,7 +128,23 @@ function main() {
 							path: "projects/:id",
 							Component: ProjectEditor,
 							loader: async ({ params }) => {
-								return api.getProject(parseInt(params.id || '0', 10));
+								const projectId = parseInt(params.id || '0', 10);
+								const [projectRes, fuelsRes] = await Promise.all([
+									api.getProject(projectId),
+									api.getFuels()
+								]);
+
+								if (projectRes.isErr) {
+									return projectRes;
+								}
+								if (fuelsRes.isErr) {
+									return api.Res.err(`Failed to load fuels: ${fuelsRes.error}`);
+								}
+
+								return api.Res.ok({
+									project: projectRes.value,
+									fuels: fuelsRes.value
+								});
 							}
 						}
 					]

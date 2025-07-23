@@ -39,6 +39,9 @@ public record GeoFeature(
 		props.put("heatDemand", b.heatDemand());
 		props.put("isHeated", b.isHeated());
 		props.put("inclusion", b.inclusion());
+		if (b.fuel() != null) {
+			props.put("fuelId", b.fuel().id());
+		}
 		return Res.of(new GeoFeature("Feature", polygon, props));
 	}
 

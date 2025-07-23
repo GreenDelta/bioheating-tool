@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
 import com.greendelta.bioheating.services.ProjectService;
@@ -73,6 +74,7 @@ public class ProjectController {
 		Authentication auth,
 		@RequestParam("name") String name,
 		@RequestParam("climateRegionId") int climateRegionId,
+		@RequestParam("fuelId") int fuelId,
 		@RequestParam(value = "description", required = false) String description,
 		@RequestParam("file") MultipartFile file
 	) {
@@ -91,10 +93,16 @@ public class ProjectController {
 			return Http.badRequest(
 				"no climate region found for ID=" + climateRegionId);
 
+		var fuel = db.getForId(Fuel.class, fuelId);
+		if (fuel == null)
+			return Http.badRequest(
+				"no fuel found for ID=" + fuelId);
+
 		var project = new Project()
 			.name(name)
 			.description(description)
 			.climateRegion(region)
+			.defaultFuel(fuel)
 			.user(user);
 
 		var res = upload.useFile(file, (gml) -> projects.addMap(project, gml));
