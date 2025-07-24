@@ -71,7 +71,7 @@ public class SophenaExport {
 	}
 
 	private ObjectNode mapBuilding(Building b) {
-		if (b == null || b.inclusion() != Inclusion.REQUIRED)
+		if (b == null || !b.isHeated() || b.inclusion() != Inclusion.REQUIRED)
 			return null;
 
 		var obj = json.objectNode()
