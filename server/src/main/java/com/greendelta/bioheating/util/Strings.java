@@ -10,6 +10,10 @@ public class Strings {
 		return s == null || s.isBlank();
 	}
 
+	public static boolean isNotNil(String s) {
+		return !isNil(s);
+	}
+
 	public static boolean eq(String a, String b) {
 		var nilA = isNil(a);
 		var nilB = isNil(b);

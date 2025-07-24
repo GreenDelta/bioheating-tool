@@ -1,7 +1,9 @@
 package com.greendelta.bioheating.controllers;
 
+import java.nio.file.Files;
 import java.util.function.Function;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.greendelta.bioheating.io.sophena.SophenaExport;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Fuel;
@@ -23,6 +26,7 @@ import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
+import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
 
 @RestController
@@ -32,18 +36,18 @@ public class ProjectController {
 	private final Database db;
 	private final ProjectService projects;
 	private final UserService users;
-	private final FileService upload;
+	private final FileService files;
 
 	public ProjectController(
 		Database db,
 		ProjectService projects,
 		UserService users,
-		FileService upload
+		FileService files
 	) {
 		this.db = db;
 		this.projects = projects;
 		this.users = users;
-		this.upload = upload;
+		this.files = files;
 	}
 
 	@GetMapping
@@ -66,6 +70,35 @@ public class ProjectController {
 			return res.hasError()
 				? Http.serverError("failed to convert project: " + res.error())
 				: Http.ok(res.value());
+		});
+	}
+
+	@GetMapping("/{id}/sophena-package")
+	public ResponseEntity<?> getSophenaPackage(
+		Authentication auth, @PathVariable long id
+	) {
+		return withProject(auth, id, project -> {
+			Res<byte[]> bytes = files.withTempFile(".zip", file -> {
+				var res = SophenaExport.write(project, file);
+				if (res.hasError())
+					return res.wrapError(
+						"failed to write Sophena package: " + res.error());
+				try {
+					var bs = Files.readAllBytes(file.toPath());
+					return Res.of(bs);
+				} catch (Exception e) {
+					return Res.error("failed to read exported Sophena package", e);
+				}
+			});
+
+			var name = Strings.isNotNil(project.name())
+				? project.name().replaceAll("\\W+", "_")
+				: "project";
+			return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+					"attachment; filename=\"" + name + ".sophena\"")
+				.header(HttpHeaders.CONTENT_TYPE, "application/zip")
+				.body(bytes.value());
 		});
 	}
 
@@ -105,7 +138,7 @@ public class ProjectController {
 			.defaultFuel(fuel)
 			.user(user);
 
-		var res = upload.useUpload(file, (gml) -> projects.addMap(project, gml));
+		var res = files.useUpload(file, (gml) -> projects.addMap(project, gml));
 		if (res.hasError())
 			return Http.serverError(res.error());
 		var info = ProjectInfo.of(res.value());
