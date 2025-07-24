@@ -19,8 +19,8 @@ import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
+import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
-import com.greendelta.bioheating.services.UploadService;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
 import com.greendelta.bioheating.util.Strings;
@@ -32,13 +32,13 @@ public class ProjectController {
 	private final Database db;
 	private final ProjectService projects;
 	private final UserService users;
-	private final UploadService upload;
+	private final FileService upload;
 
 	public ProjectController(
 		Database db,
 		ProjectService projects,
 		UserService users,
-		UploadService upload
+		FileService upload
 	) {
 		this.db = db;
 		this.projects = projects;
@@ -105,7 +105,7 @@ public class ProjectController {
 			.defaultFuel(fuel)
 			.user(user);
 
-		var res = upload.useFile(file, (gml) -> projects.addMap(project, gml));
+		var res = upload.useUpload(file, (gml) -> projects.addMap(project, gml));
 		if (res.hasError())
 			return Http.serverError(res.error());
 		var info = ProjectInfo.of(res.value());

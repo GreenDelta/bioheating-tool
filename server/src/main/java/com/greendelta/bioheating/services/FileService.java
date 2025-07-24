@@ -16,11 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.greendelta.bioheating.util.Res;
 
 @Service
-public class UploadService {
+public class FileService {
 
 	private final Path workDir;
 
-	public UploadService(@Value("${work.dir}") String path) {
+	public FileService(@Value("${work.dir}") String path) {
 		workDir = Paths.get(path);
 		try {
 			if (!Files.exists(workDir)) {
@@ -33,7 +33,7 @@ public class UploadService {
 
 	/// Uploads the file, calls the given function on that file, and deletes the
 	/// file afterward.
-	public <T> Res<T> useFile(MultipartFile f, Function<File, Res<T>> fn) {
+	public <T> Res<T> useUpload(MultipartFile f, Function<File, Res<T>> fn) {
 		if (f == null)
 			return Res.error("no upload file provided");
 		if (fn == null)
@@ -50,21 +50,33 @@ public class UploadService {
 			return Res.error("failed upload file", e);
 		}
 
-		Res<T> res;
 		try {
-			res = fn.apply(file);
+			return fn.apply(file);
 		} catch (Exception e) {
-			res = Res.error("failed to call file handler", e);
+			return Res.error("failed to call file handler", e);
 		} finally {
-			try {
-				Files.delete(file.toPath());
-			} catch (Exception e) {
-				LoggerFactory.getLogger(getClass())
-					.error("failed to delete file in work dir", e);
-			}
+			drop(file.toPath());
 		}
+	}
 
-		return res;
+	public <T> Res<T> withTempFile(String extension, Function<File, Res<T>> fn) {
+		var file = workDir.resolve(UUID.randomUUID() + extension);
+		try {
+			return fn.apply(file.toFile());
+		} catch (Exception e) {
+			return Res.error("failed to call function on file", e);
+		} finally {
+			drop(file);
+		}
+	}
+
+	private void drop(Path file) {
+		try {
+			Files.delete(file);
+		} catch (Exception e) {
+			LoggerFactory.getLogger(getClass())
+				.error("failed to delete file in work dir", e);
+		}
 	}
 
 }
