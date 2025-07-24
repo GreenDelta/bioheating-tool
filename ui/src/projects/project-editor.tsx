@@ -6,6 +6,7 @@ import { BuildingPanel } from './panel-building';
 import { StreetPanel } from './panel-street';
 import { MultiPanel } from './panel-multi';
 import { SaveIcon } from '../icons';
+import { DownloadIcon } from '../icons';
 import * as api from '../api';
 
 interface InputData {
@@ -18,7 +19,9 @@ export const ProjectEditor = () => {
 	const [selection, setSelection] = useState<GeoFeature[]>([]);
 	const [isDirty, setDirty] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isDownloading, setIsDownloading] = useState(false);
 	const [saveError, setSaveError] = useState<string | null>(null);
+	const [downloadError, setDownloadError] = useState<string | null>(null);
 	const { project, fuels }: InputData = useLoaderData();
 
 	const handlePanelChange = () => {
@@ -48,20 +51,53 @@ export const ProjectEditor = () => {
 		}
 	};
 
+	const handleDownload = async () => {
+		if (isDownloading) return;
+
+		setIsDownloading(true);
+		setDownloadError(null);
+
+		try {
+			const res = await api.downloadSophenaPackage(project.id);
+			if (!res.isOk) {
+				setDownloadError(res.error);
+			}
+		} catch (error) {
+			setDownloadError(error instanceof Error
+				? error.message
+				: 'Unknown error occurred');
+		} finally {
+			setIsDownloading(false);
+		}
+	};
+
 
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-3">
 				<h2>Project: {project.name}{isDirty ? "*" : ""}</h2>
-				<button
-					className={`btn ${isDirty ? 'btn-primary' : 'btn-outline-secondary'}`}
-					onClick={handleSave}
-					disabled={!isDirty || isSaving}
-					title={isDirty ? 'Save changes' : 'No changes to save'}
-				>
-					<SaveIcon />
-					{isSaving ? ' Saving...' : ' Save'}
-				</button>
+				<div className="d-flex">
+					<button
+						className={`btn ${isDirty ? 'btn-primary' : 'btn-outline-secondary'} me-2`}
+						onClick={handleSave}
+						disabled={!isDirty || isSaving}
+						title={isDirty ? 'Save changes' : 'No changes to save'}
+						style={{ width: '120px' }}
+					>
+						<SaveIcon />
+						{isSaving ? ' Saving...' : ' Save'}
+					</button>
+					<button
+						className="btn btn-success"
+						onClick={handleDownload}
+						disabled={isDownloading}
+						title="Download Sophena package"
+						style={{ width: '120px' }}
+					>
+						<DownloadIcon />
+						{isDownloading ? ' Downloading...' : ' Sophena'}
+					</button>
+				</div>
 			</div>
 
 			{saveError && (
@@ -71,6 +107,18 @@ export const ProjectEditor = () => {
 						type="button"
 						className="btn-close"
 						onClick={() => setSaveError(null)}
+						aria-label="Close"
+					></button>
+				</div>
+			)}
+
+			{downloadError && (
+				<div className="alert alert-danger alert-dismissible fade show" role="alert">
+					<strong>Download failed:</strong> {downloadError}
+					<button
+						type="button"
+						className="btn-close"
+						onClick={() => setDownloadError(null)}
 						aria-label="Close"
 					></button>
 				</div>

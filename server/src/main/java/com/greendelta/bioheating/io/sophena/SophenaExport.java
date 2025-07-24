@@ -102,7 +102,7 @@ public class SophenaExport {
 			.put("waterContent", 0.0)
 			.put("amount", b.heatDemand() / (fuel.calorificValue() * 0.8573))
 			.set("fuel", fuelObj);
-		fuelObj.set("fuelConsumptions", json.arrayNode(1).add(consObj));
+		obj.set("fuelConsumptions", json.arrayNode(1).add(consObj));
 
 		return obj;
 	}

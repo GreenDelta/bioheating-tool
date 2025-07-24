@@ -177,3 +177,40 @@ export async function getFuels(): Promise<Res<Fuel[]>> {
 	return Res.err(`failed to get fuels: ${r.status} | ${msg}`);
 }
 
+export async function downloadSophenaPackage(projectId: number): Promise<Res<void>> {
+	try {
+		const r = await fetch(`/api/projects/${projectId}/sophena-package`);
+		if (r.status === 200) {
+			const blob = await r.blob();
+			const filename = getFilenameFromResponse(r) || 'project.sophena';
+
+			// Create download link
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+
+			return Res.ok(undefined);
+		}
+		const msg = await r.text();
+		return Res.err(`failed to download Sophena package: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to download Sophena package: ${error}`);
+	}
+}
+
+function getFilenameFromResponse(response: Response): string | null {
+	const contentDisposition = response.headers.get('content-disposition');
+	if (contentDisposition) {
+		const match = contentDisposition.match(/filename="(.+)"/);
+		if (match) {
+			return match[1];
+		}
+	}
+	return null;
+}
+
