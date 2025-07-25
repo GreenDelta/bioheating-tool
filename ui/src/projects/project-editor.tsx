@@ -148,7 +148,7 @@ const DownloadButton = ({ ctx }: Props) => {
 		if (isDownloading) return;
 		setDownloading(true);
 		ctx.setError(null);
-		const res = await api.downloadSophenaPackage(ctx.project.id);
+		const res = await api.getSophenaPackage(ctx.project.id);
 		if (!res.isOk) {
 			ctx.setError(res.error);
 		}
