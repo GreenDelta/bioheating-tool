@@ -129,7 +129,10 @@ export async function createUser(userData: UserData): Promise<Res<User>> {
 	}
 }
 
-export async function updateUser(id: number, userData: UserData): Promise<Res<User>> {
+export async function updateUser(
+	id: number,
+	userData: UserData,
+): Promise<Res<User>> {
 	try {
 		const r = await fetch(`/api/users/${id}`, {
 			method: "PUT",

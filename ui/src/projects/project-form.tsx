@@ -27,9 +27,9 @@ function useFormData() {
 
 	const update = (diff: Partial<FormData>) => {
 		if (diff.error) {
-			setData((prev) => ({ ...prev, error: diff.error }));
+			setData(prev => ({ ...prev, error: diff.error }));
 		} else {
-			setData((prev) => ({ ...prev, ...diff, error: null }));
+			setData(prev => ({ ...prev, ...diff, error: null }));
 		}
 	};
 
@@ -84,7 +84,7 @@ export const ProjectForm = () => {
 							type="text"
 							className="form-control"
 							value={data.name || ""}
-							onChange={(e) => update({ name: e.target.value })}
+							onChange={e => update({ name: e.target.value })}
 						/>
 					</div>
 
@@ -93,7 +93,7 @@ export const ProjectForm = () => {
 						<textarea
 							className="form-control"
 							value={data.description || ""}
-							onChange={(e) => update({ description: e.target.value })}
+							onChange={e => update({ description: e.target.value })}
 							rows={2}
 						/>
 					</div>
@@ -108,7 +108,7 @@ export const ProjectForm = () => {
 							type="file"
 							className="form-control"
 							accept=".gml,.xml"
-							onChange={(e) => {
+							onChange={e => {
 								const file = e.target.files?.[0] || null;
 								update({ file });
 							}}
@@ -125,15 +125,13 @@ export const ProjectForm = () => {
 						<button
 							className="btn btn-secondary"
 							disabled={loading}
-							onClick={() => navigate("/ui/projects")}
-						>
+							onClick={() => navigate("/ui/projects")}>
 							Cancel
 						</button>
 						<button
 							className="btn btn-primary"
 							disabled={loading || !isComplete(data)}
-							onClick={onOk}
-						>
+							onClick={onOk}>
 							Create project
 						</button>
 					</div>
@@ -177,15 +175,14 @@ const RegionCombo = ({
 			<select
 				className="form-select"
 				value={data.region.id}
-				onChange={(e) => {
+				onChange={e => {
 					const id = parseInt(e.target.value);
-					const region = regions.find((r) => r.id === id);
+					const region = regions.find(r => r.id === id);
 					if (region) {
 						update({ region });
 					}
-				}}
-			>
-				{regions.map((r) => (
+				}}>
+				{regions.map(r => (
 					<option key={r.id} value={r.id}>
 						{r.number}. {r.name} ({r.stationName})
 					</option>
@@ -210,15 +207,14 @@ const FuelCombo = ({
 			<select
 				className="form-select"
 				value={data.fuel.id}
-				onChange={(e) => {
+				onChange={e => {
 					const id = parseInt(e.target.value);
-					const fuel = fuels.find((f) => f.id === id);
+					const fuel = fuels.find(f => f.id === id);
 					if (fuel) {
 						update({ fuel });
 					}
-				}}
-			>
-				{fuels.map((f) => (
+				}}>
+				{fuels.map(f => (
 					<option key={f.id} value={f.id}>
 						{f.name} ({f.unit})
 					</option>

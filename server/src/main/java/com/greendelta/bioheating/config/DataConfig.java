@@ -78,6 +78,7 @@ public class DataConfig {
 		var hash = User.hashPassword("admin").orElseThrow();
 		var admin = new User()
 			.name("admin")
+			.fullName("Default Administrator")
 			.password(hash)
 			.isAdmin(true);
 		db.insert(admin);

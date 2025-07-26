@@ -64,7 +64,7 @@ export const LoginPage = () => {
 											required
 											disabled={inProgress}
 											value={userName}
-											onChange={(e) => {
+											onChange={e => {
 												setUserName(e.target.value);
 												setError(null);
 											}}
@@ -83,7 +83,7 @@ export const LoginPage = () => {
 											required
 											disabled={inProgress}
 											value={password}
-											onChange={(e) => {
+											onChange={e => {
 												setPassword(e.target.value);
 												setError(null);
 											}}
@@ -98,8 +98,7 @@ export const LoginPage = () => {
 											type="button"
 											className="btn btn-lg btn-primary"
 											onClick={() => onLogin()}
-											disabled={inProgress}
-										>
+											disabled={inProgress}>
 											Login
 										</button>
 									</div>

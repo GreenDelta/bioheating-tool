@@ -29,7 +29,7 @@ export const StreetPanel = ({ feature, onChange }: Props) => {
 				<StringField
 					label="Street Name"
 					value={data.name}
-					onChange={(value) => put({ name: value })}
+					onChange={value => put({ name: value })}
 				/>
 
 				<SelectField
@@ -40,7 +40,7 @@ export const StreetPanel = ({ feature, onChange }: Props) => {
 						{ value: Inclusion.REQUIRED, label: "Required" },
 						{ value: Inclusion.EXCLUDED, label: "Excluded" },
 					]}
-					onChange={(value) => put({ inclusion: value })}
+					onChange={value => put({ inclusion: value })}
 				/>
 			</div>
 		</div>

@@ -128,8 +128,7 @@ const SaveButton = ({ ctx }: Props) => {
 			onClick={handleSave}
 			disabled={!ctx.isDirty || isSaving}
 			title={ctx.isDirty ? "Save changes" : "No changes to save"}
-			style={{ width: "120px" }}
-		>
+			style={{ width: "120px" }}>
 			<SaveIcon />
 			{isSaving ? " Saving..." : " Save"}
 		</button>
@@ -155,8 +154,7 @@ const DownloadButton = ({ ctx }: Props) => {
 			onClick={handleDownload}
 			disabled={isDownloading}
 			title="Download Sophena package"
-			style={{ width: "120px" }}
-		>
+			style={{ width: "120px" }}>
 			<DownloadIcon />
 			{isDownloading ? " Downloading..." : " Sophena"}
 		</button>
@@ -170,15 +168,13 @@ const ErrorPanel = ({ ctx }: Props) => {
 	return (
 		<div
 			className="alert alert-danger alert-dismissible fade show"
-			role="alert"
-		>
+			role="alert">
 			<strong>An error occured:</strong> {ctx.error}
 			<button
 				type="button"
 				className="btn-close"
 				onClick={() => ctx.setError(null)}
-				aria-label="Close"
-			></button>
+				aria-label="Close"></button>
 		</div>
 	);
 };

@@ -130,8 +130,7 @@ const Icon = ({
 			viewBox="0 -960 960 960"
 			width="24"
 			onClick={onClick}
-			style={style}
-		>
+			style={style}>
 			<title>{tooltip}</title>
 			{path}
 		</svg>

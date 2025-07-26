@@ -40,7 +40,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 
 			// add the GeoJSON layer
 			const layer = L.geoJSON(data.features || [], {
-				style: (feature) => styleOf(feature, selection),
+				style: feature => styleOf(feature, selection),
 			}).addTo(map);
 			layerRef.current = layer;
 			const bounds = layer.getBounds();
@@ -55,7 +55,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 				.addTo(map);
 
 			// handle click events on GeoJSON layer
-			layer.on("click", (evt) => {
+			layer.on("click", evt => {
 				const f = evt?.propagatedFrom?.feature;
 				if (f) {
 					handleSelect([f]);
@@ -90,7 +90,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 	// Update feature styles when selection changes
 	useEffect(() => {
 		if (layerRef.current) {
-			layerRef.current.setStyle((feature) => styleOf(feature, selection));
+			layerRef.current.setStyle(feature => styleOf(feature, selection));
 		}
 	}, [selection]);
 

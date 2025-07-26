@@ -15,7 +15,7 @@ export const StringField = ({
 			<input
 				className="form-control"
 				value={value}
-				onChange={(e) => onChange(e.target.value)}
+				onChange={e => onChange(e.target.value)}
 			/>
 		</div>
 	</div>
@@ -47,7 +47,7 @@ export const NumberField = ({
 				placeholder={disabled ? " - heating disabled - " : ""}
 				disabled={disabled || false}
 				readOnly={readOnly}
-				onChange={(e) => {
+				onChange={e => {
 					if (onChange) {
 						onChange(e.target.value);
 					}
@@ -74,7 +74,7 @@ export const CheckboxField = ({
 					type="checkbox"
 					className="form-check-input"
 					checked={checked}
-					onChange={(e) => onChange(e.target.checked)}
+					onChange={e => onChange(e.target.checked)}
 				/>
 			</div>
 		</div>
@@ -101,9 +101,8 @@ export const SelectField = ({
 				disabled={disabled}
 				className="form-control"
 				value={value}
-				onChange={(e) => onChange(e.target.value)}
-			>
-				{options.map((option) => (
+				onChange={e => onChange(e.target.value)}>
+				{options.map(option => (
 					<option key={option.value} value={option.value}>
 						{option.label}
 					</option>

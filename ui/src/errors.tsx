@@ -1,5 +1,34 @@
 import React from "react";
-import { Link, useSearchParams, useRouteError } from "react-router-dom";
+import {
+	Link,
+	useSearchParams,
+	useRouteError,
+	redirect,
+	useNavigate,
+} from "react-router-dom";
+import { Res } from "./api";
+
+const errors = {
+	redirect: redirectOf,
+	navigate: navigateOf,
+};
+export default errors;
+
+function redirectOf(message: string, details: string | Res<any>): Response {
+	return redirect(`/ui/error?${paramsOf(message, details)}`);
+}
+
+function navigateOf(message: string, details: string | Res<any>) {
+	const navigate = useNavigate();
+	navigate(`/ui/error?${paramsOf(message, details)}`);
+}
+
+function paramsOf(message: string, details: string | Res<any>) {
+	return new URLSearchParams({
+		message,
+		details: typeof details === "string" ? details : details.error,
+	}).toString();
+}
 
 export const ErrorPage = () => {
 	const [searchParams] = useSearchParams();

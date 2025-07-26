@@ -6,10 +6,8 @@ import {
 	Link,
 	RouterProvider,
 	createBrowserRouter,
-	useParams,
 	useOutletContext,
 	Navigate,
-	redirect,
 	LoaderFunctionArgs,
 } from "react-router-dom";
 
@@ -18,7 +16,7 @@ import * as api from "./api";
 import { LoginPage } from "./login";
 import { ProjectList, ProjectForm, ProjectEditor } from "./projects";
 import { HomePage } from "./home";
-import { ErrorPage } from "./error-page";
+import errors, { ErrorPage } from "./errors";
 
 const MainMenu = (props: { user: User | null; onLogout: () => void }) => {
 	let content: React.JSX.Element;
@@ -47,8 +45,7 @@ const MainMenu = (props: { user: User | null; onLogout: () => void }) => {
 					<a
 						className="nav-link"
 						onClick={props.onLogout}
-						style={{ cursor: "pointer" }}
-					>
+						style={{ cursor: "pointer" }}>
 						Logout
 					</a>
 				</div>
@@ -74,7 +71,7 @@ const Root = () => {
 	const navigate = useNavigate();
 	const [user, setUser] = React.useState<User | null>(null);
 	useEffect(() => {
-		api.getCurrentUser().then((u) => {
+		api.getCurrentUser().then(u => {
 			if (u.isErr) {
 				setUser(null);
 			} else {
@@ -133,7 +130,12 @@ function main() {
 						{
 							path: "projects",
 							Component: ProjectList,
-							loader: api.getProjects,
+							loader: async () => {
+								const res = await api.getProjects();
+								return res.isErr
+									? errors.redirect("Failed to load projects", res)
+									: res.value;
+							},
 						},
 						{
 							path: "projects/new",
@@ -162,11 +164,17 @@ function main() {
 async function loadProjectFormData() {
 	const regRes = await api.getClimateRegions();
 	if (regRes.isErr || regRes.value.length === 0) {
-		return redirect("/ui/projects?error=climate-regions-unavailable");
+		return errors.redirect(
+			"Climate regions unavailable",
+			regRes.isErr ? regRes : "No climate regions returned from the server.",
+		);
 	}
 	const fuelRes = await api.getFuels();
 	if (fuelRes.isErr || fuelRes.value.length === 0) {
-		return redirect("/ui/projects?error=fuels-unavailable");
+		return errors.redirect(
+			"Fuels unavailable",
+			fuelRes.isErr ? fuelRes : "No fuels returned from the server",
+		);
 	}
 	return { regions: regRes.value, fuels: fuelRes.value };
 }
@@ -177,14 +185,15 @@ async function loadProjectData({ params }: LoaderFunctionArgs) {
 		api.getProject(projectId),
 		api.getFuels(),
 	]);
-
 	if (projectRes.isErr) {
-		return redirect(`/ui/projects?error=project-error-${projectId}`);
+		return errors.redirect("Failed to load project", projectRes);
 	}
 	if (fuelsRes.isErr || fuelsRes.value.length === 0) {
-		return redirect("/ui/projects?error=fuels-unavailable");
+		return errors.redirect(
+			"Fuels unavailable",
+			fuelsRes.isErr ? fuelsRes : "No fuels returned from the server",
+		);
 	}
-
 	return { project: projectRes.value, fuels: fuelsRes.value };
 }
 

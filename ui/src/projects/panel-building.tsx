@@ -28,13 +28,13 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 				<StringField
 					label="Building"
 					value={data.name}
-					onChange={(value) => put({ name: value })}
+					onChange={value => put({ name: value })}
 				/>
 
 				<CheckboxField
 					label="Is heated"
 					checked={data.isHeated}
-					onChange={(checked) => put({ isHeated: checked })}
+					onChange={checked => put({ isHeated: checked })}
 				/>
 
 				<NumberField
@@ -42,7 +42,7 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 					value={data.heatDemand}
 					step="0.1"
 					disabled={!data.isHeated}
-					onChange={(value) => put({ heatDemand: value })}
+					onChange={value => put({ heatDemand: value })}
 				/>
 
 				<SelectField
@@ -51,12 +51,12 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 					disabled={!data.isHeated}
 					options={[
 						{ value: "", label: "" },
-						...fuels.map((fuel) => ({
+						...fuels.map(fuel => ({
 							value: fuel.id.toString(),
 							label: `${fuel.name} (${fuel.unit})`,
 						})),
 					]}
-					onChange={(value) =>
+					onChange={value =>
 						put({ fuelId: value === "" ? undefined : parseInt(value) })
 					}
 				/>
@@ -69,54 +69,54 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 						{ value: Inclusion.EXCLUDED, label: "Excluded" },
 						{ value: Inclusion.REQUIRED, label: "Included" },
 					]}
-					onChange={(value) => put({ inclusion: value })}
+					onChange={value => put({ inclusion: value })}
 				/>
 
 				<NumberField
 					label="Height (m)"
 					value={data.height}
 					step="0.1"
-					onChange={(value) => put({ height: value })}
+					onChange={value => put({ height: value })}
 				/>
 
 				<NumberField
 					label="Storeys"
 					value={data.storeys}
 					step="1"
-					onChange={(value) => put({ storeys: value })}
+					onChange={value => put({ storeys: value })}
 				/>
 
 				<StringField
 					label="Roof Type"
 					value={data.roofType}
-					onChange={(value) => put({ roofType: value })}
+					onChange={value => put({ roofType: value })}
 				/>
 
 				<StringField
 					label="Function"
 					value={data.function}
-					onChange={(value) => put({ function: value })}
+					onChange={value => put({ function: value })}
 				/>
 
 				<NumberField
 					label="Ground Area (m²)"
 					value={data.groundArea}
 					step="0.1"
-					onChange={(value) => put({ groundArea: value })}
+					onChange={value => put({ groundArea: value })}
 				/>
 
 				<NumberField
 					label="Heated Area (m²)"
 					value={data.heatedArea}
 					step="0.1"
-					onChange={(value) => put({ heatedArea: value })}
+					onChange={value => put({ heatedArea: value })}
 				/>
 
 				<NumberField
 					label="Volume (m³)"
 					value={data.volume}
 					step="0.1"
-					onChange={(value) => put({ volume: value })}
+					onChange={value => put({ volume: value })}
 				/>
 
 				<hr />
@@ -125,38 +125,38 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 				<StringField
 					label="Country"
 					value={data.country}
-					onChange={(value) => put({ country: value })}
+					onChange={value => put({ country: value })}
 				/>
 
 				<StringField
 					label="Locality/City"
 					value={data.locality}
-					onChange={(value) => put({ locality: value })}
+					onChange={value => put({ locality: value })}
 				/>
 
 				<StringField
 					label="Postal Code"
 					value={data.postalCode}
-					onChange={(value) => put({ postalCode: value })}
+					onChange={value => put({ postalCode: value })}
 				/>
 
 				<StringField
 					label="Street"
 					value={data.street}
-					onChange={(value) => put({ street: value })}
+					onChange={value => put({ street: value })}
 				/>
 
 				<StringField
 					label="Street Number"
 					value={data.streetNumber}
-					onChange={(value) => put({ streetNumber: value })}
+					onChange={value => put({ streetNumber: value })}
 				/>
 
 				<NumberField
 					label="Climate Zone"
 					value={data.climateZone}
 					step="1"
-					onChange={(value) => put({ climateZone: value })}
+					onChange={value => put({ climateZone: value })}
 				/>
 			</div>
 		</div>

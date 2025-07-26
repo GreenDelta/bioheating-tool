@@ -1,3 +1,5 @@
 {
-  "singleQuote": false
+  "singleQuote": false,
+  "bracketSameLine": true,
+  "arrowParens": "avoid"
 }
