@@ -77,7 +77,6 @@ public class UserController {
 		return Http.ok(infos);
 	}
 
-
 	private record UserRequest(User user, ResponseEntity<?> error) {
 
 		static UserRequest ok(User user) {
@@ -111,6 +110,4 @@ public class UserController {
 			return error != null;
 		}
 	}
-
-
 }

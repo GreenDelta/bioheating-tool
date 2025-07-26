@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "npx webpack watch",
-    "build": "npx webpack",
+		"build": "npx webpack",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "",
@@ -26,6 +26,7 @@
 		"@typescript-eslint/parser": "^8.33.0",
 		"copy-webpack-plugin": "^13.0.0",
 		"eslint": "^9.27.0",
+		"prettier": "^3.6.2",
 		"ts-loader": "^9.5.2",
 		"typescript": "^5.8.3",
 		"webpack": "^5.99.9",
