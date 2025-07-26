@@ -2,6 +2,7 @@ import React from "react";
 import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
 import { User } from "../model";
 import { AddIcon, DeleteIcon } from "../icons";
+import * as api from "../api";
 
 export const UserList = () => {
 	const navigate = useNavigate();
@@ -9,25 +10,31 @@ export const UserList = () => {
 	const users: User[] = useLoaderData();
 	const [deletable, setDeletable] = React.useState<User | null>(null);
 
-	const onDelete = (b: boolean) => {
+	const onDelete = async (b: boolean) => {
 		if (!b || !deletable) {
 			setDeletable(null);
 			return;
 		}
 
 		const u = deletable;
-		const idx = users.indexOf(u);
-		if (idx > -1) {
-			users.splice(idx, 1);
+		const res = await api.deleteUser(u.id);
+
+		if (res.isErr) {
+			const params = new URLSearchParams({
+				message: "Failed to delete user",
+				details: res.error,
+			});
+			navigate(`/ui/error?${params.toString()}`);
+		} else {
+			// Remove user from the local list on successful deletion
+			const idx = users.indexOf(u);
+			if (idx > -1) {
+				users.splice(idx, 1);
+			}
+			// Refresh the page to update the list
+			window.location.reload();
 		}
 
-		// Note: We'd need a deleteUser API method in the backend for this to work
-		// For now, just show an error message
-		const params = new URLSearchParams({
-			message: "Delete user not implemented",
-			details: "User deletion functionality is not yet implemented in the backend.",
-		});
-		navigate(`/ui/error?${params.toString()}`);
 		setDeletable(null);
 	};
 
@@ -65,7 +72,7 @@ const UserTable = ({
 	}
 
 	const rows = users.map(u => (
-		<tr key={u.name}>
+		<tr key={u.id}>
 			<td>
 				<strong>{u.name}</strong>
 			</td>
@@ -78,7 +85,7 @@ const UserTable = ({
 				)}
 			</td>
 			<td className="text-end">
-				{u.name !== currentUser.name && (
+				{u.id !== currentUser.id && (
 					<DeleteIcon
 						color="#dc3545"
 						onClick={() => onDelete(u)}

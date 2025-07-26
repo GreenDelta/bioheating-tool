@@ -2,6 +2,7 @@ package com.greendelta.bioheating.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -72,9 +73,25 @@ public class UserController {
 	@GetMapping
 	public ResponseEntity<?> getUsers(Authentication auth) {
 		if (Http.isNotAdmin(users, auth))
-			return Http.forbidden("only allowed for admins");
+			return Http.forbidden("Only allowed for admins");
 		var infos = users.getUserInfos();
 		return Http.ok(infos);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> deleteUser(
+		Authentication auth, @PathVariable long id
+	) {
+		var current = users.getCurrentUser(auth).orElse(null);
+		if (current == null || !current.isAdmin())
+			return Http.forbidden("Only allowed for admins");
+		var req = UserRequest.of(this, auth, id);
+		if (req.isError())
+			return req.error();
+		var res = users.delete(req.user());
+		return res.hasError()
+			? Http.badRequest(res.error())
+			: Http.ok("User deleted successfully");
 	}
 
 	private record UserRequest(User user, ResponseEntity<?> error) {

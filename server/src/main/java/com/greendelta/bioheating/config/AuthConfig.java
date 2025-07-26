@@ -55,21 +55,14 @@ public class AuthConfig {
 					"/api/users/logout")
 				.permitAll()
 
-				.requestMatchers(
-					"/api/epds",
-					"/api/epds/**",
-					"/api/processes",
-					"/api/processes/**"
-				).authenticated()
-
 				.requestMatchers(HttpMethod.GET, "/api/users")
 				.hasRole("ADMIN")
 
-				.requestMatchers(HttpMethod.POST,
-					"/api/users",
-					"/api/providers",
-					"/api/units")
+				.requestMatchers(HttpMethod.POST, "/api/users")
 				.hasRole("ADMIN")
+
+				.requestMatchers("/api/**")
+				.authenticated()
 
 				.anyRequest().permitAll()
 			)

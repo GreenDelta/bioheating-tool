@@ -166,6 +166,21 @@ export async function getUsers(): Promise<Res<User[]>> {
 	}
 }
 
+export async function deleteUser(id: number): Promise<Res<boolean>> {
+	try {
+		const r = await fetch(`/api/users/${id}`, {
+			method: "DELETE",
+		});
+		if (r.status === 200) {
+			return Res.ok(true);
+		}
+		const msg = await r.text();
+		return Res.err(`failed to delete user: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to delete user: ${error}`);
+	}
+}
+
 export async function getProjects(): Promise<Res<ProjectInfo[]>> {
 	try {
 		const r = await fetch("/api/projects");

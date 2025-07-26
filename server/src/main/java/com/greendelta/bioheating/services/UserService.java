@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
 import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
@@ -74,6 +75,21 @@ public class UserService {
 		}
 
 		return apply(user, data);
+	}
+
+	public Res<Void> delete(User user) {
+		if (user == null)
+			return Res.error("No user provided");
+		if (user.isAdmin())
+			return Res.error("Admins cannot be deleted");
+		// delete all projects of that user
+		for (var p : db.getAll(Project.class)) {
+			if (user.equals(p.user())) {
+				db.delete(p);
+			}
+		}
+		db.delete(user);
+		return Res.VOID;
 	}
 
 	private Res<UserInfo> apply(User user, UserData data) {
