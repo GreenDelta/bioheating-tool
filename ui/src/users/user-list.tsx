@@ -1,24 +1,13 @@
 import React from "react";
-import { Link, useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
+import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
 import { User } from "../model";
 import { AddIcon, DeleteIcon } from "../icons";
-import * as api from "../api";
 
 export const UserList = () => {
 	const navigate = useNavigate();
 	const [currentUser] = useOutletContext<[User]>();
 	const users: User[] = useLoaderData();
 	const [deletable, setDeletable] = React.useState<User | null>(null);
-
-	// Only admins should see this component
-	if (!currentUser.isAdmin) {
-		return (
-			<div className="alert alert-danger">
-				<h4>Access Denied</h4>
-				<p>Only administrators can access the user management.</p>
-			</div>
-		);
-	}
 
 	const onDelete = (b: boolean) => {
 		if (!b || !deletable) {
@@ -60,16 +49,17 @@ const UserTable = ({
 	onDelete: (u: User) => void;
 	currentUser: User;
 }) => {
+	const navigate = useNavigate();
+
 	if (!users || users.length === 0) {
 		return (
 			<div className="text-center">
 				<p>No users found.</p>
-				<button className="btn btn-primary" disabled>
-					Create new user
+				<button
+					className="btn btn-primary"
+					onClick={() => navigate("/ui/users/new")}>
+					Create first user
 				</button>
-				<small className="d-block text-muted mt-2">
-					User creation will be available in a future update.
-				</small>
 			</div>
 		);
 	}
@@ -116,11 +106,8 @@ const UserTable = ({
 						<td colSpan={3}></td>
 						<td className="text-end">
 							<AddIcon
-								tooltip="Create a new user (coming soon)"
-								onClick={() => {
-									// TODO: Navigate to user creation form when implemented
-									alert("User creation will be available in a future update.");
-								}}
+								tooltip="Create a new user"
+								onClick={() => navigate("/ui/users/new")}
 							/>
 						</td>
 					</tr>

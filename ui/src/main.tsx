@@ -15,7 +15,7 @@ import { User } from "./model";
 import * as api from "./api";
 import { LoginPage } from "./login";
 import { ProjectList, ProjectForm, ProjectEditor } from "./projects";
-import { UserList } from "./users";
+import { UserList, UserForm } from "./users";
 import { HomePage } from "./home";
 import errors, { ErrorPage } from "./errors";
 
@@ -38,9 +38,12 @@ const MainMenu = (props: { user: User | null; onLogout: () => void }) => {
 					<Link className="nav-link" to="/ui/projects">
 						Projects
 					</Link>
-					<Link className="nav-link" to="/ui/users">
-						Users
-					</Link>
+					{props.user.isAdmin
+						? <Link className="nav-link" to="/ui/users">
+							Users
+						</Link>
+						: null
+					}
 				</div>
 				<div className="navbar-nav">
 					<a
@@ -157,6 +160,10 @@ function main() {
 									? errors.redirect("Failed to load users", res)
 									: res.value;
 							},
+						},
+						{
+							path: "users/new",
+							element: <UserForm />,
 						},
 					],
 				},
