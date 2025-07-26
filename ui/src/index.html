@@ -1,58 +1,56 @@
 <!doctype html>
 <html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="/bootstrap.min.css" />
+		<link rel="stylesheet" href="/leaflet.css" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<title>BIOHEATING - Tool</title>
+		<style>
+			body {
+				min-height: 100vh;
+				margin: 0;
+				display: flex;
+				flex-direction: column;
+			}
 
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="/bootstrap.min.css">
-	<link rel="stylesheet" href="/leaflet.css"/>
-	<link rel="icon" type="image/png" href="/favicon.png" />
-	<title>BIOHEATING - Tool</title>
-	<style>
-		body {
-			min-height: 100vh;
-			margin: 0;
-			display: flex;
-			flex-direction: column;
-		}
+			main {
+				flex: 1;
+			}
 
-		main {
-			flex: 1;
-		}
+			footer {
+				background-color: #f8f9fa;
+				border-top: 1px solid #dee2e6;
+				margin-top: auto;
+			}
 
-		footer {
-			background-color: #f8f9fa;
-			border-top: 1px solid #dee2e6;
-			margin-top: auto;
-		}
+			.form-control:focus {
+				border-color: #80bdff;
+				box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+			}
 
-		.form-control:focus {
-			border-color: #80bdff;
-			box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-		}
+			.btn:focus {
+				box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+			}
+		</style>
+	</head>
 
-		.btn:focus {
-			box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-		}
-	</style>
-</head>
-
-<body>
-	<main id="app"></main>
-	<footer>
-		<div class="container-fluid px-5">
-			<nav class="navbar navbar-expand">
-				<div class="navbar-nav me-auto">
-					<span class="navbar-text">The BIOHEATING Project 2025</span>
-				</div>
-				<div class="navbar-nav">
-					<a class="nav-link" href="/ui/about">About</a>
-				</div>
-			</nav>
-		</div>
-	</footer>
-	<script src="/bootstrap.bundle.min.js"></script>
-	<script src="/main.js"></script>
-</body>
-
+	<body>
+		<main id="app"></main>
+		<footer>
+			<div class="container-fluid px-5">
+				<nav class="navbar navbar-expand">
+					<div class="navbar-nav me-auto">
+						<span class="navbar-text">The BIOHEATING Project 2025</span>
+					</div>
+					<div class="navbar-nav">
+						<a class="nav-link" href="/ui/about">About</a>
+					</div>
+				</nav>
+			</div>
+		</footer>
+		<script src="/bootstrap.bundle.min.js"></script>
+		<script src="/main.js"></script>
+	</body>
 </html>

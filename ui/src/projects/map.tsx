@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import * as L from 'leaflet';
-import { GeoFeature, GeoMap, isBuilding } from '../model';
+import React, { useEffect, useRef, useState } from "react";
+import * as L from "leaflet";
+import { GeoFeature, GeoMap, isBuilding } from "../model";
 import "leaflet-lasso";
 
 interface MapProps {
@@ -9,7 +9,6 @@ interface MapProps {
 }
 
 export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
-
 	const divRef = useRef<HTMLDivElement>(null);
 	const mapRef = useRef<L.Map | null>(null);
 	const layerRef = useRef<L.GeoJSON | null>(null);
@@ -34,7 +33,6 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 	useEffect(() => {
 		const div = divRef.current;
 		if (div && !mapRef.current) {
-
 			// init the map
 			const map = L.map(div);
 			mapRef.current = map;
@@ -49,13 +47,15 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 			map.fitBounds(bounds, { padding: [20, 20] });
 
 			// add lasso tool
-			(L.control as any).lasso({
-				intersect: true,
-				title: 'Select multiple features'
-			}).addTo(map);
+			(L.control as any)
+				.lasso({
+					intersect: true,
+					title: "Select multiple features",
+				})
+				.addTo(map);
 
 			// handle click events on GeoJSON layer
-			layer.on("click", evt => {
+			layer.on("click", (evt) => {
 				const f = evt?.propagatedFrom?.feature;
 				if (f) {
 					handleSelect([f]);
@@ -63,7 +63,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 			});
 
 			// handle lasso events
-			map.on('lasso.finished', (evt: any) => {
+			map.on("lasso.finished", (evt: any) => {
 				if (!evt.layers) {
 					return;
 				}
@@ -101,16 +101,16 @@ function styleOf(feature: any, ids: Set<any>) {
 	const f = feature as GeoFeature;
 	const id = f.properties?.id;
 	const isSelected = id && ids.has(id);
-	const color = isSelected ? '#fff59d' : colorOf(f);
+	const color = isSelected ? "#fff59d" : colorOf(f);
 	return {
 		fillColor: color,
 		weight: isSelected ? 3 : 2,
 		opacity: 1,
 		color: color,
-		dashArray: '',
-		fillOpacity: isSelected ? 0.8 : 0.5
+		dashArray: "",
+		fillOpacity: isSelected ? 0.8 : 0.5,
 	};
-};
+}
 
 function colorOf(f: GeoFeature): string {
 	const props = f.properties || {};
@@ -121,19 +121,17 @@ function colorOf(f: GeoFeature): string {
 		if (!props.isHeated) {
 			return "#607d8b";
 		}
-		return inclusion === 'REQUIRED'
-			? "#ec407a"
-			: "#f8bbd0";
+		return inclusion === "REQUIRED" ? "#ec407a" : "#f8bbd0";
 	}
 
 	// street
-	if (inclusion === 'EXCLUDED') {
+	if (inclusion === "EXCLUDED") {
 		return "#607d8b";
 	}
-	if (inclusion === 'REQUIRED') {
+	if (inclusion === "REQUIRED") {
 		return "#ec407a";
 	}
-	return '#1976d2';
+	return "#1976d2";
 }
 
 function addTileLayer(map: L.Map) {
@@ -143,8 +141,11 @@ function addTileLayer(map: L.Map) {
 		}).addTo(mapInstanceRef.current);
 		*/
 
-	L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-		maxZoom: 19,
-		attribution: '© Esri, Maxar, Earthstar Geographics'
-	}).addTo(map);
+	L.tileLayer(
+		"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+		{
+			maxZoom: 19,
+			attribution: "© Esri, Maxar, Earthstar Geographics",
+		},
+	).addTo(map);
 }

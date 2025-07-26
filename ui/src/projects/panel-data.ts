@@ -13,7 +13,8 @@ export interface BuildingProps {
 	volume?: any;
 	country?: any;
 	locality?: any;
-	postalCode?: any;	street?: any;
+	postalCode?: any;
+	street?: any;
 	streetNumber?: any;
 	climateZone?: any;
 	isHeated?: any;
@@ -61,7 +62,6 @@ function boolOf(field: any): boolean {
 }
 
 export class BuildingData {
-
 	name: string;
 	height: number;
 	storeys: number;
@@ -73,7 +73,8 @@ export class BuildingData {
 	volume: number;
 	country: string;
 	locality: string;
-	postalCode: string;	street: string;
+	postalCode: string;
+	street: string;
 	streetNumber: string;
 	climateZone: number;
 	isHeated: boolean;
@@ -98,7 +99,8 @@ export class BuildingData {
 			this.volume = d.volume;
 			this.country = d.country;
 			this.locality = d.locality;
-			this.postalCode = d.postalCode;			this.street = d.street;
+			this.postalCode = d.postalCode;
+			this.street = d.street;
 			this.streetNumber = d.streetNumber;
 			this.climateZone = d.climateZone;
 			this.isHeated = d.isHeated;
@@ -116,11 +118,12 @@ export class BuildingData {
 			this.volume = floatOf(d.volume);
 			this.country = stringOf(d.country);
 			this.locality = stringOf(d.locality);
-			this.postalCode = stringOf(d.postalCode);			this.street = stringOf(d.street);
+			this.postalCode = stringOf(d.postalCode);
+			this.street = stringOf(d.street);
 			this.streetNumber = stringOf(d.streetNumber);
 			this.climateZone = intOf(d.climateZone);
 			this.isHeated = boolOf(d.isHeated);
-			this.inclusion = inclusionFromString(d.inclusion || 'REQUIRED');
+			this.inclusion = inclusionFromString(d.inclusion || "REQUIRED");
 			this.fuelId = d.fuelId ? intOf(d.fuelId) : undefined;
 		}
 	}
@@ -150,7 +153,8 @@ export class BuildingData {
 		}
 		if (props.heatedArea) {
 			copy.heatedArea = props.heatedArea;
-		}		if (props.volume) {
+		}
+		if (props.volume) {
 			copy.volume = props.volume;
 		}
 		if (props.country) {
@@ -164,7 +168,8 @@ export class BuildingData {
 		}
 		if (props.street) {
 			copy.street = props.street;
-		}		if (props.streetNumber) {
+		}
+		if (props.streetNumber) {
 			copy.streetNumber = props.streetNumber;
 		}
 		if (props.climateZone) {
@@ -191,12 +196,14 @@ export class BuildingData {
 		f.properties.storeys = this.storeys;
 		f.properties.heatDemand = this.heatDemand;
 		f.properties.roofType = this.roofType;
-		f.properties.function = this.function;		f.properties.groundArea = this.groundArea;
+		f.properties.function = this.function;
+		f.properties.groundArea = this.groundArea;
 		f.properties.heatedArea = this.heatedArea;
 		f.properties.volume = this.volume;
 		f.properties.country = this.country;
 		f.properties.locality = this.locality;
-		f.properties.postalCode = this.postalCode;		f.properties.street = this.street;
+		f.properties.postalCode = this.postalCode;
+		f.properties.street = this.street;
 		f.properties.streetNumber = this.streetNumber;
 		f.properties.climateZone = this.climateZone;
 		f.properties.isHeated = this.isHeated;
@@ -207,7 +214,7 @@ export class BuildingData {
 	}
 
 	isValid(): boolean {
-		return (typeof this.name === "string") && this.name.trim().length > 0;
+		return typeof this.name === "string" && this.name.trim().length > 0;
 	}
 }
 
@@ -217,7 +224,6 @@ export interface StreetProps {
 }
 
 export class StreetData {
-
 	name: string;
 	inclusion: Inclusion;
 
@@ -256,6 +262,6 @@ export class StreetData {
 	}
 
 	isValid(): boolean {
-		return (typeof this.name === "string") && this.name.trim().length > 0;
+		return typeof this.name === "string" && this.name.trim().length > 0;
 	}
 }

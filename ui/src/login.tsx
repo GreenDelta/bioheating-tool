@@ -6,7 +6,6 @@ import { User } from "./model";
 type UserContext = [User | null, (user: User) => void];
 
 export const LoginPage = () => {
-
 	const navigate = useNavigate();
 	const [user, setUser] = useOutletContext<UserContext>();
 	const [inProgress, setInProgress] = useState(false);
@@ -18,7 +17,7 @@ export const LoginPage = () => {
 		setUserName("");
 		setPassword("");
 		setError("Wrong user name or password");
-	}
+	};
 
 	const onLogin = async () => {
 		setInProgress(true);
@@ -55,34 +54,52 @@ export const LoginPage = () => {
 								<ErrorRow err={error} />
 
 								<div className="form-group row mt-3">
-									<label className="col-sm-3 col-form-label col-form-label-lg">User</label>
+									<label className="col-sm-3 col-form-label col-form-label-lg">
+										User
+									</label>
 									<div className="col-sm-9">
-										<input type="text" className="form-control form-control-lg" required
-											disabled={inProgress} value={userName}
-											onChange={e => {
+										<input
+											type="text"
+											className="form-control form-control-lg"
+											required
+											disabled={inProgress}
+											value={userName}
+											onChange={(e) => {
 												setUserName(e.target.value);
 												setError(null);
-											}} />
+											}}
+										/>
 									</div>
 								</div>
 
 								<div className="form-group row mt-3">
-									<label className="col-sm-3 col-form-label col-form-label-lg">Password</label>
+									<label className="col-sm-3 col-form-label col-form-label-lg">
+										Password
+									</label>
 									<div className="col-sm-9">
-										<input type="password" className="form-control form-control-lg" required
-											disabled={inProgress} value={password}
-											onChange={e => {
+										<input
+											type="password"
+											className="form-control form-control-lg"
+											required
+											disabled={inProgress}
+											value={password}
+											onChange={(e) => {
 												setPassword(e.target.value);
 												setError(null);
-											}} />
+											}}
+										/>
 									</div>
 								</div>
 
 								<div className="form-group row mt-3">
 									<div className="col-sm-3" />
 									<div className="col-sm-9">
-										<button type="button" className="btn btn-lg btn-primary"
-											onClick={() => onLogin()} disabled={inProgress}>
+										<button
+											type="button"
+											className="btn btn-lg btn-primary"
+											onClick={() => onLogin()}
+											disabled={inProgress}
+										>
 											Login
 										</button>
 									</div>
@@ -102,7 +119,7 @@ export const LoginPage = () => {
 			</div>
 		</div>
 	);
-}
+};
 
 const ErrorRow = ({ err }: { err: string | null }) => {
 	if (!err) {
@@ -113,4 +130,4 @@ const ErrorRow = ({ err }: { err: string | null }) => {
 			{err}
 		</div>
 	);
-}
+};

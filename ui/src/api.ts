@@ -1,18 +1,24 @@
-import { Credentials, User, ProjectInfo, Project, ClimateRegion, Fuel } from "./model";
+import {
+	Credentials,
+	User,
+	ProjectInfo,
+	Project,
+	ClimateRegion,
+	Fuel,
+} from "./model";
 
 export class Res<T> {
-
 	private constructor(
 		private readonly _val?: T,
-		private readonly _err?: string
-	) { }
+		private readonly _err?: string,
+	) {}
 
 	static ok<T>(val: T): Res<T> {
 		return new Res(val, undefined);
 	}
 
 	static err<T>(err: string): Res<T> {
-		return new Res(undefined as T, err)
+		return new Res(undefined as T, err);
 	}
 
 	get value(): T {
@@ -38,7 +44,9 @@ export class Res<T> {
 	}
 }
 
-export async function postLogin(credentials: Credentials): Promise<Res<boolean>> {
+export async function postLogin(
+	credentials: Credentials,
+): Promise<Res<boolean>> {
 	try {
 		const r = await fetch("/api/users/login", {
 			method: "POST",
@@ -101,22 +109,24 @@ export async function getProjects(): Promise<Res<ProjectInfo[]>> {
 }
 
 interface NewProjectData {
-	climateRegionId: number,
-	fuelId: number,
-	name: string,
-	description?: string,
-	file: File,
+	climateRegionId: number;
+	fuelId: number;
+	name: string;
+	description?: string;
+	file: File;
 }
 
-export async function createProject(d: NewProjectData): Promise<Res<ProjectInfo>> {
+export async function createProject(
+	d: NewProjectData,
+): Promise<Res<ProjectInfo>> {
 	try {
 		const data = new FormData();
-		data.append('climateRegionId', d.climateRegionId.toString());
-		data.append('fuelId', d.fuelId.toString());
-		data.append('name', d.name);
-		data.append('file', d.file);
+		data.append("climateRegionId", d.climateRegionId.toString());
+		data.append("fuelId", d.fuelId.toString());
+		data.append("name", d.name);
+		data.append("file", d.file);
 		if (d.description) {
-			data.append('description', d.description);
+			data.append("description", d.description);
 		}
 
 		const r = await fetch("/api/projects", {
@@ -167,7 +177,9 @@ export async function deleteProject(id: number): Promise<Res<boolean>> {
 	}
 }
 
-export async function updateProject(project: Project): Promise<Res<ProjectInfo>> {
+export async function updateProject(
+	project: Project,
+): Promise<Res<ProjectInfo>> {
 	try {
 		const r = await fetch(`/api/projects/${project.id}`, {
 			method: "POST",
@@ -215,17 +227,21 @@ export async function getFuels(): Promise<Res<Fuel[]>> {
 	}
 }
 
-export async function getSophenaPackage(projectId: number): Promise<Res<boolean>> {
+export async function getSophenaPackage(
+	projectId: number,
+): Promise<Res<boolean>> {
 	try {
 		const r = await fetch(`/api/projects/${projectId}/sophena-package`);
 		if (r.status !== 200) {
 			const msg = await r.text();
-			return Res.err(`failed to download Sophena package: ${r.status} | ${msg}`);
+			return Res.err(
+				`failed to download Sophena package: ${r.status} | ${msg}`,
+			);
 		}
 
 		const blob = await r.blob();
 		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement('a');
+		const a = document.createElement("a");
 		a.href = url;
 		a.download = fileNameOf(r);
 		a.click();
@@ -237,7 +253,7 @@ export async function getSophenaPackage(projectId: number): Promise<Res<boolean>
 }
 
 function fileNameOf(resp: Response): string {
-	const header = resp.headers.get('content-disposition');
+	const header = resp.headers.get("content-disposition");
 	if (header) {
 		const match = header.match(/filename="(.+)"/);
 		if (match) {
@@ -246,4 +262,3 @@ function fileNameOf(resp: Response): string {
 	}
 	return "project.sophena";
 }
-

@@ -1,6 +1,10 @@
-import React from 'react';
+import React from "react";
 
-export const StringField = ({ label, value, onChange }: {
+export const StringField = ({
+	label,
+	value,
+	onChange,
+}: {
 	label: string;
 	value: string;
 	onChange: (value: string) => void;
@@ -11,13 +15,20 @@ export const StringField = ({ label, value, onChange }: {
 			<input
 				className="form-control"
 				value={value}
-				onChange={e => onChange(e.target.value)}
+				onChange={(e) => onChange(e.target.value)}
 			/>
 		</div>
 	</div>
 );
 
-export const NumberField = ({ label, value, step, disabled, readOnly, onChange }: {
+export const NumberField = ({
+	label,
+	value,
+	step,
+	disabled,
+	readOnly,
+	onChange,
+}: {
 	label: string;
 	value: number;
 	step?: string;
@@ -36,7 +47,7 @@ export const NumberField = ({ label, value, step, disabled, readOnly, onChange }
 				placeholder={disabled ? " - heating disabled - " : ""}
 				disabled={disabled || false}
 				readOnly={readOnly}
-				onChange={e => {
+				onChange={(e) => {
 					if (onChange) {
 						onChange(e.target.value);
 					}
@@ -46,7 +57,11 @@ export const NumberField = ({ label, value, step, disabled, readOnly, onChange }
 	</div>
 );
 
-export const CheckboxField = ({ label, checked, onChange }: {
+export const CheckboxField = ({
+	label,
+	checked,
+	onChange,
+}: {
 	label: string;
 	checked: boolean;
 	onChange: (checked: boolean) => void;
@@ -59,14 +74,20 @@ export const CheckboxField = ({ label, checked, onChange }: {
 					type="checkbox"
 					className="form-check-input"
 					checked={checked}
-					onChange={e => onChange(e.target.checked)}
+					onChange={(e) => onChange(e.target.checked)}
 				/>
 			</div>
 		</div>
 	</div>
 );
 
-export const SelectField = ({ label, value, disabled, options, onChange }: {
+export const SelectField = ({
+	label,
+	value,
+	disabled,
+	options,
+	onChange,
+}: {
 	label: string;
 	value: string;
 	disabled?: boolean;
@@ -80,9 +101,9 @@ export const SelectField = ({ label, value, disabled, options, onChange }: {
 				disabled={disabled}
 				className="form-control"
 				value={value}
-				onChange={e => onChange(e.target.value)}
+				onChange={(e) => onChange(e.target.value)}
 			>
-				{options.map(option => (
+				{options.map((option) => (
 					<option key={option.value} value={option.value}>
 						{option.label}
 					</option>

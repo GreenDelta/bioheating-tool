@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
-import { useLoaderData } from 'react-router-dom';
-import { GeoFeature, Project, Fuel, isBuilding } from '../model';
-import { Map } from './map';
-import { BuildingPanel } from './panel-building';
-import { StreetPanel } from './panel-street';
-import { MultiPanel } from './panel-multi';
-import { SaveIcon } from '../icons';
-import { DownloadIcon } from '../icons';
-import * as api from '../api';
-
+import React, { useState } from "react";
+import { useLoaderData } from "react-router-dom";
+import { GeoFeature, Project, Fuel, isBuilding } from "../model";
+import { Map } from "./map";
+import { BuildingPanel } from "./panel-building";
+import { StreetPanel } from "./panel-street";
+import { MultiPanel } from "./panel-multi";
+import { SaveIcon } from "../icons";
+import { DownloadIcon } from "../icons";
+import * as api from "../api";
 
 interface InputData {
 	project: Project;
 	fuels: Fuel[];
 }
 
-
 interface EditorContext {
-
 	project: Project;
 	fuels: Fuel[];
 
@@ -29,9 +26,7 @@ interface EditorContext {
 
 	error: string | null;
 	setError: (error: string | null) => void;
-
 }
-
 
 function useEditorContext(): EditorContext {
 	const { project, fuels }: InputData = useLoaderData();
@@ -52,17 +47,19 @@ function useEditorContext(): EditorContext {
 		isDirty,
 		setDirty,
 		error,
-		setError
-	}
+		setError,
+	};
 }
-
 
 export const ProjectEditor = () => {
 	const ctx = useEditorContext();
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-3">
-				<h2>Project: {ctx.project.name}{ctx.isDirty ? "*" : ""}</h2>
+				<h2>
+					Project: {ctx.project.name}
+					{ctx.isDirty ? "*" : ""}
+				</h2>
 				<div className="d-flex">
 					<SaveButton ctx={ctx} />
 					<DownloadButton ctx={ctx} />
@@ -83,11 +80,9 @@ export const ProjectEditor = () => {
 	);
 };
 
-
 interface Props {
 	ctx: EditorContext;
 }
-
 
 /// The selection panel shows the attributes on the right side of the map.
 const SelectionPanel = ({ ctx }: Props) => {
@@ -101,14 +96,14 @@ const SelectionPanel = ({ ctx }: Props) => {
 		return <MultiPanel features={selection} onChange={onChange} />;
 	}
 	const f = selection[0];
-	return isBuilding(f)
-		? <BuildingPanel feature={f} fuels={ctx.fuels} onChange={onChange} />
-		: <StreetPanel feature={f} onChange={onChange} />
-}
-
+	return isBuilding(f) ? (
+		<BuildingPanel feature={f} fuels={ctx.fuels} onChange={onChange} />
+	) : (
+		<StreetPanel feature={f} onChange={onChange} />
+	);
+};
 
 const SaveButton = ({ ctx }: Props) => {
-
 	const [isSaving, setSaving] = useState(false);
 	const handleSave = async () => {
 		if (!ctx.isDirty || isSaving) {
@@ -127,22 +122,21 @@ const SaveButton = ({ ctx }: Props) => {
 
 	return (
 		<button
-			className={ctx.isDirty
-				? "btn btn-outline-primary me-2"
-				: "btn-outline-secondary"}
+			className={
+				ctx.isDirty ? "btn btn-outline-primary me-2" : "btn-outline-secondary"
+			}
 			onClick={handleSave}
 			disabled={!ctx.isDirty || isSaving}
-			title={ctx.isDirty ? 'Save changes' : 'No changes to save'}
-			style={{ width: '120px' }}>
+			title={ctx.isDirty ? "Save changes" : "No changes to save"}
+			style={{ width: "120px" }}
+		>
 			<SaveIcon />
-			{isSaving ? ' Saving...' : ' Save'}
+			{isSaving ? " Saving..." : " Save"}
 		</button>
 	);
 };
 
-
 const DownloadButton = ({ ctx }: Props) => {
-
 	const [isDownloading, setDownloading] = useState(false);
 	const handleDownload = async () => {
 		if (isDownloading) return;
@@ -161,20 +155,23 @@ const DownloadButton = ({ ctx }: Props) => {
 			onClick={handleDownload}
 			disabled={isDownloading}
 			title="Download Sophena package"
-			style={{ width: '120px' }}>
+			style={{ width: "120px" }}
+		>
 			<DownloadIcon />
-			{isDownloading ? ' Downloading...' : ' Sophena'}
+			{isDownloading ? " Downloading..." : " Sophena"}
 		</button>
 	);
 };
-
 
 const ErrorPanel = ({ ctx }: Props) => {
 	if (!ctx.error) {
 		return null;
 	}
 	return (
-		<div className="alert alert-danger alert-dismissible fade show" role="alert">
+		<div
+			className="alert alert-danger alert-dismissible fade show"
+			role="alert"
+		>
 			<strong>An error occured:</strong> {ctx.error}
 			<button
 				type="button"

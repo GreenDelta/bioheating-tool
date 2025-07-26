@@ -69,7 +69,7 @@ export function isStreet(f: GeoFeature): boolean {
 export enum Inclusion {
 	OPTIONAL = "OPTIONAL",
 	REQUIRED = "REQUIRED",
-	EXCLUDED = "EXCLUDED"
+	EXCLUDED = "EXCLUDED",
 }
 
 export function inclusionFromString(value: string): Inclusion {

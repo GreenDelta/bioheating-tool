@@ -1,20 +1,14 @@
 {
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "target": "ES6",
-    "lib": [
-      "es2015",
-      "dom"
-    ],
-    "jsx": "react",
-    "outDir": "./static",
-    "strict": true,
-    "noFallthroughCasesInSwitch": true,
-    "sourceMap": true
-  },
-  "exclude": [
-    "static",
-    "node_modules"
-  ]
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"target": "ES6",
+		"lib": ["es2015", "dom"],
+		"jsx": "react",
+		"outDir": "./static",
+		"strict": true,
+		"noFallthroughCasesInSwitch": true,
+		"sourceMap": true
+	},
+	"exclude": ["static", "node_modules"]
 }

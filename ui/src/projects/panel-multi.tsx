@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { GeoFeature, Inclusion, isBuilding, isStreet } from '../model';
-import { NumberField, SelectField } from './fields';
-import { BuildingData } from './panel-data';
+import React, { useState } from "react";
+import { GeoFeature, Inclusion, isBuilding, isStreet } from "../model";
+import { NumberField, SelectField } from "./fields";
+import { BuildingData } from "./panel-data";
 
 interface Props {
 	features: GeoFeature[];
@@ -21,8 +21,7 @@ export const MultiPanel: React.FC<Props> = ({ features, onChange }) => {
 
 const BuildingSection = ({ features, onChange }: Props) => {
 	const buildings = features.filter(isBuilding);
-	if (!buildings || buildings.length === 0)
-		return <></>;
+	if (!buildings || buildings.length === 0) return <></>;
 
 	const [inclusion, setInclusion] = useState(commonInclusionOf(buildings));
 	const stats = buildingStatsOf(buildings);
@@ -41,14 +40,15 @@ const BuildingSection = ({ features, onChange }: Props) => {
 			<NumberField
 				label="Total heat demand [kWh/a]"
 				readOnly
-				value={stats.totalDemand} />
+				value={stats.totalDemand}
+			/>
 			<SelectField
 				label="Set inclusion"
 				value={inclusion}
 				options={[
-					{ value: '', label: 'Select...' },
-					{ value: Inclusion.REQUIRED, label: 'Included' },
-					{ value: Inclusion.EXCLUDED, label: 'Excluded' }
+					{ value: "", label: "Select..." },
+					{ value: Inclusion.REQUIRED, label: "Included" },
+					{ value: Inclusion.EXCLUDED, label: "Excluded" },
 				]}
 				onChange={onUpdate}
 			/>
@@ -58,8 +58,7 @@ const BuildingSection = ({ features, onChange }: Props) => {
 
 const StreetSection = ({ features, onChange }: Props) => {
 	const streets = features.filter(isStreet);
-	if (!streets || streets.length === 0)
-		return <></>;
+	if (!streets || streets.length === 0) return <></>;
 
 	const [inclusion, setInclusion] = useState(commonInclusionOf(streets));
 	const onUpdate = (v: string) => {
@@ -76,16 +75,16 @@ const StreetSection = ({ features, onChange }: Props) => {
 				label="Set inclusion"
 				value={inclusion}
 				options={[
-					{ value: '', label: 'Select...' },
-					{ value: Inclusion.OPTIONAL, label: 'Optional' },
-					{ value: Inclusion.REQUIRED, label: 'Required' },
-					{ value: Inclusion.EXCLUDED, label: 'Excluded' }
+					{ value: "", label: "Select..." },
+					{ value: Inclusion.OPTIONAL, label: "Optional" },
+					{ value: Inclusion.REQUIRED, label: "Required" },
+					{ value: Inclusion.EXCLUDED, label: "Excluded" },
 				]}
 				onChange={onUpdate}
 			/>
 		</div>
 	);
-}
+};
 
 function putInclusion(features: GeoFeature[], value: string) {
 	for (const f of features) {

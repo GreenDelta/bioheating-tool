@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { GeoFeature, Inclusion } from '../model';
-import { StreetData, StreetProps } from './panel-data';
-import { StringField, SelectField } from './fields';
+import React, { useState, useEffect } from "react";
+import { GeoFeature, Inclusion } from "../model";
+import { StreetData, StreetProps } from "./panel-data";
+import { StringField, SelectField } from "./fields";
 
 interface Props {
 	feature: GeoFeature;
@@ -21,27 +21,28 @@ export const StreetPanel = ({ feature, onChange }: Props) => {
 		onChange();
 	};
 
-	return <div className="card">
-		<div className="card-body">
-			<h6>Street Information</h6>
+	return (
+		<div className="card">
+			<div className="card-body">
+				<h6>Street Information</h6>
 
-			<StringField
-				label="Street Name"
-				value={data.name}
-				onChange={value => put({ name: value })}
-			/>
+				<StringField
+					label="Street Name"
+					value={data.name}
+					onChange={(value) => put({ name: value })}
+				/>
 
-			<SelectField
-				label="Inclusion"
-				value={data.inclusion}
-				options={[
-					{ value: Inclusion.OPTIONAL, label: "Optional" },
-					{ value: Inclusion.REQUIRED, label: "Required" },
-					{ value: Inclusion.EXCLUDED, label: "Excluded" }
-				]}
-				onChange={value => put({ inclusion: value })}
-			/>
-
+				<SelectField
+					label="Inclusion"
+					value={data.inclusion}
+					options={[
+						{ value: Inclusion.OPTIONAL, label: "Optional" },
+						{ value: Inclusion.REQUIRED, label: "Required" },
+						{ value: Inclusion.EXCLUDED, label: "Excluded" },
+					]}
+					onChange={(value) => put({ inclusion: value })}
+				/>
+			</div>
 		</div>
-	</div>
+	);
 };
