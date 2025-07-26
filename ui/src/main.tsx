@@ -15,6 +15,7 @@ import { User } from "./model";
 import * as api from "./api";
 import { LoginPage } from "./login";
 import { ProjectList, ProjectForm, ProjectEditor } from "./projects";
+import { UserList } from "./users";
 import { HomePage } from "./home";
 import errors, { ErrorPage } from "./errors";
 
@@ -146,6 +147,16 @@ function main() {
 							path: "projects/:id",
 							Component: ProjectEditor,
 							loader: loadProjectData,
+						},
+						{
+							path: "users",
+							Component: UserList,
+							loader: async () => {
+								const res = await api.getUsers();
+								return res.isErr
+									? errors.redirect("Failed to load users", res)
+									: res.value;
+							},
 						},
 					],
 				},
