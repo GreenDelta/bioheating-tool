@@ -1,6 +1,7 @@
 import {
 	Credentials,
 	User,
+	UserData,
 	ProjectInfo,
 	Project,
 	ClimateRegion,
@@ -91,6 +92,74 @@ export async function postLogout(): Promise<Res<boolean>> {
 		return Res.err(`failed to logout: ${r.status} | ${msg}`);
 	} catch (error) {
 		return Res.err(`failed to logout: ${error}`);
+	}
+}
+
+export async function getUser(id: number): Promise<Res<User>> {
+	try {
+		const r = await fetch(`/api/users/${id}`);
+		if (r.status === 200) {
+			const user = await r.json();
+			return Res.ok(user);
+		}
+		const msg = await r.text();
+		return Res.err(`failed to get user: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to get user: ${error}`);
+	}
+}
+
+export async function createUser(userData: UserData): Promise<Res<User>> {
+	try {
+		const r = await fetch("/api/users", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(userData),
+		});
+		if (r.status === 200) {
+			const user = await r.json();
+			return Res.ok(user);
+		}
+		const msg = await r.text();
+		return Res.err(`failed to create user: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to create user: ${error}`);
+	}
+}
+
+export async function updateUser(id: number, userData: UserData): Promise<Res<User>> {
+	try {
+		const r = await fetch(`/api/users/${id}`, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(userData),
+		});
+		if (r.status === 200) {
+			const user = await r.json();
+			return Res.ok(user);
+		}
+		const msg = await r.text();
+		return Res.err(`failed to update user: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to update user: ${error}`);
+	}
+}
+
+export async function getUsers(): Promise<Res<User[]>> {
+	try {
+		const r = await fetch("/api/users");
+		if (r.status === 200) {
+			const users = await r.json();
+			return Res.ok(users);
+		}
+		const msg = await r.text();
+		return Res.err(`failed to get users: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to get users: ${error}`);
 	}
 }
 

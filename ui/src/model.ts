@@ -4,6 +4,13 @@ export interface User {
 	isAdmin: boolean;
 }
 
+export interface UserData {
+	name: string;
+	password: string;
+	fullName: string;
+	isAdmin: boolean;
+}
+
 export interface Credentials {
 	user: string;
 	password: string;
