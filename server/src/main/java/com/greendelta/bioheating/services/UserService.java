@@ -21,6 +21,10 @@ public class UserService {
 		this.db = db;
 	}
 
+	public Optional<User> get(long id) {
+		return Optional.ofNullable(db.getForId(User.class, id));
+	}
+
 	public List<UserInfo> getUserInfos() {
 		var infos = new ArrayList<UserInfo>();
 		for (var u : db.getAll(User.class)) {
@@ -29,84 +33,78 @@ public class UserService {
 		return infos;
 	}
 
-	public Optional<User> getUser(Authentication auth) {
+	public Optional<User> getCurrentUser(Authentication auth) {
 		return auth != null && auth.isAuthenticated()
-			? getUser(auth.getName())
+			? getForName(auth.getName())
 			: Optional.empty();
 	}
 
-	public Optional<User> getUser(String name) {
-		if (name == null || name.isBlank())
+	private Optional<User> getForName(String name) {
+		if (Strings.isNil(name))
 			return Optional.empty();
 		for (var u : db.getAll(User.class)) {
-			if (name.equalsIgnoreCase(u.name()))
+			if (Strings.eq(name, u.name()))
 				return Optional.of(u);
 		}
 		return Optional.empty();
 	}
 
-	public Optional<UserInfo> getUserInfo(String name) {
-		var user = getUser(name).orElse(null);
-		return user != null
-			? Optional.of(UserInfo.of(user))
-			: Optional.empty();
+	public Res<UserInfo> create(UserData data) {
+		return data == null
+			? Res.error("No user data provided")
+			: apply(new User(), data);
 	}
 
-	public Res<UserInfo> create(UserData data) {
-		if (data == null)
-			return Res.error("no user data provided");
+	public Res<UserInfo> update(User user, UserData data) {
+		if (user == null || data == null)
+			return Res.error("No user data provided");
 
-		if (getUser(data.name).isPresent())
-			return Res.error("a user '" + data.name + "' already exists");
+		// check that we always have an admin
+		if (user.isAdmin() && !data.isAdmin()) {
+			boolean otherAdmin = false;
+			for (var u : db.getAll(User.class)) {
+				if (!u.equals(user) && u.isAdmin()) {
+					otherAdmin = true;
+					break;
+				}
+			}
+			if (!otherAdmin) {
+				return Res.error("At least one admin must exist");
+			}
+		}
 
-		var nameRes = validateUserName(data.name);
-		if (nameRes.hasError())
-			return nameRes.castError();
+		return apply(user, data);
+	}
 
-		var pwRes = validatePassword(data.password);
-		if (pwRes.hasError())
-			return pwRes.castError();
+	private Res<UserInfo> apply(User user, UserData data) {
+		var err = data.validate();
+		if (err != null)
+			return Res.error("Invalid user data: " + err);
 
-		var hash = User.hashPassword(data.password);
+		var other = getForName(data.name).orElse(null);
+		if (other != null && !user.equals(other))
+			return Res.error("Another user with this name exists");
+
+		var hash = User.hashPassword(data.password.strip());
 		if (hash.hasError())
-			return Res.error("failed to process password");
+			return Res.error("Failed to process password");
 
-		var user = new User()
-			.name(data.name)
+		user.name(data.name.strip())
 			.fullName(data.fullName)
 			.password(hash.value())
 			.isAdmin(data.isAdmin);
-		db.insert(user);
+
+		if (user.id() == 0) {
+			db.insert(user);
+		} else {
+			user = db.update(user);
+		}
+
 		return Res.of(UserInfo.of(user));
 	}
 
-	private Res<Void> validatePassword(String pw) {
-		if (Strings.isNil(pw))
-			return Res.error("password is empty");
-		if (pw.length() < 4)
-			return Res.error("password too short");
-		for (var c : pw.toCharArray()) {
-			if (Character.isWhitespace(c))
-				return Res.error("password contains spaces");
-		}
-		return Res.VOID;
-	}
-
-	private Res<Void> validateUserName(String name) {
-		if (Strings.isNil(name))
-			return Res.error("user name is empty");
-		if (name.length() < 2)
-			return Res.error("user name too short");
-		for (var c : name.toCharArray()) {
-			if (Character.isAlphabetic(c) || Character.isDigit(c)
-				|| c == '@' || c == '_' || c == '-' || c == '.' || c == '/')
-				continue;
-			return Res.error("invalid character in user name: '" + c + "'");
-		}
-		return Res.VOID;
-	}
-
 	public record UserInfo(
+		long id,
 		String name,
 		String fullName,
 		boolean isAdmin
@@ -114,6 +112,7 @@ public class UserService {
 
 		public static UserInfo of(User user) {
 			return new UserInfo(
+				user.id(),
 				user.name(),
 				user.fullName(),
 				user.isAdmin()
@@ -125,8 +124,24 @@ public class UserService {
 		String name,
 		String password,
 		String fullName,
-		String url,
 		boolean isAdmin
 	) {
+
+		String validate() {
+
+			if (Strings.isNil(name))
+				return "User name is empty";
+			var n = name.strip();
+			if (n.length() < 2)
+				return "User name is shorter than 2 characters.";
+
+			if (Strings.isNil(password))
+				return "Password is empty";
+			var p = password.strip();
+			if (p.length() < 4)
+				return "Password is too short";
+
+			return null;
+		}
 	}
 }

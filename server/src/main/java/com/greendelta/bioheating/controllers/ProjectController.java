@@ -52,7 +52,7 @@ public class ProjectController {
 
 	@GetMapping
 	public ResponseEntity<?> getProjects(Authentication auth) {
-		var user = users.getUser(auth).orElse(null);
+		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
 		var data = projects.getProjects(user).stream()
@@ -113,7 +113,7 @@ public class ProjectController {
 	) {
 
 		// check input data
-		var user = users.getUser(auth).orElse(null);
+		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
 		if (Strings.isNil(name))
@@ -173,7 +173,7 @@ public class ProjectController {
 	private ResponseEntity<?> withProject(
 		Authentication auth, long id, Function<Project, ResponseEntity<?>> fn
 	) {
-		var user = users.getUser(auth).orElse(null);
+		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
 		var project = projects.getProject(user, id).orElse(null);
