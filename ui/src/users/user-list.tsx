@@ -1,13 +1,9 @@
 import React from "react";
-import {
-	Link,
-	useLoaderData,
-	useNavigate,
-	useOutletContext,
-} from "react-router-dom";
+import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
 import { User } from "../model";
 import { AddIcon, DeleteIcon } from "../components/icons";
 import * as api from "../api";
+import { BreadcrumbRow } from "../components/navi";
 
 export const UserList = () => {
 	const navigate = useNavigate();
@@ -45,16 +41,7 @@ export const UserList = () => {
 
 	return (
 		<div>
-			<nav aria-label="breadcrumb">
-				<ol className="breadcrumb">
-					<li className="breadcrumb-item">
-						<Link to="/">Home</Link>
-					</li>
-					<li className="breadcrumb-item active" aria-current="page">
-						Users
-					</li>
-				</ol>
-			</nav>
+			<BreadcrumbRow active="Users" path={[["/", "Home"]]} />
 			<DeleteDialog user={deletable} doIt={onDelete} />
 			<UserTable
 				users={users}

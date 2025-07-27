@@ -54,3 +54,28 @@ const MainLinks = ({ user, onLogout }: MenuProps) => {
 		</>
 	);
 };
+
+interface BreadcrumbProps {
+	active: string;
+	path?: [string, string][];
+}
+
+export const BreadcrumbRow = ({ active, path }: BreadcrumbProps) => {
+	const links = !path
+		? null
+		: path.map(([seg, label]) => (
+				<li className="breadcrumb-item">
+					<Link to={seg}>{label}</Link>
+				</li>
+			));
+	return (
+		<nav aria-label="breadcrumb">
+			<ol className="breadcrumb">
+				{links}
+				<li className="breadcrumb-item active" aria-current="page">
+					{active}
+				</li>
+			</ol>
+		</nav>
+	);
+};

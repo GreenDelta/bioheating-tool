@@ -1,10 +1,25 @@
 import React from "react";
-import { Link, useLoaderData, useNavigate } from "react-router-dom";
+import {
+	Link,
+	NavigateFunction,
+	useLoaderData,
+	useNavigate,
+} from "react-router-dom";
 import { ProjectInfo } from "../model";
 import { AddIcon, DeleteIcon } from "../components/icons";
 import * as api from "../api";
+import { BreadcrumbRow } from "../components/navi";
+import errors from "../components/errors";
 
-export const ProjectList = () => {
+interface ProjectListContext {
+	navigate: NavigateFunction;
+	projects: ProjectInfo[];
+	deletable: ProjectInfo | null;
+	setDeletable: (p: ProjectInfo) => void;
+	onDelete: (b: boolean) => void;
+}
+
+function useProjectListContext(): ProjectListContext {
 	const navigate = useNavigate();
 	const projects: ProjectInfo[] = useLoaderData();
 	const [deletable, setDeletable] = React.useState<ProjectInfo | null>(null);
@@ -14,55 +29,59 @@ export const ProjectList = () => {
 			setDeletable(null);
 			return;
 		}
-
 		const p = deletable;
-
 		const idx = projects.indexOf(p);
 		if (idx > -1) {
 			projects.splice(idx, 1);
 		}
+		setDeletable(null);
 		api.deleteProject(p.id).then(res => {
 			if (res.isErr) {
-				const params = new URLSearchParams({
-					message: "Failed to delete project",
-					details: res.error,
-				});
-				navigate(`/ui/error?${params.toString()}`);
+				errors.navigate("Failed to delete project", res);
 			}
 		});
-
-		setDeletable(null);
 	};
+
+	return {
+		navigate,
+		projects,
+		deletable,
+		setDeletable,
+		onDelete,
+	};
+}
+
+export const ProjectList = () => {
+	const ctx = useProjectListContext();
+
+	const content =
+		!ctx.projects || ctx.projects.length === 0 ? (
+			<NoContentPanel ctx={ctx} />
+		) : (
+			<>
+				<DeleteDialog ctx={ctx} />
+				<ProjectTable ctx={ctx} />
+			</>
+		);
 
 	return (
 		<div>
-			<h1>My Projects</h1>
-			<DeleteDialog project={deletable} doIt={onDelete} />
-			<ProjectTable projects={projects} onDelete={setDeletable} />
+			<BreadcrumbRow active="Projects" path={[["/", "Home"]]} />
+			{content}
 		</div>
 	);
 };
 
-const ProjectTable = ({
-	projects,
-	onDelete,
-}: {
-	projects: ProjectInfo[];
-	onDelete: (p: ProjectInfo) => void;
-}) => {
-	if (!projects || projects.length === 0) {
-		return (
-			<div className="text-center">
-				<Link to="/ui/projects/new" className="btn btn-primary">
-					Create your first project
-				</Link>
-			</div>
-		);
-	}
+type Props = { ctx: ProjectListContext };
 
-	const navigate = useNavigate();
+const NoContentPanel = ({ ctx }: Props) => {
+	return (
+		<div className="text-center">You do not have any created projects yet.</div>
+	);
+};
 
-	const rows = projects.map(p => (
+const ProjectTable = ({ ctx }: Props) => {
+	const rows = ctx.projects.map(p => (
 		<tr key={p.id}>
 			<td>
 				<Link to={`/ui/projects/${p.id}`} className="text-decoration-none">
@@ -70,7 +89,7 @@ const ProjectTable = ({
 				</Link>
 			</td>
 			<td className="text-end">
-				<DeleteIcon color="#dc3545" onClick={() => onDelete(p)} />
+				<DeleteIcon color="#dc3545" onClick={() => ctx.setDeletable(p)} />
 			</td>
 		</tr>
 	));
@@ -85,7 +104,7 @@ const ProjectTable = ({
 						<td className="text-end">
 							<AddIcon
 								tooltip="Create a new project"
-								onClick={() => navigate("/ui/projects/new")}
+								onClick={() => ctx.navigate("/ui/projects/new")}
 							/>
 						</td>
 					</tr>
@@ -95,14 +114,8 @@ const ProjectTable = ({
 	);
 };
 
-const DeleteDialog = ({
-	project,
-	doIt,
-}: {
-	project: ProjectInfo | null;
-	doIt: (b: boolean) => void;
-}) => {
-	if (!project) {
+const DeleteDialog = ({ ctx }: Props) => {
+	if (!ctx.deletable) {
 		return <></>;
 	}
 	return (
@@ -117,20 +130,21 @@ const DeleteDialog = ({
 					<div className="modal-body">
 						<p>
 							Do you really want to delete project{" "}
-							<strong>{project.name}</strong>? Note that this cannot be undone.
+							<strong>{ctx.deletable.name}</strong>? Note that this cannot be
+							undone.
 						</p>
 					</div>
 					<div className="modal-footer">
 						<button
 							type="button"
 							className="btn btn-secondary"
-							onClick={() => doIt(false)}>
+							onClick={() => ctx.onDelete(false)}>
 							Cancel
 						</button>
 						<button
 							type="button"
 							className="btn btn-danger"
-							onClick={() => doIt(true)}>
+							onClick={() => ctx.onDelete(true)}>
 							Delete
 						</button>
 					</div>

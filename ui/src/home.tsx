@@ -1,9 +1,11 @@
 import React from "react";
+import { BreadcrumbRow } from "./components/navi";
 
 export const HomePage = () => {
 	return (
 		<>
 			<div className="container-fluid">
+				<BreadcrumbRow active="/ Home" />
 				<div className="row">
 					<div className="col-md-7">
 						<div className="my-3">
