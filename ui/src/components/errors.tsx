@@ -6,7 +6,7 @@ import {
 	redirect,
 	useNavigate,
 } from "react-router-dom";
-import { Res } from "./api";
+import { Res } from "../api";
 
 const errors = {
 	redirect: redirectOf,

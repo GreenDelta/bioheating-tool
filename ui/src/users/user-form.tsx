@@ -39,10 +39,12 @@ function isComplete(data: FormData): boolean {
 	const fullName = data.fullName.trim();
 	const confirmPassword = data.confirmPassword?.trim() || "";
 
-	return name.length >= 2 &&
-		   password.length >= 3 &&
-		   fullName.length > 0 &&
-		   password === confirmPassword;
+	return (
+		name.length >= 2 &&
+		password.length >= 3 &&
+		fullName.length > 0 &&
+		password === confirmPassword
+	);
 }
 
 function getValidationError(data: FormData): string | null {
@@ -148,9 +150,7 @@ export const UserForm = () => {
 							onChange={e => update({ password: e.target.value })}
 							placeholder="Enter password (min. 3 characters)"
 						/>
-						<div className="form-text">
-							Must be at least 3 characters long.
-						</div>
+						<div className="form-text">Must be at least 3 characters long.</div>
 					</div>
 
 					<div className="mb-3">
@@ -178,7 +178,8 @@ export const UserForm = () => {
 							</label>
 						</div>
 						<div className="form-text">
-							Administrators can manage users and have full access to the system.
+							Administrators can manage users and have full access to the
+							system.
 						</div>
 					</div>
 
@@ -204,22 +205,44 @@ export const UserForm = () => {
 							<h5 className="card-title">User Requirements</h5>
 							<ul className="list-unstyled">
 								<li className="mb-2">
-									<span className={data.name && data.name.trim().length >= 2 ? "text-success" : "text-muted"}>
+									<span
+										className={
+											data.name && data.name.trim().length >= 2
+												? "text-success"
+												: "text-muted"
+										}>
 										✓ Username: min. 2 characters
 									</span>
 								</li>
 								<li className="mb-2">
-									<span className={data.fullName && data.fullName.trim().length > 0 ? "text-success" : "text-muted"}>
+									<span
+										className={
+											data.fullName && data.fullName.trim().length > 0
+												? "text-success"
+												: "text-muted"
+										}>
 										✓ Full name: required
 									</span>
 								</li>
 								<li className="mb-2">
-									<span className={data.password && data.password.trim().length >= 3 ? "text-success" : "text-muted"}>
+									<span
+										className={
+											data.password && data.password.trim().length >= 3
+												? "text-success"
+												: "text-muted"
+										}>
 										✓ Password: min. 3 characters
 									</span>
 								</li>
 								<li className="mb-2">
-									<span className={data.password && data.confirmPassword && data.password === data.confirmPassword ? "text-success" : "text-muted"}>
+									<span
+										className={
+											data.password &&
+											data.confirmPassword &&
+											data.password === data.confirmPassword
+												? "text-success"
+												: "text-muted"
+										}>
 										✓ Passwords match
 									</span>
 								</li>

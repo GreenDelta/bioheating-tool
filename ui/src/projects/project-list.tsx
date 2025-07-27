@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLoaderData, useNavigate } from "react-router-dom";
 import { ProjectInfo } from "../model";
-import { AddIcon, DeleteIcon } from "../icons";
+import { AddIcon, DeleteIcon } from "../components/icons";
 import * as api from "../api";
 
 export const ProjectList = () => {

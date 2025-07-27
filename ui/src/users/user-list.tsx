@@ -1,7 +1,12 @@
 import React from "react";
-import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
+import {
+	Link,
+	useLoaderData,
+	useNavigate,
+	useOutletContext,
+} from "react-router-dom";
 import { User } from "../model";
-import { AddIcon, DeleteIcon } from "../icons";
+import { AddIcon, DeleteIcon } from "../components/icons";
 import * as api from "../api";
 
 export const UserList = () => {
@@ -40,9 +45,22 @@ export const UserList = () => {
 
 	return (
 		<div>
-			<h1>User Management</h1>
+			<nav aria-label="breadcrumb">
+				<ol className="breadcrumb">
+					<li className="breadcrumb-item">
+						<Link to="/">Home</Link>
+					</li>
+					<li className="breadcrumb-item active" aria-current="page">
+						Users
+					</li>
+				</ol>
+			</nav>
 			<DeleteDialog user={deletable} doIt={onDelete} />
-			<UserTable users={users} onDelete={setDeletable} currentUser={currentUser} />
+			<UserTable
+				users={users}
+				onDelete={setDeletable}
+				currentUser={currentUser}
+			/>
 		</div>
 	);
 };
@@ -145,9 +163,9 @@ const DeleteDialog = ({
 					</div>
 					<div className="modal-body">
 						<p>
-							Do you really want to delete user{" "}
-							<strong>{user.name}</strong> ({user.fullName})?
-							Note that this cannot be undone.
+							Do you really want to delete user <strong>{user.name}</strong> (
+							{user.fullName})? Note that this will delete all user data and
+							cannot be undone.
 						</p>
 					</div>
 					<div className="modal-footer">

@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import {
 	useNavigate,
 	Outlet,
-	Link,
 	RouterProvider,
 	createBrowserRouter,
 	useOutletContext,
@@ -17,57 +16,8 @@ import { LoginPage } from "./login";
 import { ProjectList, ProjectForm, ProjectEditor } from "./projects";
 import { UserList, UserForm } from "./users";
 import { HomePage } from "./home";
-import errors, { ErrorPage } from "./errors";
-
-const MainMenu = (props: { user: User | null; onLogout: () => void }) => {
-	let content: React.JSX.Element;
-	if (!props.user) {
-		content = (
-			<>
-				<div className="navbar-nav ms-auto">
-					<Link className="nav-link" to="/ui/login">
-						Login
-					</Link>
-				</div>
-			</>
-		);
-	} else {
-		content = (
-			<>
-				<div className="navbar-nav me-auto">
-					<Link className="nav-link" to="/ui/projects">
-						Projects
-					</Link>
-					{props.user.isAdmin
-						? <Link className="nav-link" to="/ui/users">
-							Users
-						</Link>
-						: null
-					}
-				</div>
-				<div className="navbar-nav">
-					<a
-						className="nav-link"
-						onClick={props.onLogout}
-						style={{ cursor: "pointer" }}>
-						Logout
-					</a>
-				</div>
-			</>
-		);
-	}
-
-	return (
-		<nav className="navbar navbar-expand-lg navbar-light bg-light mb-4">
-			<div className="container-fluid px-5">
-				<Link className="navbar-brand" to="/">
-					BIOHEATING
-				</Link>
-				{content}
-			</div>
-		</nav>
-	);
-};
+import errors, { ErrorPage } from "./components/errors";
+import { MainMenu } from "./components/navi";
 
 /// The root component of the application. It contains the main menu and the
 /// respective sub-components that are navigated to by routing.

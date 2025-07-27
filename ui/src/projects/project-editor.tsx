@@ -5,8 +5,8 @@ import { Map } from "./map";
 import { BuildingPanel } from "./panel-building";
 import { StreetPanel } from "./panel-street";
 import { MultiPanel } from "./panel-multi";
-import { SaveIcon } from "../icons";
-import { DownloadIcon } from "../icons";
+import { SaveIcon } from "../components/icons";
+import { DownloadIcon } from "../components/icons";
 import * as api from "../api";
 
 interface InputData {

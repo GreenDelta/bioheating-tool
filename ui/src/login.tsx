@@ -21,7 +21,6 @@ interface LoginContext {
 	onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
-
 function useLoginContext(): LoginContext {
 	const navigate = useNavigate();
 	const [user, setUser] = useOutletContext<UserContext>();
@@ -39,12 +38,12 @@ function useLoginContext(): LoginContext {
 	const setUserName = (name: string) => {
 		_setError(null);
 		_setUserName(name);
-	}
+	};
 
 	const setPassword = (pw: string) => {
 		_setError(null);
 		_setPassword(pw);
-	}
+	};
 
 	const onLogin = async () => {
 		setProgressing(true);
@@ -82,10 +81,9 @@ function useLoginContext(): LoginContext {
 		error,
 		forward: () => navigate("/"),
 		onLogin,
-		onKeyDown
-	}
+		onKeyDown,
+	};
 }
-
 
 export const LoginPage = () => {
 	const ctx = useLoginContext();
@@ -112,16 +110,15 @@ export const LoginPage = () => {
 					<img
 						src="/img/home.png"
 						alt="BIOHEATING"
-						className="img-fluid rounded shadow mb-3" />
+						className="img-fluid rounded shadow mb-3"
+					/>
 				</div>
 			</div>
 		</div>
 	);
 };
 
-
 type Props = { ctx: LoginContext };
-
 
 const ErrorRow = ({ ctx }: Props) => {
 	if (!ctx.error) {
@@ -134,13 +131,10 @@ const ErrorRow = ({ ctx }: Props) => {
 	);
 };
 
-
 const UserRow = ({ ctx }: Props) => {
 	return (
 		<div className="form-group row mt-3">
-			<label className="col-sm-3 col-form-label col-form-label-lg">
-				User
-			</label>
+			<label className="col-sm-3 col-form-label col-form-label-lg">User</label>
 			<div className="col-sm-9">
 				<input
 					type="text"
@@ -155,7 +149,6 @@ const UserRow = ({ ctx }: Props) => {
 		</div>
 	);
 };
-
 
 const PasswordRow = ({ ctx }: Props) => {
 	return (
@@ -177,7 +170,6 @@ const PasswordRow = ({ ctx }: Props) => {
 		</div>
 	);
 };
-
 
 const LoginButton = ({ ctx }: Props) => {
 	return (
