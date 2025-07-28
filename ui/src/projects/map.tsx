@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as L from "leaflet";
 import { GeoFeature, GeoMap, isBuilding } from "../model";
 import "leaflet-lasso";
@@ -14,21 +14,35 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 	const layerRef = useRef<L.GeoJSON | null>(null);
 	const [selection, setSelection] = useState<Set<any>>(new Set());
 
-	const handleSelect = (features: GeoFeature[]) => {
+	const handleSelect = useCallback((features: GeoFeature[]) => {
+		console.log(selection);
 		const nextIds = new Set();
 		if (!features) {
 			setSelection(nextIds);
+			onSelect([]);
 			return;
 		}
+
+		let someNew = false;
 		for (const f of features) {
 			const id = f.properties?.id;
-			if (id) {
-				nextIds.add(id);
+			if (!id) {
+				continue;
+			}
+			nextIds.add(id);
+			if (!selection.has(id)) {
+				someNew = true;
 			}
 		}
-		setSelection(nextIds);
-		onSelect(features);
-	};
+
+		if (!someNew) {
+			setSelection(new Set());
+			onSelect([]);
+		} else {
+			setSelection(nextIds);
+			onSelect(features);
+		}
+	}, [selection, onSelect]);
 
 	useEffect(() => {
 		const div = divRef.current;
@@ -53,17 +67,34 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 					title: "Select multiple features",
 				})
 				.addTo(map);
+		}
 
-			// handle click events on GeoJSON layer
-			layer.on("click", evt => {
+		return () => {
+			if (mapRef.current) {
+				mapRef.current.remove();
+				mapRef.current = null;
+				layerRef.current = null;
+			}
+		};
+	}, []);
+
+	// Separate effect for updating event handlers
+	useEffect(() => {
+		if (layerRef.current && mapRef.current) {
+			// Remove existing event handlers
+			layerRef.current.off("click");
+			mapRef.current.off("lasso.finished");
+
+			// Add event handlers with current selection state
+			layerRef.current.on("click", evt => {
 				const f = evt?.propagatedFrom?.feature;
 				if (f) {
+					console.log(f.properties?.id);
 					handleSelect([f]);
 				}
 			});
 
-			// handle lasso events
-			map.on("lasso.finished", (evt: any) => {
+			mapRef.current.on("lasso.finished", (evt: any) => {
 				if (!evt.layers) {
 					return;
 				}
@@ -77,15 +108,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 				handleSelect(features);
 			});
 		}
-
-		return () => {
-			if (mapRef.current) {
-				mapRef.current.remove();
-				mapRef.current = null;
-				layerRef.current = null;
-			}
-		};
-	}, []);
+	}, [handleSelect]);
 
 	// Update feature styles when selection changes
 	useEffect(() => {
