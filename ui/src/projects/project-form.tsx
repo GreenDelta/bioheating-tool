@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import * as api from "../api";
 import { ClimateRegion, Fuel } from "../model";
+import { BreadcrumbRow } from "../components/navi";
 
 interface FormInput {
 	regions: ClimateRegion[];
@@ -9,16 +10,31 @@ interface FormInput {
 }
 
 interface FormData {
-	name?: string;
+	name: string;
 	description?: string;
 	region: ClimateRegion;
 	fuel: Fuel;
 	file?: File | null;
-	error?: string | null;
 }
 
-function useFormData() {
+interface FormContext {
+	regions: ClimateRegion[];
+	fuels: Fuel[];
+	data: FormData;
+	error: string | null;
+	update: (diff: Partial<FormData>) => void;
+	isComplete: boolean;
+	isLoading: boolean;
+	onOk: () => void;
+	onCancel: () => void;
+}
+
+function useFormContext(): FormContext {
+	const navigate = useNavigate();
 	const { regions, fuels }: FormInput = useLoaderData();
+	const [isLoading, setLoading] = useState(false);
+	const [isComplete, setComplete] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 	const [data, setData] = useState<FormData>({
 		name: "New project",
 		region: regions[0],
@@ -26,33 +42,16 @@ function useFormData() {
 	});
 
 	const update = (diff: Partial<FormData>) => {
-		if (diff.error) {
-			setData(prev => ({ ...prev, error: diff.error }));
-		} else {
-			setData(prev => ({ ...prev, ...diff, error: null }));
-		}
+		const next = { ...data, ...diff };
+		setData(next);
+		setError(null);
+		setComplete(!!next.name && next.name.trim().length > 0 && !!next.file);
 	};
 
-	return { regions, fuels, data, update };
-}
-
-function isComplete(data: FormData): boolean {
-	if (!data || !data.name || !data.file || !data.region) return false;
-	var name = data.name.trim();
-	return name.length > 0;
-}
-
-export const ProjectForm = () => {
-	const navigate = useNavigate();
-
-	const { regions, fuels, data, update } = useFormData();
-	const [loading, setLoading] = useState(false);
-
 	const onOk = async () => {
-		if (!isComplete(data)) {
+		if (!isComplete) {
 			return;
 		}
-
 		setLoading(true);
 		const res = await api.createProject({
 			climateRegionId: data.region.id,
@@ -64,27 +63,53 @@ export const ProjectForm = () => {
 		setLoading(false);
 
 		if (res.isErr) {
-			update({ error: res.error });
+			setError("Failed to create project: " + res.error);
 		} else {
 			navigate("/ui/projects");
 		}
 	};
 
+	const onCancel = () => {
+		navigate("/ui/projects");
+	};
+
+	return {
+		regions,
+		fuels,
+		data,
+		error,
+		update,
+		isComplete,
+		isLoading,
+		onOk,
+		onCancel,
+	};
+}
+
+export const ProjectForm = () => {
+	const ctx = useFormContext();
+
 	return (
 		<div className="container-fluid">
 			<div className="row">
 				<div className="col-md-7">
-					<h1>New project</h1>
+					<BreadcrumbRow
+						active="New"
+						path={[
+							["/", "Home"],
+							["/ui/projects", "Projects"],
+						]}
+					/>
 
-					{data.error ? <ErrorRow err={data.error} /> : <></>}
+					<ErrorRow ctx={ctx} />
 
 					<div className="mb-3">
 						<label className="form-label">Name</label>
 						<input
 							type="text"
 							className="form-control"
-							value={data.name || ""}
-							onChange={e => update({ name: e.target.value })}
+							value={ctx.data.name || ""}
+							onChange={e => ctx.update({ name: e.target.value })}
 						/>
 					</div>
 
@@ -92,15 +117,15 @@ export const ProjectForm = () => {
 						<label className="form-label">Description</label>
 						<textarea
 							className="form-control"
-							value={data.description || ""}
-							onChange={e => update({ description: e.target.value })}
+							value={ctx.data.description || ""}
+							onChange={e => ctx.update({ description: e.target.value })}
 							rows={2}
 						/>
 					</div>
 
-					<RegionCombo data={data} regions={regions} update={update} />
+					<RegionCombo ctx={ctx} />
 
-					<FuelCombo data={data} fuels={fuels} update={update} />
+					<FuelCombo ctx={ctx} />
 
 					<div className="mb-3">
 						<label className="form-label">CityGML</label>
@@ -110,29 +135,31 @@ export const ProjectForm = () => {
 							accept=".gml,.xml"
 							onChange={e => {
 								const file = e.target.files?.[0] || null;
-								update({ file });
+								ctx.update({ file });
 							}}
 						/>
-						{data.file && (
+						{ctx.data.file && (
 							<div className="form-text">
-								Selected: {data.file.name} (
-								{(data.file.size / 1024 ** 2).toFixed(1)} MB)
+								Selected: {ctx.data.file.name} (
+								{(ctx.data.file.size / 1024 ** 2).toFixed(1)} MB)
 							</div>
 						)}
 					</div>
 
 					<div className="d-flex gap-2">
 						<button
-							className="btn btn-secondary"
-							disabled={loading}
-							onClick={() => navigate("/ui/projects")}>
+							className="btn btn-outline-secondary"
+							disabled={ctx.isLoading}
+							onClick={ctx.onCancel}
+							style={{ width: "120px" }}>
 							Cancel
 						</button>
 						<button
-							className="btn btn-primary"
-							disabled={loading || !isComplete(data)}
-							onClick={onOk}>
-							Create project
+							className="btn btn-outline-primary"
+							disabled={ctx.isLoading || !ctx.isComplete}
+							onClick={ctx.onOk}
+							style={{ width: "120px" }}>
+							OK
 						</button>
 					</div>
 				</div>
@@ -140,7 +167,7 @@ export const ProjectForm = () => {
 				<div className="col-md-5">
 					<img
 						src="/img/try-regions.png"
-						alt="Try Regions"
+						alt="TRY Regions"
 						className="img-fluid rounded shadow mb-3"
 					/>
 				</div>
@@ -149,76 +176,70 @@ export const ProjectForm = () => {
 	);
 };
 
-const ErrorRow = ({ err }: { err: string | null }) => {
-	if (!err) {
+type Props = { ctx: FormContext };
+
+const ErrorRow = ({ ctx }: Props) => {
+	if (!ctx.error) {
 		return <></>;
 	}
 	return (
 		<div className="alert alert-danger" role="alert">
-			{err}
+			{ctx.error}
 		</div>
 	);
 };
 
-const RegionCombo = ({
-	data,
-	regions,
-	update,
-}: {
-	data: FormData;
-	regions: ClimateRegion[];
-	update: (fd: Partial<FormData>) => void;
-}) => {
+const RegionCombo = ({ ctx }: Props) => {
+	const options = ctx.regions.map(r => (
+		<option key={r.id} value={r.id}>
+			{r.number}. {r.name} ({r.stationName})
+		</option>
+	));
+
+	const onSelect = (sid: string) => {
+		const id = parseInt(sid);
+		const region = ctx.regions.find(r => r.id === id);
+		if (region) {
+			ctx.update({ region });
+		}
+	};
+
 	return (
 		<div className="mb-3">
 			<label className="form-label">Climate region</label>
 			<select
 				className="form-select"
-				value={data.region.id}
-				onChange={e => {
-					const id = parseInt(e.target.value);
-					const region = regions.find(r => r.id === id);
-					if (region) {
-						update({ region });
-					}
-				}}>
-				{regions.map(r => (
-					<option key={r.id} value={r.id}>
-						{r.number}. {r.name} ({r.stationName})
-					</option>
-				))}
+				value={ctx.data.region.id}
+				onChange={e => onSelect(e.target.value)}>
+				{options}
 			</select>
 		</div>
 	);
 };
 
-const FuelCombo = ({
-	data,
-	fuels,
-	update,
-}: {
-	data: FormData;
-	fuels: Fuel[];
-	update: (fd: Partial<FormData>) => void;
-}) => {
+const FuelCombo = ({ ctx }: Props) => {
+	const options = ctx.fuels.map(f => (
+		<option key={f.id} value={f.id}>
+			{f.name} ({f.unit})
+		</option>
+	));
+
+	const onSelect = (sid: string) => {
+		const id = parseInt(sid);
+		const fuel = ctx.fuels.find(f => f.id === id);
+		if (fuel) {
+			ctx.update({ fuel });
+		}
+	};
+
 	return (
 		<div className="mb-3">
 			<label className="form-label">Default fuel</label>
 			<select
 				className="form-select"
-				value={data.fuel.id}
-				onChange={e => {
-					const id = parseInt(e.target.value);
-					const fuel = fuels.find(f => f.id === id);
-					if (fuel) {
-						update({ fuel });
-					}
-				}}>
-				{fuels.map(f => (
-					<option key={f.id} value={f.id}>
-						{f.name} ({f.unit})
-					</option>
-				))}
+				value={ctx.data.fuel.id}
+				onChange={e => onSelect(e.target.value)}>
+				{options}
 			</select>
 		</div>
 	);

@@ -76,7 +76,16 @@ type Props = { ctx: ProjectListContext };
 
 const NoContentPanel = ({ ctx }: Props) => {
 	return (
-		<div className="text-center">You do not have any created projects yet.</div>
+		<>
+			<div className="text-center my-3">
+				You do not have any created projects yet.
+				<div className="my-3">
+					<Link to="/ui/projects/new" className="btn btn-outline-primary">
+						Create your first project
+					</Link>
+				</div>
+			</div>
+		</>
 	);
 };
 

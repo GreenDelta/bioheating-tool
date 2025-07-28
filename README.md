@@ -1,5 +1,10 @@
 # The BioHeating Tool
 
+```bash
+cd server
+mvn spring-boot:run
+```
+
 ## Building the UI
 
 The user interface is built with TypeScript, React, and Webpack. The UI source code is located in the `ui/` directory.
