@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import * as api from "../api";
 import { User, UserData } from "../model";
+import { BreadcrumbRow } from "../components/navi";
 
 interface FormData {
 	name?: string;
@@ -112,7 +113,13 @@ export const UserForm = () => {
 		<div className="container-fluid">
 			<div className="row">
 				<div className="col-md-8">
-					<h1>New User</h1>
+					<BreadcrumbRow
+						active="New"
+						path={[
+							["/", "Home"],
+							["/ui/users", "Users"],
+						]}
+					/>
 
 					{data.error ? <ErrorRow err={data.error} /> : <></>}
 
@@ -183,18 +190,20 @@ export const UserForm = () => {
 						</div>
 					</div>
 
-					<div className="d-flex gap-2">
+					<div className="d-flex gap-2 justify-content-end">
 						<button
-							className="btn btn-secondary"
+							className="btn btn-outline-secondary"
 							disabled={loading}
-							onClick={() => navigate("/ui/users")}>
+							onClick={() => navigate("/ui/users")}
+							style={{ width: 120 }}>
 							Cancel
 						</button>
 						<button
-							className="btn btn-primary"
+							className="btn btn-outline-primary"
 							disabled={loading || !isComplete(data)}
-							onClick={onOk}>
-							{loading ? "Creating..." : "Create User"}
+							onClick={onOk}
+							style={{ width: 120 }}>
+							OK
 						</button>
 					</div>
 				</div>

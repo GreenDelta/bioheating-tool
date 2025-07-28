@@ -8,6 +8,7 @@ import { MultiPanel } from "./panel-multi";
 import { SaveIcon } from "../components/icons";
 import { DownloadIcon } from "../components/icons";
 import * as api from "../api";
+import { BreadcrumbRow } from "../components/navi";
 
 interface InputData {
 	project: Project;
@@ -56,11 +57,14 @@ export const ProjectEditor = () => {
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-3">
-				<h2>
-					Project: {ctx.project.name}
-					{ctx.isDirty ? "*" : ""}
-				</h2>
-				<div className="d-flex">
+				<BreadcrumbRow
+					active={ctx.project.name}
+					path={[
+						["/", "Home"],
+						["/ui/projects", "Projects"],
+					]}
+				/>
+				<div className="d-flex gap-2">
 					<SaveButton ctx={ctx} />
 					<DownloadButton ctx={ctx} />
 				</div>
@@ -123,7 +127,9 @@ const SaveButton = ({ ctx }: Props) => {
 	return (
 		<button
 			className={
-				ctx.isDirty ? "btn btn-outline-primary me-2" : "btn-outline-secondary"
+				ctx.isDirty
+					? "btn btn-outline-primary me-2"
+					: "btn btn-outline-secondary"
 			}
 			onClick={handleSave}
 			disabled={!ctx.isDirty || isSaving}
@@ -150,7 +156,7 @@ const DownloadButton = ({ ctx }: Props) => {
 
 	return (
 		<button
-			className="btn-outline-secondary"
+			className="btn btn-outline-secondary"
 			onClick={handleDownload}
 			disabled={isDownloading}
 			title="Download Sophena package"

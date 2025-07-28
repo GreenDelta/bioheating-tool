@@ -146,7 +146,7 @@ export const ProjectForm = () => {
 						)}
 					</div>
 
-					<div className="d-flex gap-2">
+					<div className="d-flex gap-2 justify-content-end">
 						<button
 							className="btn btn-outline-secondary"
 							disabled={ctx.isLoading}
