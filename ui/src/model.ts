@@ -42,7 +42,7 @@ export interface Fuel {
 export interface Project {
 	id: number;
 	name: string;
-	description: string;
+	description?: string;
 	climateRegion?: ClimateRegion;
 	defaultFuel?: Fuel;
 	map: GeoMap;

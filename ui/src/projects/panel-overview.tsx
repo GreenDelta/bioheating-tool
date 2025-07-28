@@ -1,41 +1,49 @@
 import React from "react";
-import { Project, Fuel, isBuilding } from "../model";
+import { Project, isBuilding, Inclusion } from "../model";
+import { BuildingData } from "./panel-data";
 
 interface Props {
 	project: Project;
-	fuels: Fuel[];
 }
 
-export const OverviewPanel = ({ project, fuels }: Props) => {
-	// Calculate building statistics
-	const buildings = project.map.features.filter(isBuilding);
-	const buildingCount = buildings.length;
+function keyFiguresOf(project: Project) {
+	const fs = project?.map?.features || [];
+	let buildingCount = 0;
+	let totalDemand = 0;
+	for (const f of fs) {
+		if (!isBuilding(f)) {
+			continue;
+		}
+		const data = BuildingData.of(f);
+		if (data.inclusion === Inclusion.REQUIRED && data.isHeated) {
+			buildingCount++;
+			totalDemand += data.heatDemand;
+		}
+	}
+	return { buildingCount, totalDemand };
+}
 
-	// Calculate total heat demand
-	const totalHeatDemand = buildings.reduce((total, building) => {
-		const heatDemand = building.properties?.heatDemand || 0;
-		return total + (typeof heatDemand === 'number' ? heatDemand : 0);
-	}, 0);
+export const OverviewPanel = ({ project }: Props) => {
+	const { buildingCount, totalDemand } = keyFiguresOf(project);
 
-	// Format heat demand with appropriate units
 	const formatHeatDemand = (value: number): string => {
 		if (value >= 1000000) {
-			return `${(value / 1000000).toFixed(1)} GWh`;
+			return `${(value / 1000000).toFixed()} GWh`;
 		} else if (value >= 1000) {
-			return `${(value / 1000).toFixed(1)} MWh`;
+			return `${(value / 1000).toFixed()} MWh`;
 		}
-		return `${value.toFixed(1)} kWh`;
+		return `${value.toFixed()} kWh`;
 	};
 
 	return (
 		<div className="card">
 			<div className="card-header">
-				<h5 className="card-title mb-0">Project Overview</h5>
+				<h5 className="card-title mb-0">Project overview</h5>
 			</div>
 			<div className="card-body">
 				<div className="row g-3">
 					<div className="col-12">
-						<label className="form-label fw-bold">Project Name</label>
+						<label className="form-label fw-bold">Project name</label>
 						<p className="form-control-plaintext">{project.name}</p>
 					</div>
 
@@ -48,12 +56,12 @@ export const OverviewPanel = ({ project, fuels }: Props) => {
 
 					{project.climateRegion && (
 						<div className="col-12">
-							<label className="form-label fw-bold">Climate Region</label>
+							<label className="form-label fw-bold">Climate region</label>
 							<p className="form-control-plaintext">
 								{project.climateRegion.number}. {project.climateRegion.name}
 								<br />
 								<small className="text-muted">
-									Station: {project.climateRegion.stationName} ({project.climateRegion.stationId})
+									Station: {project.climateRegion.stationName}
 								</small>
 							</p>
 						</div>
@@ -61,12 +69,14 @@ export const OverviewPanel = ({ project, fuels }: Props) => {
 
 					{project.defaultFuel && (
 						<div className="col-12">
-							<label className="form-label fw-bold">Default Fuel</label>
+							<label className="form-label fw-bold">Default fuel</label>
 							<p className="form-control-plaintext">
 								{project.defaultFuel.name} ({project.defaultFuel.unit})
 								<br />
 								<small className="text-muted">
-									Calorific value: {project.defaultFuel.calorificValue.toLocaleString()} kWh/{project.defaultFuel.unit}
+									Calorific value:{" "}
+									{project.defaultFuel.calorificValue.toLocaleString()} kWh/
+									{project.defaultFuel.unit}
 								</small>
 							</p>
 						</div>
@@ -79,26 +89,29 @@ export const OverviewPanel = ({ project, fuels }: Props) => {
 					<div className="col-6">
 						<label className="form-label fw-bold">Buildings</label>
 						<p className="form-control-plaintext">
-							<span className="fs-4 text-primary">{buildingCount.toLocaleString()}</span>
+							<span className="fs-4 text-primary">{buildingCount}</span>
 							<br />
 							<small className="text-muted">included buildings</small>
 						</p>
 					</div>
 
 					<div className="col-6">
-						<label className="form-label fw-bold">Total Heat Demand</label>
+						<label className="form-label fw-bold">Total heat demand</label>
 						<p className="form-control-plaintext">
-							<span className="fs-4 text-success">{formatHeatDemand(totalHeatDemand)}</span>
+							<span className="fs-4 text-success">
+								{formatHeatDemand(totalDemand)}
+							</span>
 							<br />
 							<small className="text-muted">annual demand</small>
 						</p>
 					</div>
 
-					{buildingCount > 0 && (
+					{buildingCount === 0 && (
 						<div className="col-12">
 							<div className="alert alert-info mb-0">
 								<small>
-									<strong>Tip:</strong> Select buildings or streets on the map to view and edit their properties.
+									Select buildings or streets on the map to view and edit their
+									properties.
 								</small>
 							</div>
 						</div>

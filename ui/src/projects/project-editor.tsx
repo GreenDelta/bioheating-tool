@@ -95,7 +95,7 @@ const SelectionPanel = ({ ctx }: Props) => {
 	const onChange = () => ctx.setDirty(true);
 
 	if (!selection || selection.length === 0) {
-		return <OverviewPanel project={ctx.project} fuels={ctx.fuels} />;
+		return <OverviewPanel project={ctx.project} />;
 	}
 	if (selection.length > 1) {
 		return <MultiPanel features={selection} onChange={onChange} />;
