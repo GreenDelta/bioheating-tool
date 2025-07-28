@@ -45,6 +45,24 @@ public class TaskService {
 		}
 	}
 
+	public TaskState getState(String id) {
+		if (Strings.isNil(id))
+			return new TaskState(Status.ERROR, "No task ID provided", null);
+
+		var task = store.get(id);
+		if (task == null)
+			return new TaskState(Status.ERROR, "Task not found", null);
+
+		return switch (task) {
+			case NewTask<?> ignored -> new TaskState(Status.RUNNING, null, null);
+			case Error error -> new TaskState(Status.ERROR, error.message(), null);
+			case Result<?> result ->
+				new TaskState(Status.READY, null, result.value());
+		};
+	}
+
+	public record TaskState(Status status, String error, Object result) {
+	}
 
 	public enum Status {RUNNING, READY, ERROR}
 
@@ -55,7 +73,9 @@ public class TaskService {
 
 		long time();
 
-		record NewTask<T>(String id, long time, Supplier<Res<T>> func) implements Task {
+		record NewTask<T>(
+			String id, long time, Supplier<Res<T>> func
+		) implements Task {
 			public static <T> NewTask<T> of(Supplier<Res<T>> func) {
 				var id = UUID.randomUUID().toString();
 				long time = System.currentTimeMillis();
@@ -74,9 +94,8 @@ public class TaskService {
 		record Result<T>(String id, long time, T value) implements Task {
 
 			public static <T> Result<T> of(String id, T value) {
-				return new Result(id, System.currentTimeMillis(), value);
+				return new Result<>(id, System.currentTimeMillis(), value);
 			}
-
 		}
 	}
 
