@@ -3,9 +3,12 @@ package com.greendelta.bioheating.services;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.greendelta.bioheating.services.TaskService.Task.Error;
@@ -18,6 +21,13 @@ import com.greendelta.bioheating.util.Strings;
 public class TaskService {
 
 	private final Map<String, Task> store = new ConcurrentHashMap<>();
+	private final long taskTimeoutMs;
+
+	public TaskService(
+		@Value("${bioheating.tasks.retention-minutes:30}") int timeout
+	) {
+		this.taskTimeoutMs = timeout * 60L * 1000L;
+	}
 
 	public void schedule(NewTask<?> task) {
 		if (task == null || Strings.isNil(task.id))
@@ -43,6 +53,17 @@ public class TaskService {
 			store.put(task.id, Error.of(
 				task.id, "failed to execute task: " + e.getMessage()));
 		}
+	}
+
+	@Async
+	@Scheduled(fixedRate = 30, timeUnit = TimeUnit.MINUTES)
+	public void runCleanup() {
+		long cutoffTime = System.currentTimeMillis() - taskTimeoutMs;
+		store.entrySet().removeIf(entry -> {
+			Task task = entry.getValue();
+			return (task instanceof Error || task instanceof Result) &&
+				   task.time() < cutoffTime;
+		});
 	}
 
 	public TaskState getState(String id) {
@@ -98,5 +119,4 @@ public class TaskService {
 			}
 		}
 	}
-
 }
