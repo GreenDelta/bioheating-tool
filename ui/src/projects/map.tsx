@@ -15,7 +15,6 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 	const [selection, setSelection] = useState<Set<any>>(new Set());
 
 	const handleSelect = useCallback((features: GeoFeature[]) => {
-		console.log(selection);
 		const nextIds = new Set();
 		if (!features) {
 			setSelection(nextIds);
@@ -89,7 +88,6 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 			layerRef.current.on("click", evt => {
 				const f = evt?.propagatedFrom?.feature;
 				if (f) {
-					console.log(f.properties?.id);
 					handleSelect([f]);
 				}
 			});
