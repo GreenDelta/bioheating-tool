@@ -5,6 +5,7 @@ import { Map } from "./map";
 import { BuildingPanel } from "./panel-building";
 import { StreetPanel } from "./panel-street";
 import { MultiPanel } from "./panel-multi";
+import { OverviewPanel } from "./panel-overview";
 import { SaveIcon } from "../components/icons";
 import { DownloadIcon } from "../components/icons";
 import * as api from "../api";
@@ -94,7 +95,7 @@ const SelectionPanel = ({ ctx }: Props) => {
 	const onChange = () => ctx.setDirty(true);
 
 	if (!selection || selection.length === 0) {
-		return <div></div>;
+		return <OverviewPanel project={ctx.project} fuels={ctx.fuels} />;
 	}
 	if (selection.length > 1) {
 		return <MultiPanel features={selection} onChange={onChange} />;

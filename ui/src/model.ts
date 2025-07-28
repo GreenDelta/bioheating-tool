@@ -43,6 +43,8 @@ export interface Project {
 	id: number;
 	name: string;
 	description: string;
+	climateRegion?: ClimateRegion;
+	defaultFuel?: Fuel;
 	map: GeoMap;
 }
 
