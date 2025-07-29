@@ -3,6 +3,7 @@ import { useLoaderData, useNavigate } from "react-router-dom";
 import * as api from "../api";
 import { ClimateRegion, Fuel } from "../model";
 import { BreadcrumbRow } from "../components/navi";
+import { TaskPanel } from "../components/tasks";
 
 interface FormInput {
 	regions: ClimateRegion[];
@@ -22,11 +23,13 @@ interface FormContext {
 	fuels: Fuel[];
 	data: FormData;
 	error: string | null;
+	taskId: string | null;
 	update: (diff: Partial<FormData>) => void;
 	isComplete: boolean;
 	isLoading: boolean;
 	onOk: () => void;
 	onCancel: () => void;
+	onTaskSuccess: (result: any) => void;
 }
 
 function useFormContext(): FormContext {
@@ -35,6 +38,7 @@ function useFormContext(): FormContext {
 	const [isLoading, setLoading] = useState(false);
 	const [isComplete, setComplete] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [taskId, setTaskId] = useState<string | null>(null);
 	const [data, setData] = useState<FormData>({
 		name: "New project",
 		region: regions[0],
@@ -65,6 +69,14 @@ function useFormContext(): FormContext {
 		if (res.isErr) {
 			setError("Failed to create project: " + res.error);
 		} else {
+			setTaskId(res.value.id);
+		}
+	};
+
+	const onTaskSuccess = (result: any) => {
+		if (result && result.id) {
+			navigate(`/ui/projects/${result.id}`);
+		} else {
 			navigate("/ui/projects");
 		}
 	};
@@ -78,17 +90,48 @@ function useFormContext(): FormContext {
 		fuels,
 		data,
 		error,
+		taskId,
 		update,
 		isComplete,
 		isLoading,
 		onOk,
 		onCancel,
+		onTaskSuccess,
 	};
 }
 
 export const ProjectForm = () => {
 	const ctx = useFormContext();
 
+	// Show TaskPanel when task is running
+	if (ctx.taskId) {
+		return (
+			<div className="container-fluid">
+				<div className="row">
+					<div className="col-md-8 offset-md-2">
+						<BreadcrumbRow
+							active="Creating..."
+							path={[
+								["/", "Home"],
+								["/ui/projects", "Projects"],
+								["/ui/projects/new", "New"],
+							]}
+						/>
+
+						<div className="mt-4">
+							<TaskPanel
+								taskId={ctx.taskId}
+								message={`Creating project "${ctx.data.name}" and processing uploaded file...`}
+								onSuccess={ctx.onTaskSuccess}
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Show regular form when no task is running
 	return (
 		<div className="container-fluid">
 			<div className="row">

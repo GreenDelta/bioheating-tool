@@ -74,7 +74,7 @@ public class TaskService {
 		if (user == null || Strings.isNil(id))
 			return Optional.empty();
 		var task = store.get(id);
-		return task != null && task.userId() != user.id()
+		return task != null && task.userId() == user.id()
 			? Optional.of(task.toState())
 			: Optional.empty();
 	}
@@ -89,7 +89,9 @@ public class TaskService {
 		return true;
 	}
 
-	public record TaskState(Status status, String error, Object result) {
+	public record TaskState(
+		String id, Status status, String error, Object result
+	) {
 	}
 
 	public enum Status {RUNNING, READY, ERROR}
@@ -105,10 +107,12 @@ public class TaskService {
 
 		default TaskState toState() {
 			return switch (this) {
-				case NewTask<?> ignored -> new TaskState(Status.RUNNING, null, null);
-				case Error error -> new TaskState(Status.ERROR, error.message(), null);
+				case NewTask<?> ignored ->
+					new TaskState(id(), Status.RUNNING, null, null);
+				case Error error -> new
+					TaskState(id(), Status.ERROR, error.message(), null);
 				case Result<?> result ->
-					new TaskState(Status.READY, null, result.value());
+					new TaskState(id(), Status.READY, null, result.value());
 			};
 		}
 

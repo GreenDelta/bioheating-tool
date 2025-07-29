@@ -6,7 +6,7 @@ import {
 	Project,
 	ClimateRegion,
 	Fuel,
-	TaskState,
+	TaskState
 } from "./model";
 
 export class Res<T> {
@@ -206,7 +206,7 @@ interface NewProjectData {
 
 export async function createProject(
 	d: NewProjectData,
-): Promise<Res<ProjectInfo>> {
+): Promise<Res<TaskState>> {
 	try {
 		const data = new FormData();
 		data.append("climateRegionId", d.climateRegionId.toString());
@@ -223,8 +223,8 @@ export async function createProject(
 		});
 
 		if (r.status === 200) {
-			const project = await r.json();
-			return Res.ok(project);
+			const state = await r.json();
+			return Res.ok(state);
 		}
 		const msg = await r.text();
 		return Res.err(`failed to create project: ${r.status} | ${msg}`);

@@ -99,6 +99,7 @@ export function inclusionToString(inclusion: Inclusion): string {
 }
 
 export interface TaskState {
+	id: string;
 	status: TaskStatus;
 	error?: string;
 	result?: any;
