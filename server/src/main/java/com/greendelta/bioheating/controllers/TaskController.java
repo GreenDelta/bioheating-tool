@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.greendelta.bioheating.services.TaskService;
-import com.greendelta.bioheating.services.TaskService.TaskState;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
 
@@ -17,33 +16,33 @@ import com.greendelta.bioheating.util.Http;
 @RequestMapping("/api/tasks")
 public class TaskController {
 
-	private final TaskService taskService;
-	private final UserService userService;
+	private final TaskService tasks;
+	private final UserService users;
 
-	public TaskController(TaskService taskService, UserService userService) {
-		this.taskService = taskService;
-		this.userService = userService;
+	public TaskController(TaskService tasks, UserService users) {
+		this.tasks = tasks;
+		this.users = users;
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getTaskState(Authentication auth, @PathVariable String id) {
-		var user = userService.getCurrentUser(auth).orElse(null);
+	public ResponseEntity<?> getState(Authentication auth, @PathVariable String id) {
+		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
 
-		var state = taskService.getState(user, id);
+		var state = tasks.getState(user, id);
 		return state.isPresent()
 			? Http.ok(state.get())
 			: Http.notFound("task not found: " + id);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deleteTask(Authentication auth, @PathVariable String id) {
-		var user = userService.getCurrentUser(auth).orElse(null);
+	public ResponseEntity<?> dropResult(Authentication auth, @PathVariable String id) {
+		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
 
-		boolean deleted = taskService.deleteTask(user, id);
+		boolean deleted = tasks.remove(user, id);
 		return deleted
 			? Http.ok("task deleted successfully")
 			: Http.notFound("task not found: " + id);
