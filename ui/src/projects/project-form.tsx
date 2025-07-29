@@ -29,7 +29,7 @@ interface FormContext {
 	isLoading: boolean;
 	onOk: () => void;
 	onCancel: () => void;
-	onTaskSuccess: (result: any) => void;
+	getTaskTargetUrl: (result: any) => string;
 }
 
 function useFormContext(): FormContext {
@@ -81,6 +81,14 @@ function useFormContext(): FormContext {
 		}
 	};
 
+	const getTaskTargetUrl = (result: any) => {
+		if (result && result.id) {
+			return `/ui/projects/${result.id}`;
+		} else {
+			return "/ui/projects";
+		}
+	};
+
 	const onCancel = () => {
 		navigate("/ui/projects");
 	};
@@ -96,7 +104,7 @@ function useFormContext(): FormContext {
 		isLoading,
 		onOk,
 		onCancel,
-		onTaskSuccess,
+		getTaskTargetUrl,
 	};
 }
 
@@ -122,7 +130,7 @@ export const ProjectForm = () => {
 							<TaskPanel
 								taskId={ctx.taskId}
 								message={`Creating project "${ctx.data.name}" and processing uploaded file...`}
-								onSuccess={ctx.onTaskSuccess}
+								getTargetUrl={ctx.getTaskTargetUrl}
 							/>
 						</div>
 					</div>

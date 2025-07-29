@@ -1,17 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as api from "../api";
 import { TaskState, TaskStatus } from "../model";
 
 interface Props {
 	taskId: string;
 	message: string;
-	onSuccess: (result: any) => void;
+	getTargetUrl: (result: any) => string;
 }
 
-export const TaskPanel = ({ taskId, message, onSuccess }: Props) => {
+export const TaskPanel = ({ taskId, message, getTargetUrl }: Props) => {
 	const [state, setState] = useState<TaskState | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const timeoutRef = useRef<any>(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const poll = async () => {
@@ -48,6 +50,13 @@ export const TaskPanel = ({ taskId, message, onSuccess }: Props) => {
 
 	}, [taskId]);
 
+	useEffect(() => {
+		if (state && state.status === TaskStatus.READY) {
+			const targetUrl = getTargetUrl(state.result);
+			navigate(targetUrl);
+		}
+	}, [state]);
+
 	if (!state || !state.status) {
 		return <ProgressPanel message={message} />;
 	}
@@ -57,8 +66,7 @@ export const TaskPanel = ({ taskId, message, onSuccess }: Props) => {
 	}
 
 	if (state.status === TaskStatus.READY) {
-		onSuccess(state.result);
-		return null;
+		return <ProgressPanel message="Task completed successfully..." />;
 	}
 
 	return <ErrorPanel message="Unknown task state" />;
