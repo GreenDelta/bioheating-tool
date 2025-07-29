@@ -3,10 +3,13 @@ package com.greendelta.bioheating.services;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,11 +27,14 @@ public class TaskService {
 
 	private final Map<String, Task> store = new ConcurrentHashMap<>();
 	private final long taskTimeoutMs;
+	private final Executor exec;
 
 	public TaskService(
-		@Value("${bioheating.tasks.retention-minutes:30}") int timeout
+		@Value("${bioheating.tasks.retention-minutes:30}") int timeout,
+		@Qualifier("applicationTaskExecutor") Executor exec
 	) {
 		this.taskTimeoutMs = timeout * 60L * 1000L;
+		this.exec = exec;
 	}
 
 	public void schedule(NewTask<?> task) {
@@ -39,13 +45,10 @@ public class TaskService {
 			return;
 		}
 		store.put(task.id, task);
-		exec(task);
+		CompletableFuture.runAsync(() -> exec(task), exec);
 	}
 
-	@Async
 	private void exec(NewTask<?> task) {
-		if (task == null)
-			return;
 		try {
 			var res = task.func.get();
 			if (res.hasError()) {
