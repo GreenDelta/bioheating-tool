@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.services;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,17 +73,10 @@ public class TaskService {
 	public Optional<TaskState> getState(User user, String id) {
 		if (user == null || Strings.isNil(id))
 			return Optional.empty();
-
 		var task = store.get(id);
-		if (task == null || !Objects.equals(task.userId(), user.id()))
-			return Optional.empty();
-
-		return Optional.of(switch (task) {
-			case NewTask<?> ignored -> new TaskState(Status.RUNNING, null, null);
-			case Error error -> new TaskState(Status.ERROR, error.message(), null);
-			case Result<?> result ->
-				new TaskState(Status.READY, null, result.value());
-		});
+		return task != null && task.userId() != user.id()
+			? Optional.of(task.toState())
+			: Optional.empty();
 	}
 
 	public boolean remove(User user, String id) {
@@ -110,6 +102,15 @@ public class TaskService {
 		long time();
 
 		long userId();
+
+		default TaskState toState() {
+			return switch (this) {
+				case NewTask<?> ignored -> new TaskState(Status.RUNNING, null, null);
+				case Error error -> new TaskState(Status.ERROR, error.message(), null);
+				case Result<?> result ->
+					new TaskState(Status.READY, null, result.value());
+			};
+		}
 
 		default Error toError(String message) {
 			return new Error(id(), System.currentTimeMillis(), userId(), message);
