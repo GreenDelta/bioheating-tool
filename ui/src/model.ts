@@ -97,3 +97,16 @@ export function inclusionFromString(value: string): Inclusion {
 export function inclusionToString(inclusion: Inclusion): string {
 	return inclusion.toString();
 }
+
+export interface TaskState {
+	id: string;
+	status: TaskStatus;
+	error?: string;
+	result?: any;
+}
+
+export enum TaskStatus {
+	RUNNING = "RUNNING",
+	READY = "READY",
+	ERROR = "ERROR",
+}

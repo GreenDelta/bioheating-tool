@@ -6,6 +6,7 @@ import {
 	Project,
 	ClimateRegion,
 	Fuel,
+	TaskState
 } from "./model";
 
 export class Res<T> {
@@ -205,7 +206,7 @@ interface NewProjectData {
 
 export async function createProject(
 	d: NewProjectData,
-): Promise<Res<ProjectInfo>> {
+): Promise<Res<TaskState>> {
 	try {
 		const data = new FormData();
 		data.append("climateRegionId", d.climateRegionId.toString());
@@ -222,8 +223,8 @@ export async function createProject(
 		});
 
 		if (r.status === 200) {
-			const project = await r.json();
-			return Res.ok(project);
+			const state = await r.json();
+			return Res.ok(state);
 		}
 		const msg = await r.text();
 		return Res.err(`failed to create project: ${r.status} | ${msg}`);
@@ -348,4 +349,39 @@ function fileNameOf(resp: Response): string {
 		}
 	}
 	return "project.sophena";
+}
+
+export async function getTaskState(id: string): Promise<Res<TaskState>> {
+	try {
+		const r = await fetch(`/api/tasks/${id}`);
+		if (r.status === 200) {
+			const state = await r.json();
+			return Res.ok(state);
+		}
+		if (r.status === 404) {
+			return Res.err("task not found");
+		}
+		const msg = await r.text();
+		return Res.err(`failed to get task state: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to get task state: ${error}`);
+	}
+}
+
+export async function dropTaskResult(id: string): Promise<Res<boolean>> {
+	try {
+		const r = await fetch(`/api/tasks/${id}`, {
+			method: "DELETE",
+		});
+		if (r.status === 200) {
+			return Res.ok(true);
+		}
+		if (r.status === 404) {
+			return Res.err("task not found");
+		}
+		const msg = await r.text();
+		return Res.err(`failed to delete task: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to delete task: ${error}`);
+	}
 }

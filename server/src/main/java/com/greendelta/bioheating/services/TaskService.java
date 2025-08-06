@@ -1,13 +1,15 @@
 package com.greendelta.bioheating.services;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,38 +27,38 @@ public class TaskService {
 
 	private final Map<String, Task> store = new ConcurrentHashMap<>();
 	private final long taskTimeoutMs;
+	private final Executor exec;
 
 	public TaskService(
-		@Value("${bioheating.tasks.retention-minutes:30}") int timeout
+		@Value("${bioheating.tasks.retention-minutes:30}") int timeout,
+		@Qualifier("applicationTaskExecutor") Executor exec
 	) {
 		this.taskTimeoutMs = timeout * 60L * 1000L;
+		this.exec = exec;
 	}
 
-	public void schedule(User user, NewTask<?> task) {
-		if (user == null || task == null || Strings.isNil(task.id))
+	public void schedule(NewTask<?> task) {
+		if (task == null || Strings.isNil(task.id))
 			return;
 		if (task.func == null) {
-			store.put(task.id, Error.of(task.id, user.id(), "No function provided"));
+			store.put(task.id, task.toError("No function provided"));
 			return;
 		}
-		// Update task with user information
-		var userTask = new NewTask<>(task.id, task.time, task.func, user.id());
-		store.put(task.id, userTask);
-		exec(userTask);
+		store.put(task.id, task);
+		CompletableFuture.runAsync(() -> exec(task), exec);
 	}
 
-	@Async
 	private void exec(NewTask<?> task) {
 		try {
 			var res = task.func.get();
 			if (res.hasError()) {
-				store.put(task.id, Error.of(task.id, task.userId, res.error()));
+				store.put(task.id, task.toError(res.error()));
 			} else {
-				store.put(task.id, Result.of(task.id, task.userId, res.value()));
+				store.put(task.id, task.toResult(res.value()));
 			}
 		} catch (Exception e) {
-			store.put(task.id, Error.of(
-				task.id, task.userId, "failed to execute task: " + e.getMessage()));
+			store.put(task.id,
+				task.toError("failed to execute task: " + e.getMessage()));
 		}
 	}
 
@@ -67,39 +69,32 @@ public class TaskService {
 		store.entrySet().removeIf(entry -> {
 			Task task = entry.getValue();
 			return (task instanceof Error || task instanceof Result) &&
-				   task.time() < cutoffTime;
+				task.time() < cutoffTime;
 		});
 	}
 
 	public Optional<TaskState> getState(User user, String id) {
 		if (user == null || Strings.isNil(id))
 			return Optional.empty();
-
 		var task = store.get(id);
-		if (task == null || !Objects.equals(task.userId(), user.id()))
-			return Optional.empty();
-
-		return Optional.of(switch (task) {
-			case NewTask<?> ignored -> new TaskState(Status.RUNNING, null, null);
-			case Error error -> new TaskState(Status.ERROR, error.message(), null);
-			case Result<?> result ->
-				new TaskState(Status.READY, null, result.value());
-		});
+		return task != null && task.userId() == user.id()
+			? Optional.of(task.toState())
+			: Optional.empty();
 	}
 
-	public boolean deleteTask(User user, String id) {
+	public boolean remove(User user, String id) {
 		if (user == null || Strings.isNil(id))
 			return false;
-
 		var task = store.get(id);
-		if (task == null || !Objects.equals(task.userId(), user.id()))
+		if (task == null || task.userId() != user.id())
 			return false;
-
 		store.remove(id);
 		return true;
 	}
 
-	public record TaskState(Status status, String error, Object result) {
+	public record TaskState(
+		String id, Status status, String error, Object result
+	) {
 	}
 
 	public enum Status {RUNNING, READY, ERROR}
@@ -111,31 +106,46 @@ public class TaskService {
 
 		long time();
 
-		Long userId();
+		long userId();
+
+		default TaskState toState() {
+			return switch (this) {
+				case NewTask<?> ignored ->
+					new TaskState(id(), Status.RUNNING, null, null);
+				case Error error -> new
+					TaskState(id(), Status.ERROR, error.message(), null);
+				case Result<?> result ->
+					new TaskState(id(), Status.READY, null, result.value());
+			};
+		}
+
+		default Error toError(String message) {
+			return new Error(id(), System.currentTimeMillis(), userId(), message);
+		}
+
+		default <T> Result<T> toResult(T value) {
+			return new Result<>(id(), System.currentTimeMillis(), userId(), value);
+		}
 
 		record NewTask<T>(
-			String id, long time, Supplier<Res<T>> func, Long userId
+			String id, long time, long userId, Supplier<Res<T>> func
 		) implements Task {
+
 			public static <T> NewTask<T> of(User user, Supplier<Res<T>> func) {
 				var id = UUID.randomUUID().toString();
 				long time = System.currentTimeMillis();
-				return new NewTask<>(id, time, func, user.id());
+				return new NewTask<>(id, time, user.id(), func);
 			}
 		}
 
-		record Error(String id, long time, Long userId, String message) implements Task {
-
-			public static Error of(String id, Long userId, String message) {
-				return new Error(id, System.currentTimeMillis(), userId, message);
-			}
-
+		record Error(
+			String id, long time, long userId, String message
+		) implements Task {
 		}
 
-		record Result<T>(String id, long time, Long userId, T value) implements Task {
-
-			public static <T> Result<T> of(String id, Long userId, T value) {
-				return new Result<>(id, System.currentTimeMillis(), userId, value);
-			}
+		record Result<T>(
+			String id, long time, long userId, T value
+		) implements Task {
 		}
 	}
 }

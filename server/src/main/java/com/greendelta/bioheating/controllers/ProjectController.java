@@ -24,6 +24,8 @@ import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
 import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
+import com.greendelta.bioheating.services.TaskService;
+import com.greendelta.bioheating.services.TaskService.Task.NewTask;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
 import com.greendelta.bioheating.util.Res;
@@ -37,17 +39,20 @@ public class ProjectController {
 	private final ProjectService projects;
 	private final UserService users;
 	private final FileService files;
+	private final TaskService tasks;
 
 	public ProjectController(
 		Database db,
 		ProjectService projects,
 		UserService users,
-		FileService files
+		FileService files,
+		TaskService tasks
 	) {
 		this.db = db;
 		this.projects = projects;
 		this.users = users;
 		this.files = files;
+		this.tasks = tasks;
 	}
 
 	@GetMapping
@@ -137,12 +142,10 @@ public class ProjectController {
 			.climateRegion(region)
 			.defaultFuel(fuel)
 			.user(user);
-
-		var res = files.useUpload(file, (gml) -> projects.addMap(project, gml));
-		if (res.hasError())
-			return Http.serverError(res.error());
-		var info = ProjectInfo.of(res.value());
-		return Http.ok(info);
+		var task = NewTask.of(user,
+			() -> files.useUpload(file, (gml) -> projects.addMap(project, gml)));
+		tasks.schedule(task);
+		return Http.ok(task.toState());
 	}
 
 	@DeleteMapping("/{id}")
