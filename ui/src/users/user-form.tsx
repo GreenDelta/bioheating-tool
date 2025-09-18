@@ -7,7 +7,7 @@ import { BreadcrumbRow } from "../components/navi";
 interface FormData {
 	name?: string;
 	password?: string;
-	confirmPassword?: string;
+	confirmedPassword?: string;
 	fullName?: string;
 	isAdmin: boolean;
 	error?: string | null;
@@ -17,7 +17,7 @@ function useFormData() {
 	const [data, setData] = useState<FormData>({
 		name: "",
 		password: "",
-		confirmPassword: "",
+		confirmedPassword: "",
 		fullName: "",
 		isAdmin: false,
 	});
@@ -34,31 +34,33 @@ function useFormData() {
 }
 
 function isComplete(data: FormData): boolean {
-	if (!data || !data.name || !data.password || !data.fullName) return false;
+	if (!data || !data.name || !data.password || !data.fullName) {
+		return false;
+	}
 	const name = data.name.trim();
 	const password = data.password.trim();
 	const fullName = data.fullName.trim();
-	const confirmPassword = data.confirmPassword?.trim() || "";
+	const confirmedPassword = data.confirmedPassword?.trim() || "";
 
 	return (
 		name.length >= 2 &&
 		password.length >= 3 &&
 		fullName.length > 0 &&
-		password === confirmPassword
+		password === confirmedPassword
 	);
 }
 
-function getValidationError(data: FormData): string | null {
+function validate(data: FormData): string | null {
 	if (!data.name?.trim() || data.name.trim().length < 2) {
-		return "User name must be at least 2 characters long";
+		return "User name is too short";
 	}
 	if (!data.password?.trim() || data.password.trim().length < 3) {
-		return "Password must be at least 3 characters long";
+		return "Password is too short";
 	}
 	if (!data.fullName?.trim()) {
 		return "Full name is required";
 	}
-	if (data.password !== data.confirmPassword) {
+	if (data.password !== data.confirmedPassword) {
 		return "Passwords do not match";
 	}
 	return null;
@@ -70,7 +72,7 @@ export const UserForm = () => {
 	const { data, update } = useFormData();
 	const [loading, setLoading] = useState(false);
 
-	// Only admins can create users
+	// only admins can create users
 	if (!currentUser.isAdmin) {
 		return (
 			<div className="alert alert-danger">
@@ -81,13 +83,9 @@ export const UserForm = () => {
 	}
 
 	const onOk = async () => {
-		const validationError = getValidationError(data);
-		if (validationError) {
-			update({ error: validationError });
-			return;
-		}
-
-		if (!isComplete(data)) {
+		const err = validate(data);
+		if (err) {
+			update({ error: err });
 			return;
 		}
 
@@ -112,7 +110,7 @@ export const UserForm = () => {
 	return (
 		<div className="container-fluid">
 			<div className="row">
-				<div className="col-md-8">
+				<div className="col-md-12">
 					<BreadcrumbRow
 						active="New"
 						path={[
@@ -120,54 +118,52 @@ export const UserForm = () => {
 							["/ui/users", "Users"],
 						]}
 					/>
+				</div>
+			</div>
+			<div className="row">
+				<div className="col-md-3" />
+				<div className="col-md-6">
 
 					{data.error ? <ErrorRow err={data.error} /> : <></>}
 
 					<div className="mb-3">
-						<label className="form-label">Username *</label>
+						<label className="form-label">User name</label>
 						<input
 							type="text"
 							className="form-control"
 							value={data.name || ""}
 							onChange={e => update({ name: e.target.value })}
-							placeholder="Enter username (min. 2 characters)"
 						/>
-						<div className="form-text">
-							This will be used for login. Must be at least 2 characters.
-						</div>
+						<div className="form-text">This will be used for the login</div>
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Full Name *</label>
+						<label className="form-label">Full name</label>
 						<input
 							type="text"
 							className="form-control"
 							value={data.fullName || ""}
 							onChange={e => update({ fullName: e.target.value })}
-							placeholder="Enter full name"
 						/>
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Password *</label>
+						<label className="form-label">Password</label>
 						<input
 							type="password"
 							className="form-control"
 							value={data.password || ""}
 							onChange={e => update({ password: e.target.value })}
-							placeholder="Enter password (min. 3 characters)"
 						/>
-						<div className="form-text">Must be at least 3 characters long.</div>
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Confirm Password *</label>
+						<label className="form-label">Confirm password</label>
 						<input
 							type="password"
 							className="form-control"
-							value={data.confirmPassword || ""}
-							onChange={e => update({ confirmPassword: e.target.value })}
-							placeholder="Confirm password"
+							value={data.confirmedPassword || ""}
+							onChange={e => update({ confirmedPassword: e.target.value })}
 						/>
 					</div>
 
@@ -207,58 +203,7 @@ export const UserForm = () => {
 						</button>
 					</div>
 				</div>
-
-				<div className="col-md-4">
-					<div className="card">
-						<div className="card-body">
-							<h5 className="card-title">User Requirements</h5>
-							<ul className="list-unstyled">
-								<li className="mb-2">
-									<span
-										className={
-											data.name && data.name.trim().length >= 2
-												? "text-success"
-												: "text-muted"
-										}>
-										✓ Username: min. 2 characters
-									</span>
-								</li>
-								<li className="mb-2">
-									<span
-										className={
-											data.fullName && data.fullName.trim().length > 0
-												? "text-success"
-												: "text-muted"
-										}>
-										✓ Full name: required
-									</span>
-								</li>
-								<li className="mb-2">
-									<span
-										className={
-											data.password && data.password.trim().length >= 3
-												? "text-success"
-												: "text-muted"
-										}>
-										✓ Password: min. 3 characters
-									</span>
-								</li>
-								<li className="mb-2">
-									<span
-										className={
-											data.password &&
-											data.confirmPassword &&
-											data.password === data.confirmPassword
-												? "text-success"
-												: "text-muted"
-										}>
-										✓ Passwords match
-									</span>
-								</li>
-							</ul>
-						</div>
-					</div>
-				</div>
+				<div className="col-md-3" />
 			</div>
 		</div>
 	);
