@@ -73,23 +73,28 @@ export const TaskPanel = ({ taskId, message, getTargetUrl }: Props) => {
 };
 
 const ProgressPanel = ({ message }: { message: string }) => (
-	<div className="d-flex align-items-center">
-		<span>{message}</span>
-		<div className="progress mt-3">
-			<div
-				className="progress-bar progress-bar-striped progress-bar-animated"
-				role="progressbar"
-				style={{ width: "100%" }}
-			/>
+	<div className="d-flex justify-content-center">
+		<div className="card text-center" style={{ maxWidth: "600px" }}>
+			<div className="card-body py-5">
+				<div className="mb-4">
+					<div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+						<span className="visually-hidden">Loading...</span>
+					</div>
+				</div>
+				<h6 className="card-title text-muted mb-0">{message}</h6>
+			</div>
 		</div>
 	</div>
 );
 
 const ErrorPanel = ({ message }: { message: string }) => (
-	<div className="d-flex align-items-center">
+	<div className="text-center py-4">
 		<div className="alert alert-danger" role="alert">
-			<h5 className="alert-heading">Task failed</h5>
-			<p>{message}</p>
+			<h5 className="alert-heading mb-3">
+				<i className="bi bi-exclamation-triangle-fill me-2"></i>
+				Task Failed
+			</h5>
+			<p className="mb-0">{message}</p>
 		</div>
 	</div>
 );
