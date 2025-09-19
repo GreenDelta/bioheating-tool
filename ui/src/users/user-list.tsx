@@ -3,7 +3,7 @@ import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
 import { User } from "../model";
 import { AddIcon, DeleteIcon, EditIcon } from "../components/icons";
 import * as api from "../api";
-import { BreadcrumbRow } from "../components/navi";
+import { FluidBreadcrumbRow } from "../components/navi";
 
 export const UserList = () => {
 	const navigate = useNavigate();
@@ -41,13 +41,19 @@ export const UserList = () => {
 
 	return (
 		<div>
-			<BreadcrumbRow active="Users" path={[["/", "Home"]]} />
+			<div className="container-fluid">
+				<FluidBreadcrumbRow active="Users" path={[["/", "Home"]]} />
+				<div className="row justify-content-center">
+					<div className="col-12 col-md-10 col-lg-8">
+						<UserTable
+							users={users}
+							onDelete={setDeletable}
+							currentUser={currentUser}
+						/>
+					</div>
+				</div>
+			</div>
 			<DeleteDialog user={deletable} doIt={onDelete} />
-			<UserTable
-				users={users}
-				onDelete={setDeletable}
-				currentUser={currentUser}
-			/>
 		</div>
 	);
 };
@@ -78,9 +84,7 @@ const UserTable = ({
 
 	const rows = users.map(u => (
 		<tr key={u.id}>
-			<td>
-				<strong>{u.name}</strong>
-			</td>
+			<td>{u.name}</td>
 			<td>{u.fullName}</td>
 			<td>
 				{u.isAdmin ? (
@@ -92,7 +96,6 @@ const UserTable = ({
 			<td className="text-end">
 				<div className="d-flex gap-2 justify-content-end">
 					<EditIcon
-						color="#007bff"
 						onClick={() => navigate(`/ui/users/${u.id}/edit`)}
 						tooltip="Edit user"
 					/>
@@ -113,8 +116,8 @@ const UserTable = ({
 			<table className="table table-hover">
 				<thead>
 					<tr>
-						<th>Username</th>
-						<th>Full Name</th>
+						<th>User</th>
+						<th>Full name</th>
 						<th>Role</th>
 						<th className="text-end">Actions</th>
 					</tr>

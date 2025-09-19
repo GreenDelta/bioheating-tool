@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useOutletContext, useLoaderData, useParams } from "react-router-dom";
 import * as api from "../api";
 import { User, UserData } from "../model";
-import { BreadcrumbRow } from "../components/navi";
+import { FluidBreadcrumbRow } from "../components/navi";
 
 interface FormData {
 	name?: string;
@@ -68,14 +68,13 @@ function validate(data: FormData): string | null {
 
 export const UserForm = () => {
 	const navigate = useNavigate();
-	const params = useParams();
 	const [currentUser] = useOutletContext<[User]>();
 	const existingUser = useLoaderData() as User | undefined;
 	const isEdit = !!existingUser;
 	const { data, update } = useFormData(existingUser);
 	const [loading, setLoading] = useState(false);
 
-	// only admins can create/edit users
+	// only admins can currently create/edit users
 	if (!currentUser.isAdmin) {
 		return (
 			<div className="alert alert-danger">
@@ -114,20 +113,15 @@ export const UserForm = () => {
 
 	return (
 		<div className="container-fluid">
-			<div className="row">
-				<div className="col-md-12">
-					<BreadcrumbRow
-						active={isEdit ? "Edit" : "New"}
-						path={[
-							["/", "Home"],
-							["/ui/users", "Users"],
-						]}
-					/>
-				</div>
-			</div>
-			<div className="row">
-				<div className="col-md-3" />
-				<div className="col-md-6">
+			<FluidBreadcrumbRow
+				active={isEdit ? "Edit" : "New"}
+				path={[
+					["/", "Home"],
+					["/ui/users", "Users"],
+				]}
+			/>
+			<div className="row justify-content-center">
+				<div className="col-12 col-md-8 col-lg-6">
 
 					{data.error ? <ErrorRow err={data.error} /> : <></>}
 
@@ -208,7 +202,6 @@ export const UserForm = () => {
 						</button>
 					</div>
 				</div>
-				<div className="col-md-3" />
 			</div>
 		</div>
 	);

@@ -73,14 +73,6 @@ function useFormContext(): FormContext {
 		}
 	};
 
-	const onTaskSuccess = (result: any) => {
-		if (result && result.id) {
-			navigate(`/ui/projects/${result.id}`);
-		} else {
-			navigate("/ui/projects");
-		}
-	};
-
 	const getTaskTargetUrl = (result: any) => {
 		if (result && result.id) {
 			return `/ui/projects/${result.id}`;

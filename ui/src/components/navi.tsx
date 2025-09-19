@@ -64,10 +64,10 @@ export const BreadcrumbRow = ({ active, path }: BreadcrumbProps) => {
 	const links = !path
 		? null
 		: path.map(([seg, label]) => (
-				<li className="breadcrumb-item">
-					<Link to={seg}>{label}</Link>
-				</li>
-			));
+			<li className="breadcrumb-item">
+				<Link to={seg}>{label}</Link>
+			</li>
+		));
 	return (
 		<nav aria-label="breadcrumb">
 			<ol className="breadcrumb">
@@ -79,3 +79,13 @@ export const BreadcrumbRow = ({ active, path }: BreadcrumbProps) => {
 		</nav>
 	);
 };
+
+export const FluidBreadcrumbRow = (props: BreadcrumbProps) => {
+	return (
+		<div className="row">
+			<div className="col-md-12">
+				<BreadcrumbRow {...props} />
+			</div>
+		</div>
+	);
+}

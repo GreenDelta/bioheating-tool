@@ -129,7 +129,7 @@ const Icon = ({
 	path: React.JSX.Element;
 }) => {
 	const style: React.CSSProperties = {
-		color: color || "var(--bs-primary)",
+		fill: color || "var(--bs-primary)",
 	};
 	if (onClick) {
 		style.cursor = "pointer";

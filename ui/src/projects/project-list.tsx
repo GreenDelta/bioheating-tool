@@ -6,9 +6,9 @@ import {
 	useNavigate,
 } from "react-router-dom";
 import { ProjectInfo } from "../model";
-import { AddIcon, DeleteIcon } from "../components/icons";
+import { AddIcon, DeleteIcon, EditIcon } from "../components/icons";
 import * as api from "../api";
-import { BreadcrumbRow } from "../components/navi";
+import { FluidBreadcrumbRow } from "../components/navi";
 import errors from "../components/errors";
 
 interface ProjectListContext {
@@ -53,21 +53,21 @@ function useProjectListContext(): ProjectListContext {
 
 export const ProjectList = () => {
 	const ctx = useProjectListContext();
-
-	const content =
-		!ctx.projects || ctx.projects.length === 0 ? (
-			<NoContentPanel ctx={ctx} />
-		) : (
-			<>
-				<DeleteDialog ctx={ctx} />
-				<ProjectTable ctx={ctx} />
-			</>
-		);
+	const content = !ctx.projects || ctx.projects.length === 0
+		? <NoContentPanel ctx={ctx} />
+		: <ProjectTable ctx={ctx} />;
 
 	return (
 		<div>
-			<BreadcrumbRow active="Projects" path={[["/", "Home"]]} />
-			{content}
+			<div className="container-fluid">
+				<FluidBreadcrumbRow active="Projects" path={[["/", "Home"]]} />
+				<div className="row justify-content-center">
+					<div className="col-12 col-md-10 col-lg-8">
+						{content}
+					</div>
+				</div>
+			</div>
+			<DeleteDialog ctx={ctx} />
 		</div>
 	);
 };
@@ -98,7 +98,15 @@ const ProjectTable = ({ ctx }: Props) => {
 				</Link>
 			</td>
 			<td className="text-end">
-				<DeleteIcon color="#dc3545" onClick={() => ctx.setDeletable(p)} />
+				<div className="d-flex gap-2 justify-content-end">
+					<EditIcon
+						onClick={() => ctx.navigate(`/ui/projects/${p.id}`)}
+						tooltip="Edit project" />
+					<DeleteIcon
+						color="#dc3545"
+						onClick={() => ctx.setDeletable(p)}
+						tooltip="Delete project" />
+				</div>
 			</td>
 		</tr>
 	));
@@ -106,6 +114,12 @@ const ProjectTable = ({ ctx }: Props) => {
 	return (
 		<div>
 			<table className="table table-hover">
+				<thead>
+					<tr>
+						<th>Project</th>
+						<th className="text-end">Actions</th>
+					</tr>
+				</thead>
 				<tbody>
 					{rows}
 					<tr>
