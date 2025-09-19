@@ -115,6 +115,17 @@ function main() {
 							path: "users/new",
 							element: <UserForm />,
 						},
+						{
+							path: "users/:id/edit",
+							element: <UserForm />,
+							loader: async ({ params }) => {
+								const id = parseInt(params.id!);
+								const res = await api.getUser(id);
+								return res.isErr
+									? errors.redirect("Failed to load user", res)
+									: res.value;
+							},
+						},
 					],
 				},
 			],

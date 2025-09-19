@@ -1,7 +1,7 @@
 import React from "react";
 import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
 import { User } from "../model";
-import { AddIcon, DeleteIcon } from "../components/icons";
+import { AddIcon, DeleteIcon, EditIcon } from "../components/icons";
 import * as api from "../api";
 import { BreadcrumbRow } from "../components/navi";
 
@@ -90,13 +90,20 @@ const UserTable = ({
 				)}
 			</td>
 			<td className="text-end">
-				{u.id !== currentUser.id && (
-					<DeleteIcon
-						color="#dc3545"
-						onClick={() => onDelete(u)}
-						tooltip="Delete user"
+				<div className="d-flex gap-2 justify-content-end">
+					<EditIcon
+						color="#007bff"
+						onClick={() => navigate(`/ui/users/${u.id}/edit`)}
+						tooltip="Edit user"
 					/>
-				)}
+					{u.id !== currentUser.id && (
+						<DeleteIcon
+							color="#dc3545"
+							onClick={() => onDelete(u)}
+							tooltip="Delete user"
+						/>
+					)}
+				</div>
 			</td>
 		</tr>
 	));

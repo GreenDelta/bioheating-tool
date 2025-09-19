@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useLoaderData, useParams } from "react-router-dom";
 import * as api from "../api";
 import { User, UserData } from "../model";
 import { BreadcrumbRow } from "../components/navi";
@@ -13,13 +13,13 @@ interface FormData {
 	error?: string | null;
 }
 
-function useFormData() {
+function useFormData(initialUser?: User) {
 	const [data, setData] = useState<FormData>({
-		name: "",
+		name: initialUser?.name || "",
 		password: "",
 		confirmedPassword: "",
-		fullName: "",
-		isAdmin: false,
+		fullName: initialUser?.fullName || "",
+		isAdmin: initialUser?.isAdmin || false,
 	});
 
 	const update = (diff: Partial<FormData>) => {
@@ -68,16 +68,19 @@ function validate(data: FormData): string | null {
 
 export const UserForm = () => {
 	const navigate = useNavigate();
+	const params = useParams();
 	const [currentUser] = useOutletContext<[User]>();
-	const { data, update } = useFormData();
+	const existingUser = useLoaderData() as User | undefined;
+	const isEdit = !!existingUser;
+	const { data, update } = useFormData(existingUser);
 	const [loading, setLoading] = useState(false);
 
-	// only admins can create users
+	// only admins can create/edit users
 	if (!currentUser.isAdmin) {
 		return (
 			<div className="alert alert-danger">
 				<h4>Access Denied</h4>
-				<p>Only administrators can create new users.</p>
+				<p>Only administrators can {isEdit ? 'edit' : 'create'} users.</p>
 			</div>
 		);
 	}
@@ -97,7 +100,9 @@ export const UserForm = () => {
 			isAdmin: data.isAdmin,
 		};
 
-		const res = await api.createUser(userData);
+		const res = isEdit
+			? await api.updateUser(existingUser.id, userData)
+			: await api.createUser(userData);
 		setLoading(false);
 
 		if (res.isErr) {
@@ -112,7 +117,7 @@ export const UserForm = () => {
 			<div className="row">
 				<div className="col-md-12">
 					<BreadcrumbRow
-						active="New"
+						active={isEdit ? "Edit" : "New"}
 						path={[
 							["/", "Home"],
 							["/ui/users", "Users"],
@@ -199,7 +204,7 @@ export const UserForm = () => {
 							disabled={loading || !isComplete(data)}
 							onClick={onOk}
 							style={{ width: 120 }}>
-							OK
+							{isEdit ? "Update" : "OK"}
 						</button>
 					</div>
 				</div>

@@ -7,7 +7,7 @@ export interface User {
 
 export interface UserData {
 	name: string;
-	password: string;
+	password?: string;
 	fullName: string;
 	isAdmin: boolean;
 }
