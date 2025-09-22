@@ -25,6 +25,9 @@ def main():
     jar = next((server_dir / "target").glob("bioheating-tool*"))
     shutil.copy2(jar, app_dir / "bioheating-tool.jar")
 
+    # copy the current database schema to the docker folder
+    shutil.copy2(server_dir / "schema.sql", app_dir / "schema.sql")
+
     print("Build done!")
 
 def cmd(cmd: str) -> str:

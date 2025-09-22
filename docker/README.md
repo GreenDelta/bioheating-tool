@@ -11,6 +11,9 @@ For the Docker setup, we have two images that we need to build:
 Use the `db.Dockerfile` to build the database image like this:
 
 ```bash
+# copy the schema file to the docker directory
+cd docker
+cp ../server/schema.sql ./app/schema.sql
 
 # build the image
 docker build -t bioheating-db . -f db.Dockerfile
@@ -49,7 +52,7 @@ A running database container is also useful when developing the application.
 ## Building the application image
 
 For the application image, use the `app.Dockerfile`. **Make sure** to run the
-application build first and copy it to the `docker` folder, before building the
+application build first and copy the required files to the `docker` folder, before building the
 image:
 
 ```bash
@@ -59,16 +62,23 @@ mvn clean package -DskipTests
 rm docker/bioheating-tool.jar
 cp server/target/bioheating-tool-*.jar docker/bioheating-tool.jar
 
+# copy the static files (built UI)
+cp -r server/static docker/
+
 cd docker
 
 # build the image
 docker build -t bioheating-app . -f app.Dockerfile
 
-# run it
-docker run --rm -d -p 3000:3000 --name bioheating-app bioheating-app
+# run it (with upload volume mapping)
+docker run --rm -d -p 3000:3000 \
+  -v ./upload-data:/app/uploads \
+  --name bioheating-app bioheating-app
 
 # or interactively
-docker run --rm -it -p 3000:3000 --name bioheating-app bioheating-app
+docker run --rm -it -p 3000:3000 \
+  -v ./upload-data:/app/uploads \
+  --name bioheating-app bioheating-app
 ```
 
 
@@ -83,7 +93,10 @@ docker compose up
 docker compose up -d
 ```
 
-The docker-compose.yml file automatically configures the required environment variables and sets up proper service dependencies.
+The docker-compose.yml file automatically configures:
+- Required environment variables for the database
+- Volume mapping for file uploads (`./upload-data:/app/uploads`)
+- Proper service dependencies and health checks
 
 ---
 
