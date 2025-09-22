@@ -9,7 +9,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.greendelta.bioheating.Tests;
-import com.greendelta.bioheating.calc.search.Node;
+import com.greendelta.bioheating.calc.search.BuildingShape;
 import com.greendelta.bioheating.calc.search.StreetSegment;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
@@ -37,7 +37,7 @@ public class ClusterBuilder {
 
 		var nodes = project.map().buildings().stream()
 			.filter(b -> b.isHeated() && b.inclusion() == Inclusion.REQUIRED)
-			.map(b -> Node.of(b, factory))
+			.map(b -> BuildingShape.of(b, factory))
 			.toList();
 		if (nodes.size() < 2)
 			return;
@@ -53,7 +53,7 @@ public class ClusterBuilder {
 		handled.add(root.id());
 		while (handled.size() < nodes.size()) {
 
-			Node next = null;
+			BuildingShape next = null;
 			for (var node : nodes) {
 				if (handled.contains(node.id())) {
 					continue;
