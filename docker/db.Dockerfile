@@ -1,11 +1,7 @@
 FROM postgres:latest
 
-# Copy initialization scripts
-COPY init-db.sql /docker-entrypoint-initdb.d/
-
-# Set environment variables
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=bioheating
-ENV POSTGRES_DB=bioheating
+# copy initialization scripts
+COPY init-db.sql /docker-entrypoint-initdb.d/01-init-db.sql
+COPY ../server/schema.sql /docker-entrypoint-initdb.d/02-schema.sql
 
 EXPOSE 5432
