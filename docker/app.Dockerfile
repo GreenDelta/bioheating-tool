@@ -1,16 +1,17 @@
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
-RUN apt-get update
 
 # add libc and libgomp, these are required for XGBoost
+RUN apt-get update
 RUN apt-get install -y libc6 libgomp1
 
-# add SCIP, this is used to solve the network problems
-RUN curl -SL https://www.scipopt.org/download/release/SCIPOptSuite-9.2.1-Linux-ubuntu24.deb -o scip.deb
-RUN apt-get install -y ./scip.deb && rm scip.deb
+# copy the complete app folder
+COPY app/bioheating-tool.jar /app/bioheating-tool.jar
+COPY app/static/ /app/static/
 
-COPY bioheating-tool.jar /app/bioheating-tool.jar
+# create uploads directory for work.dir
+RUN mkdir -p /app/uploads
 
 EXPOSE 3000
 
