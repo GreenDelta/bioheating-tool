@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jgrapht.GraphPath;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -24,13 +25,20 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 		return new Builder(project).build();
 	}
 
-	private void _add(Edge edge) {
+	public void add(GraphPath<Node, Edge> path) {
+		if (path == null)
+			return;
+		for (var edge : path.getEdgeList()) {
+			add(edge);
+		}
+	}
+
+	private void add(Edge edge) {
 		addVertex(edge.source());
 		addVertex(edge.target());
 		addEdge(edge.source(), edge.target(), edge);
 		setEdgeWeight(edge, edge.length());
 	}
-
 
 	private static class Builder {
 
@@ -75,7 +83,7 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 					var line = factory.createLineString(new Coordinate[]{start, end});
 					var edge = new Edge(
 						ids.incrementAndGet(), source, target, line, line.getLength());
-					graph._add(edge);
+					graph.add(edge);
 					tree.insert(line.getEnvelopeInternal(), edge);
 				}
 			}
@@ -109,7 +117,7 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 					var line = factory.createLineString(cs);
 					var edge = new Edge(
 						ids.incrementAndGet(), node, split, line, line.getLength());
-					graph._add(edge);
+					graph.add(edge);
 				}
 			}
 		}
@@ -126,14 +134,14 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 			);
 			var edge1 = new Edge(
 				ids.incrementAndGet(), edge.source(), node, line1, line1.getLength());
-			graph._add(edge1);
+			graph.add(edge1);
 
 			var line2 = factory.createLineString(
 				new Coordinate[]{cs, edge.target().center().getCoordinate()}
 			);
 			var edge2 = new Edge(
 				ids.incrementAndGet(), node, edge.target(), line2, line2.getLength());
-			graph._add(edge2);
+			graph.add(edge2);
 			return node;
 		}
 
