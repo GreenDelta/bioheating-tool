@@ -6,7 +6,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.greendelta.bioheating.Tests;
 import com.greendelta.bioheating.calc.search.BuildingShape;
@@ -58,9 +57,6 @@ public class ClusterBuilder {
 				if (handled.contains(node.id())) {
 					continue;
 				}
-
-				var dist = DistanceOp.nearestPoints(env, node.center);
-
 
 			}
 
