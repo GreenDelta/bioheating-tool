@@ -43,7 +43,7 @@ public class SegmentIndex {
 		}
 	}
 
-	public List<Segment> find(BuildingShape bs) {
+	public List<Segment> find(BuildingNode bs) {
 		if (bs == null)
 			return List.of();
 		var env = bs.envelope();
@@ -53,8 +53,9 @@ public class SegmentIndex {
 			var res = tree.query(env);
 			if (res == null || res.isEmpty())
 				continue;
+
 			var matches = res.stream()
-				.filter(Segment.class::isInstance)
+				.filter(obj -> obj instanceof Segment)
 				.map(Segment.class::cast)
 				.toList();
 			if (!matches.isEmpty())
@@ -64,9 +65,6 @@ public class SegmentIndex {
 	}
 
 	public record Segment(int id, LineString line, Envelope envelope) {
-
-
-
 	}
 
 }

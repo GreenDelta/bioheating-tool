@@ -11,7 +11,7 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.greendelta.bioheating.model.Project;
 
-public record NodeIndex(Map<Long, BuildingShape> nodes) {
+public record NodeIndex(Map<Long, BuildingNode> nodes) {
 
 	private static NodeIndex empty() {
 		return new NodeIndex(new HashMap<>());
@@ -25,10 +25,10 @@ public record NodeIndex(Map<Long, BuildingShape> nodes) {
 		return nodes != null ? nodes.size() : 0;
 	}
 
-	public static NodeIndex of(List<BuildingShape> nodes) {
+	public static NodeIndex of(List<BuildingNode> nodes) {
 		if (nodes == null || nodes.isEmpty())
 			return empty();
-		var map = new HashMap<Long, BuildingShape>();
+		var map = new HashMap<Long, BuildingNode>();
 		for (var node : nodes) {
 			map.put(node.id(), node);
 		}
@@ -38,17 +38,17 @@ public record NodeIndex(Map<Long, BuildingShape> nodes) {
 	public static NodeIndex of(Project project, GeometryFactory f) {
 		if (project == null || project.map() == null || f == null)
 			return empty();
-		var map = new HashMap<Long, BuildingShape>();
+		var map = new HashMap<Long, BuildingNode>();
 		project.map().buildings().stream()
-			.map(b -> BuildingShape.of(b, f))
+			.map(b -> BuildingNode.of(b, f))
 			.forEach(n -> map.put(n.id(), n));
 		return new NodeIndex(map);
 	}
 
-	public Optional<BuildingShape> findClosestOf(Geometry g) {
+	public Optional<BuildingNode> findClosestOf(Geometry g) {
 		if (g == null || isEmpty())
 			return Optional.empty();
-		BuildingShape selected = null;
+		BuildingNode selected = null;
 		double distance = Double.MAX_VALUE;
 		for (var node : nodes.values()) {
 			double dist = DistanceOp.distance(g, node.center());

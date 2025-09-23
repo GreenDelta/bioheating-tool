@@ -1,0 +1,8 @@
+package com.greendelta.bioheating.calc.graph;
+
+import org.locationtech.jts.geom.LineString;
+
+public record Edge(
+	long id, Node source, Node target, LineString line, double length
+) {
+}

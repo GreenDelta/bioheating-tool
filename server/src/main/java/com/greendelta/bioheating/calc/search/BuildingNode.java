@@ -7,7 +7,7 @@ import org.locationtech.jts.geom.Polygon;
 
 import com.greendelta.bioheating.model.Building;
 
-public record BuildingShape(
+public record BuildingNode(
 	Building building, Polygon polygon, Envelope envelope, Point center
 ) {
 
@@ -15,11 +15,11 @@ public record BuildingShape(
 		return building.id();
 	}
 
-	public static BuildingShape of(Building building, GeometryFactory f) {
+	public static BuildingNode of(Building building, GeometryFactory f) {
 		var polygon = f.createPolygon(building.coordinates());
 		var center = polygon.getCentroid();
 		var envelope = polygon.getEnvelopeInternal();
-		return new BuildingShape(building, polygon, envelope, center);
+		return new BuildingNode(building, polygon, envelope, center);
 	}
 
 }
