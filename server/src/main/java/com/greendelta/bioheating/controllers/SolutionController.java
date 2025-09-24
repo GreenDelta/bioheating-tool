@@ -48,17 +48,8 @@ public class SolutionController {
 	public ResponseEntity<?> getSolution(
 		Authentication auth, @PathVariable long id
 	) {
-		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-		var solution = db.getForId(Solution.class, id);
-		if (solution == null)
-			return Http.notFound("solution not found: " + id);
-
-		var project = solution.project();
-		return project == null || !user.equals(project.user())
-			? Http.forbidden("access denied")
-			: Http.ok(ClientSolution.of(solution));
+		return withSolution(
+			auth, id, solution -> Http.ok(ClientSolution.of(solution)));
 	}
 
 	@GetMapping("/project/{projectId}")
@@ -75,29 +66,18 @@ public class SolutionController {
 	}
 
 	@GetMapping("/{id}/image")
-	public ResponseEntity<byte[]> getSolutionImage(
+	public ResponseEntity<?> getSolutionImage(
 		Authentication auth, @PathVariable long id
 	) {
-		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return ResponseEntity.badRequest().build();
-
-		var solution = db.getForId(Solution.class, id);
-		if (solution == null)
-			return ResponseEntity.notFound().build();
-
-		var project = solution.project();
-		if (project == null || !user.equals(project.user()))
-			return ResponseEntity.status(403).build();
-
-		var imageData = solution.image();
-		if (imageData == null || imageData.length == 0)
-			return ResponseEntity.notFound().build();
-
-		return ResponseEntity.ok()
-			.contentType(MediaType.IMAGE_PNG)
-			.header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
-			.body(imageData);
+		return withSolution(auth, id, solution -> {
+			var image = solution.image();
+			if (image == null || image.length == 0)
+				return ResponseEntity.notFound().build();
+			return ResponseEntity.ok()
+				.contentType(MediaType.IMAGE_PNG)
+				.header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
+				.body(image);
+		});
 	}
 
 	@PostMapping("/project/{id}")
@@ -114,6 +94,7 @@ public class SolutionController {
 				if (solutionRes.hasError())
 					return solutionRes;
 				var solution = solutionRes.value();
+				solution.calculatedAt(System.currentTimeMillis());
 				db.insert(solution);
 				return solutionRes;
 			});
@@ -132,5 +113,20 @@ public class SolutionController {
 		return project == null
 			? Http.notFound("project not found: " + id)
 			: fn.apply(project);
+	}
+
+	private ResponseEntity<?> withSolution(
+		Authentication auth, long id, Function<Solution, ResponseEntity<?>> fn
+	) {
+		var user = users.getCurrentUser(auth).orElse(null);
+		if (user == null)
+			return Http.badRequest("not authenticated");
+		var solution = db.getForId(Solution.class, id);
+		if (solution == null)
+			return Http.notFound("solution not found: " + id);
+		var project = solution.project();
+		return project == null || !user.equals(project.user())
+			? Http.forbidden("access denied")
+			: fn.apply(solution);
 	}
 }

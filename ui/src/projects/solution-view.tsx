@@ -74,6 +74,12 @@ export function SolutionView() {
 								</Link>
 							</div>
 
+							{solution.calculatedAt && (
+								<div className="mb-3">
+									<strong>Calculated At:</strong> {solution.calculatedAt}
+								</div>
+							)}
+
 							<div className="mb-3">
 								<strong>Solution Image:</strong>
 								<div className="mt-2">

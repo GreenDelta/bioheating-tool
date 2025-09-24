@@ -109,6 +109,7 @@ export interface Solution {
 	id: number;
 	name: string;
 	projectId: number;
+	calculatedAt: string;
 }
 
 export enum TaskStatus {

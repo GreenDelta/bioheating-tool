@@ -22,6 +22,9 @@ public class Solution extends BaseEntity {
 	@Column(name = "image")
 	private byte[] image;
 
+	@Column(name = "calculated_at")
+	private long calculatedAt;
+
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "f_solution")
 	private final List<SolutionNode> nodes = new ArrayList<>();
@@ -45,6 +48,15 @@ public class Solution extends BaseEntity {
 
 	public Solution image(byte[] image) {
 		this.image = image;
+		return this;
+	}
+
+	public long calculatedAt() {
+		return calculatedAt;
+	}
+
+	public Solution calculatedAt(long calculatedAt) {
+		this.calculatedAt = calculatedAt;
 		return this;
 	}
 

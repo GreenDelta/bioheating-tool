@@ -90,7 +90,8 @@ drop table if exists tbl_solutions cascade;
 create table tbl_solutions (
     id int not null primary key,
     f_project int,
-    image bytea
+    image bytea,
+    calculated_at bigint
 );
 
 drop table if exists tbl_solution_nodes cascade;
