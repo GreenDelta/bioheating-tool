@@ -4,6 +4,7 @@ import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.util.Res;
 
 public record ClientProject(
@@ -12,10 +13,11 @@ public record ClientProject(
 	String description,
 	ClimateRegion climateRegion,
 	Fuel defaultFuel,
-	ClientMap map
+	ClientMap map,
+	Long solutionId
 ) {
 
-	public static Res<ClientProject> of(Project project) {
+	public static Res<ClientProject> of(Database db, Project project) {
 		if (project == null)
 			return Res.error("project is null");
 		var map = ClientMap.of(project.map());
@@ -27,9 +29,14 @@ public record ClientProject(
 			project.description(),
 			project.climateRegion(),
 			project.defaultFuel(),
-			map.value()
+			map.value(),
+			null
 		);
 		return Res.of(p);
+	}
+
+	private static Solution findSolution(Database db, Project project) {
+
 	}
 
 	public void writeUpdatesTo(Database db, Project project) {

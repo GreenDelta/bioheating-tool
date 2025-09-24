@@ -52,19 +52,6 @@ public class SolutionController {
 			auth, id, solution -> Http.ok(ClientSolution.of(solution)));
 	}
 
-	@GetMapping("/project/{projectId}")
-	public ResponseEntity<?> getSolutionsForProject(
-		Authentication auth, @PathVariable long projectId
-	) {
-		return withProject(auth, projectId, project -> {
-			var solutions = db.getAll(Solution.class).stream()
-				.filter(s -> s.project() != null && s.project().id() == projectId)
-				.map(ClientSolution::of)
-				.toList();
-			return Http.ok(solutions);
-		});
-	}
-
 	@GetMapping("/{id}/image")
 	public ResponseEntity<?> getSolutionImage(
 		Authentication auth, @PathVariable long id
@@ -96,11 +83,23 @@ public class SolutionController {
 				var solution = solutionRes.value();
 				solution.calculatedAt(System.currentTimeMillis());
 				db.insert(solution);
+				deleteOutdatedOf(solution);
 				return solutionRes;
 			});
 			tasks.schedule(task);
 			return Http.ok(task.toState());
 		});
+	}
+
+	private void deleteOutdatedOf(Solution solution) {
+		if (solution == null || solution.project() == null)
+			return;
+		for (var s : db.getAll(Solution.class)) {
+			if (solution.equals(s)
+				|| !solution.project().equals(s.project()))
+				continue;
+			db.delete(s);
+		}
 	}
 
 	private ResponseEntity<?> withProject(

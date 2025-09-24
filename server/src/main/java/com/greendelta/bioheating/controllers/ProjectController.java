@@ -71,7 +71,7 @@ public class ProjectController {
 		Authentication auth, @PathVariable long id
 	) {
 		return withProject(auth, id, project -> {
-			var res = ClientProject.of(project);
+			var res = ClientProject.of(db, project);
 			return res.hasError()
 				? Http.serverError("failed to convert project: " + res.error())
 				: Http.ok(res.value());

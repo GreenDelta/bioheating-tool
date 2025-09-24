@@ -404,23 +404,6 @@ export async function getSolution(id: number): Promise<Res<Solution>> {
 	}
 }
 
-export async function getSolutionsForProject(projectId: number): Promise<Res<Solution[]>> {
-	try {
-		const r = await fetch(`/api/solutions/project/${projectId}`);
-		if (r.status === 200) {
-			const solutions: Solution[] = await r.json();
-			return Res.ok(solutions);
-		}
-		if (r.status === 404) {
-			return Res.err("project not found");
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get solutions: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get solutions: ${error}`);
-	}
-}
-
 export async function calculateSolution(projectId: number): Promise<Res<TaskState>> {
 	try {
 		const r = await fetch(`/api/solutions/project/${projectId}`, {
