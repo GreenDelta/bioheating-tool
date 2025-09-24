@@ -1,0 +1,136 @@
+package com.greendelta.bioheating.controllers;
+
+import java.util.function.Function;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.greendelta.bioheating.calc.graph.MinTree;
+import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.Solution;
+import com.greendelta.bioheating.model.client.ClientSolution;
+import com.greendelta.bioheating.services.ProjectService;
+import com.greendelta.bioheating.services.TaskService;
+import com.greendelta.bioheating.services.TaskService.Task.NewTask;
+import com.greendelta.bioheating.services.UserService;
+import com.greendelta.bioheating.util.Http;
+
+@RestController
+@RequestMapping("/api/solutions")
+public class SolutionController {
+
+	private final Database db;
+	private final ProjectService projects;
+	private final UserService users;
+	private final TaskService tasks;
+
+	public SolutionController(
+		Database db,
+		ProjectService projects,
+		UserService users,
+		TaskService tasks
+	) {
+		this.db = db;
+		this.projects = projects;
+		this.users = users;
+		this.tasks = tasks;
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> getSolution(
+		Authentication auth, @PathVariable long id
+	) {
+		var user = users.getCurrentUser(auth).orElse(null);
+		if (user == null)
+			return Http.badRequest("not authenticated");
+		var solution = db.getForId(Solution.class, id);
+		if (solution == null)
+			return Http.notFound("solution not found: " + id);
+
+		var project = solution.project();
+		return project == null || !user.equals(project.user())
+			? Http.forbidden("access denied")
+			: Http.ok(ClientSolution.of(solution));
+	}
+
+	@GetMapping("/project/{projectId}")
+	public ResponseEntity<?> getSolutionsForProject(
+		Authentication auth, @PathVariable long projectId
+	) {
+		return withProject(auth, projectId, project -> {
+			var solutions = db.getAll(Solution.class).stream()
+				.filter(s -> s.project() != null && s.project().id() == projectId)
+				.map(ClientSolution::of)
+				.toList();
+			return Http.ok(solutions);
+		});
+	}
+
+	@GetMapping("/{id}/image")
+	public ResponseEntity<byte[]> getSolutionImage(
+		Authentication auth, @PathVariable long id
+	) {
+		var user = users.getCurrentUser(auth).orElse(null);
+		if (user == null)
+			return ResponseEntity.badRequest().build();
+
+		var solution = db.getForId(Solution.class, id);
+		if (solution == null)
+			return ResponseEntity.notFound().build();
+
+		var project = solution.project();
+		if (project == null || !user.equals(project.user()))
+			return ResponseEntity.status(403).build();
+
+		var imageData = solution.image();
+		if (imageData == null || imageData.length == 0)
+			return ResponseEntity.notFound().build();
+
+		return ResponseEntity.ok()
+			.contentType(MediaType.IMAGE_PNG)
+			.header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
+			.body(imageData);
+	}
+
+	@PostMapping("/project/{id}")
+	public ResponseEntity<?> calculate(
+		Authentication auth, @PathVariable long id
+	) {
+		return withProject(auth, id, project -> {
+			var user = users.getCurrentUser(auth).orElse(null);
+			if (user == null)
+				return Http.badRequest("not authenticated");
+
+			var task = NewTask.of(user, () -> {
+				var solutionRes = MinTree.solutionOf(project);
+				if (solutionRes.hasError())
+					return solutionRes;
+				var solution = solutionRes.value();
+				db.insert(solution);
+				return solutionRes;
+			});
+			tasks.schedule(task);
+			return Http.ok(task.toState());
+		});
+	}
+
+	private ResponseEntity<?> withProject(
+		Authentication auth, long id, Function<Project, ResponseEntity<?>> fn
+	) {
+		var user = users.getCurrentUser(auth).orElse(null);
+		if (user == null)
+			return Http.badRequest("not authenticated");
+		var project = projects.getProject(user, id).orElse(null);
+		return project == null
+			? Http.notFound("project not found: " + id)
+			: fn.apply(project);
+	}
+}
