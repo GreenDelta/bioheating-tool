@@ -85,3 +85,29 @@ create table tbl_projects (
     f_climate_region int,
     f_default_fuel int
 );
+
+drop table if exists tbl_solutions cascade;
+create table tbl_solutions (
+    id int not null primary key,
+    f_project int,
+    image bytea
+);
+
+drop table if exists tbl_solution_nodes cascade;
+create table tbl_solution_nodes (
+    id int not null primary key,
+    f_solution int,
+    f_building int,
+    x double precision,
+    y double precision
+);
+
+drop table if exists tbl_solution_edges cascade;
+create table tbl_solution_edges (
+    id int not null primary key,
+    f_solution int,
+    f_source_node int,
+    f_target_node int,
+    length double precision,
+    coordinates bytea
+);

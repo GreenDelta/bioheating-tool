@@ -12,6 +12,9 @@
 		<class>com.greendelta.bioheating.model.Fuel</class>
 		<class>com.greendelta.bioheating.model.GeoMap</class>
 		<class>com.greendelta.bioheating.model.Project</class>
+		<class>com.greendelta.bioheating.model.Solution</class>
+		<class>com.greendelta.bioheating.model.SolutionEdge</class>
+		<class>com.greendelta.bioheating.model.SolutionNode</class>
 		<class>com.greendelta.bioheating.model.Street</class>
 		<class>com.greendelta.bioheating.model.User</class>
 		<shared-cache-mode>ALL</shared-cache-mode>
