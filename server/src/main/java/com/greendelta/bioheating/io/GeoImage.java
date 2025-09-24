@@ -60,8 +60,8 @@ public class GeoImage implements AutoCloseable {
 		if (cs == null || color == null)
 			return;
 		var shape = shapeOf(cs);
-		shape.drawPolygon(g, color);
 		shape.fillPolygon(g, color);
+		shape.drawPolygon(g, color);
 	}
 
 	public void drawLine(Coordinate[] cs, Color color) {
@@ -91,7 +91,13 @@ public class GeoImage implements AutoCloseable {
 	private record Shape(int[] xs, int[] ys, int n) {
 
 		void fillPolygon(Graphics2D g2d, Color color) {
-			g2d.setColor(color);
+			var fillColor = new Color(
+				color.getRed(),
+				color.getGreen(),
+				color.getBlue(),
+				128
+			);
+			g2d.setColor(fillColor);
 			g2d.fillPolygon(xs, ys, n);
 		}
 

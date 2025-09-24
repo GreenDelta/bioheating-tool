@@ -24,10 +24,17 @@ public class GeoImageExample {
 			}
 
 			try (var img = new GeoImage(1024, 800, envelope)) {
+
 				for (var street : project.map().streets()) {
-					img.drawLine(street.coordinates(), Color.BLUE);
+					img.drawLine(street.coordinates(), Color.DARK_GRAY);
 				}
-				ImageIO.write(img.getImage(), "png", new File("target/streets.png"));
+
+				var buildingColor = new Color(216, 27, 96);
+				for (var building : project.map().buildings()) {
+					img.drawPolygon(building.coordinates(), buildingColor);
+				}
+
+				ImageIO.write(img.getImage(), "png", new File("target/project.png"));
 			}
 
 		} catch (Exception e) {
