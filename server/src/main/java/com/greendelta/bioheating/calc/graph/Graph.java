@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jgrapht.GraphPath;
-import org.jgrapht.graph.SimpleWeightedGraph;
+import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.index.strtree.STRtree;
@@ -15,7 +15,7 @@ import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
 import com.greendelta.bioheating.calc.graph.Node.StreetNode;
 import com.greendelta.bioheating.model.Project;
 
-public class Graph extends SimpleWeightedGraph<Node, Edge> {
+public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
 	public Graph() {
 		super(Edge.class);
@@ -36,8 +36,10 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 	private void add(Edge edge) {
 		addVertex(edge.source());
 		addVertex(edge.target());
-		addEdge(edge.source(), edge.target(), edge);
-		setEdgeWeight(edge, edge.length());
+		var b = addEdge(edge.source(), edge.target(), edge);
+		if (b) {
+			setEdgeWeight(edge, edge.length());
+		}
 	}
 
 	private static class Builder {
@@ -46,11 +48,13 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 		private final GeometryFactory factory;
 		private final AtomicLong ids;
 		private final Graph graph;
+		private final List<StreetNode> streetNodes;
 
 		Builder(Project project) {
 			this.project = project;
 			this.factory = new GeometryFactory();
 			this.graph = new Graph();
+			this.streetNodes = new ArrayList<>();
 
 			this.ids = new AtomicLong(0);
 			long maxId = 0;
@@ -76,10 +80,13 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 					var start = cs[i - 1];
 					var end = cs[i];
 
-					var source = new StreetNode(
-						ids.incrementAndGet(), factory.createPoint(start));
-					var target = new StreetNode(
-						ids.incrementAndGet(), factory.createPoint(end));
+					var source = getOrCreateNode(start);
+					var target = getOrCreateNode(end);
+
+					// Skip if source and target are the same (would create a self-loop)
+					if (source.equals(target))
+						continue;
+
 					var line = factory.createLineString(new Coordinate[]{start, end});
 					var edge = new Edge(
 						ids.incrementAndGet(), source, target, line, line.getLength());
@@ -88,6 +95,21 @@ public class Graph extends SimpleWeightedGraph<Node, Edge> {
 				}
 			}
 			return tree;
+		}
+
+		private StreetNode getOrCreateNode(Coordinate coordinate) {
+			// Find existing node within 1 meter
+			for (var candidate : streetNodes) {
+				if (coordinate.distance(candidate.center().getCoordinate()) < 1.0) {
+					return candidate;
+				}
+			}
+
+			// Create new node if none found within tolerance
+			var point = factory.createPoint(coordinate);
+			var newNode = new StreetNode(ids.incrementAndGet(), point);
+			streetNodes.add(newNode);
+			return newNode;
 		}
 
 		private void joinBuildings(STRtree tree) {
