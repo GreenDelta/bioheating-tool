@@ -7,7 +7,7 @@ import { StreetPanel } from "./panel-street";
 import { MultiPanel } from "./panel-multi";
 import { OverviewPanel } from "./panel-overview";
 import { SaveIcon } from "../components/icons";
-import { DownloadIcon } from "../components/icons";
+import { TaskPanel } from "../components/tasks";
 import * as api from "../api";
 import { BreadcrumbRow } from "../components/navi";
 
@@ -28,6 +28,9 @@ interface EditorContext {
 
 	error: string | null;
 	setError: (error: string | null) => void;
+
+	taskId: string | null;
+	setTaskId: (taskId: string | null) => void;
 }
 
 function useEditorContext(): EditorContext {
@@ -35,6 +38,7 @@ function useEditorContext(): EditorContext {
 	const [selection, setSelection] = useState<GeoFeature[]>([]);
 	const [isDirty, _setDirty] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [taskId, setTaskId] = useState<string | null>(null);
 
 	const setDirty = (b: boolean) => {
 		_setDirty(b);
@@ -50,11 +54,51 @@ function useEditorContext(): EditorContext {
 		setDirty,
 		error,
 		setError,
+		taskId,
+		setTaskId,
 	};
 }
 
 export const ProjectEditor = () => {
 	const ctx = useEditorContext();
+
+	// Show TaskPanel when calculation task is running
+	if (ctx.taskId) {
+		return (
+			<div>
+				<div className="container">
+					<div className="row">
+						<div className="col">
+							<BreadcrumbRow
+								active={ctx.project.name}
+								path={[
+									["/", "Home"],
+									["/ui/projects", "Projects"],
+								]}
+							/>
+
+							<div className="mt-4">
+								<TaskPanel
+									taskId={ctx.taskId}
+									message={`Calculating solution for project "${ctx.project.name}"...`}
+									getTargetUrl={(result: any) => {
+										// When calculation is done, navigate to the solution view
+										if (result && result.id) {
+											return `/ui/solutions/${result.id}`;
+										} else {
+											return `/ui/projects/${ctx.project.id}`;
+										}
+									}}
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Show regular editor when no task is running
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-3">
@@ -67,7 +111,7 @@ export const ProjectEditor = () => {
 				/>
 				<div className="d-flex gap-2">
 					<SaveButton ctx={ctx} />
-					<DownloadButton ctx={ctx} />
+					<CalculateButton ctx={ctx} />
 				</div>
 			</div>
 			<ErrorPanel ctx={ctx} />
@@ -142,28 +186,29 @@ const SaveButton = ({ ctx }: Props) => {
 	);
 };
 
-const DownloadButton = ({ ctx }: Props) => {
-	const [isDownloading, setDownloading] = useState(false);
-	const handleDownload = async () => {
-		if (isDownloading) return;
-		setDownloading(true);
+const CalculateButton = ({ ctx }: Props) => {
+	const [isCalculating, setCalculating] = useState(false);
+	const handleCalculate = async () => {
+		if (isCalculating) return;
+		setCalculating(true);
 		ctx.setError(null);
-		const res = await api.getSophenaPackage(ctx.project.id);
-		if (!res.isOk) {
+		const res = await api.calculateSolution(ctx.project.id);
+		if (res.isOk) {
+			ctx.setTaskId(res.value.id);
+		} else {
 			ctx.setError(res.error);
 		}
-		setDownloading(false);
+		setCalculating(false);
 	};
 
 	return (
 		<button
-			className="btn btn-outline-secondary"
-			onClick={handleDownload}
-			disabled={isDownloading}
-			title="Download Sophena package"
+			className="btn btn-primary"
+			onClick={handleCalculate}
+			disabled={isCalculating}
+			title="Calculate solution"
 			style={{ width: "120px" }}>
-			<DownloadIcon />
-			{isDownloading ? " Downloading..." : " Sophena"}
+			{isCalculating ? " Calculating..." : " Calculate"}
 		</button>
 	);
 };

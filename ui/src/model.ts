@@ -105,6 +105,12 @@ export interface TaskState {
 	result?: any;
 }
 
+export interface Solution {
+	id: number;
+	name: string;
+	projectId: number;
+}
+
 export enum TaskStatus {
 	RUNNING = "RUNNING",
 	READY = "READY",

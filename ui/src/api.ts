@@ -6,7 +6,8 @@ import {
 	Project,
 	ClimateRegion,
 	Fuel,
-	TaskState
+	TaskState,
+	Solution
 } from "./model";
 
 export class Res<T> {
@@ -384,4 +385,58 @@ export async function dropTaskResult(id: string): Promise<Res<boolean>> {
 	} catch (error) {
 		return Res.err(`failed to delete task: ${error}`);
 	}
+}
+
+export async function getSolution(id: number): Promise<Res<Solution>> {
+	try {
+		const r = await fetch(`/api/solutions/${id}`);
+		if (r.status === 200) {
+			const solution: Solution = await r.json();
+			return Res.ok(solution);
+		}
+		if (r.status === 404) {
+			return Res.err("solution not found");
+		}
+		const msg = await r.text();
+		return Res.err(`failed to get solution: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to get solution: ${error}`);
+	}
+}
+
+export async function getSolutionsForProject(projectId: number): Promise<Res<Solution[]>> {
+	try {
+		const r = await fetch(`/api/solutions/project/${projectId}`);
+		if (r.status === 200) {
+			const solutions: Solution[] = await r.json();
+			return Res.ok(solutions);
+		}
+		if (r.status === 404) {
+			return Res.err("project not found");
+		}
+		const msg = await r.text();
+		return Res.err(`failed to get solutions: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to get solutions: ${error}`);
+	}
+}
+
+export async function calculateSolution(projectId: number): Promise<Res<TaskState>> {
+	try {
+		const r = await fetch(`/api/solutions/project/${projectId}`, {
+			method: "POST",
+		});
+		if (r.status === 200) {
+			const task: TaskState = await r.json();
+			return Res.ok(task);
+		}
+		const msg = await r.text();
+		return Res.err(`failed to start calculation: ${r.status} | ${msg}`);
+	} catch (error) {
+		return Res.err(`failed to start calculation: ${error}`);
+	}
+}
+
+export function getSolutionImageUrl(id: number): string {
+	return `/api/solutions/${id}/image`;
 }
