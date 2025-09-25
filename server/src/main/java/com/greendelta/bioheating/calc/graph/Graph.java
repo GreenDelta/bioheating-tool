@@ -33,7 +33,7 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 		}
 	}
 
-	private void add(Edge edge) {
+	void add(Edge edge) {
 		addVertex(edge.source());
 		addVertex(edge.target());
 		var b = addEdge(edge.source(), edge.target(), edge);
