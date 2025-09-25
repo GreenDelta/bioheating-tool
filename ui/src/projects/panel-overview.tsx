@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Project, isBuilding, Inclusion } from "../model";
 import { BuildingData } from "./panel-data";
 
@@ -78,6 +79,20 @@ export const OverviewPanel = ({ project }: Props) => {
 									{project.defaultFuel.calorificValue.toLocaleString()} kWh/
 									{project.defaultFuel.unit}
 								</small>
+							</p>
+						</div>
+					)}
+
+					{project.solutionId && (
+						<div className="col-12">
+							<label className="form-label fw-bold">Solution</label>
+							<p className="form-control-plaintext">
+								<Link
+									to={`/ui/projects/${project.id}/solutions/${project.solutionId}`}
+									className="text-decoration-none"
+								>
+									Last calculated solution
+								</Link>
 							</p>
 						</div>
 					)}

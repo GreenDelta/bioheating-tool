@@ -46,6 +46,7 @@ export interface Project {
 	climateRegion?: ClimateRegion;
 	defaultFuel?: Fuel;
 	map: GeoMap;
+	solutionId?: number;
 }
 
 export interface GeoMap {

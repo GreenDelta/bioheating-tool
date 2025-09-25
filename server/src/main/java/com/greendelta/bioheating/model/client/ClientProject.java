@@ -30,13 +30,18 @@ public record ClientProject(
 			project.climateRegion(),
 			project.defaultFuel(),
 			map.value(),
-			null
+			findSolutionId(db, project)
 		);
 		return Res.of(p);
 	}
 
-	private static Solution findSolution(Database db, Project project) {
-
+	private static Long findSolutionId(Database db, Project project) {
+		var solution = db.getAll(Solution.class)
+			.stream()
+			.filter(s -> project.equals(s.project()))
+			.findAny()
+			.orElse(null);
+		return solution != null ? solution.id() : null;
 	}
 
 	public void writeUpdatesTo(Database db, Project project) {
