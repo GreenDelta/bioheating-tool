@@ -1,8 +1,9 @@
 package com.greendelta.bioheating.calc.graph;
 
 import java.util.Set;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,14 @@ public class SteinerTree {
 			case 3, 4, 5 -> 2;
 			default -> cpus / 2;
 		};
-		try (var exec = Executors.newFixedThreadPool(n)) {
+
+		// same what Executors.newFixedThreadPool(n) would do but we
+		// need a ThreadPoolExecutor, and newFixedThreadPool just returns
+		// an ExecutorService
+		var exec = new ThreadPoolExecutor(
+			n, n, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>()
+		);
+		try (exec){
 			return compute(exec, g);
 		} catch (Exception e) {
 			return Res.error("failed to calculate Steiner-Tree", e);

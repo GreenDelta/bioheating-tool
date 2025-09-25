@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.greendelta.bioheating.calc.graph.MinTree;
+import com.greendelta.bioheating.calc.graph.Graph;
+import com.greendelta.bioheating.calc.graph.MinTreeSolution;
+import com.greendelta.bioheating.calc.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
@@ -77,14 +79,18 @@ public class SolutionController {
 				return Http.badRequest("not authenticated");
 
 			var task = NewTask.of(user, () -> {
-				var solutionRes = MinTree.solutionOf(project);
-				if (solutionRes.hasError())
-					return solutionRes;
-				var solution = solutionRes.value();
+				var graph = Graph.buildFrom(project);
+				var tree = SteinerTree.compute(graph);
+				if (tree.hasError())
+					return tree.wrapError("failed to create Steiner-Tree");
+				var res = new MinTreeSolution(project, tree.value()).create();
+				if (res.hasError())
+					return res;
+				var solution = res.value();
 				solution.calculatedAt(System.currentTimeMillis());
 				db.insert(solution);
 				deleteOutdatedOf(solution);
-				return solutionRes;
+				return res;
 			});
 			tasks.schedule(task);
 			return Http.ok(task.toState());
