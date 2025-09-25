@@ -32,6 +32,8 @@ interface FormContext {
 	getTaskTargetUrl: (result: any) => string;
 }
 
+type Props = { ctx: FormContext };
+
 function useFormContext(): FormContext {
 	const navigate = useNavigate();
 	const { regions, fuels }: FormInput = useLoaderData();
@@ -102,36 +104,10 @@ function useFormContext(): FormContext {
 
 export const ProjectForm = () => {
 	const ctx = useFormContext();
-
-	// Show TaskPanel when task is running
 	if (ctx.taskId) {
-		return (
-			<div className="container-fluid">
-				<div className="row">
-					<div className="col-md-8 offset-md-2">
-						<BreadcrumbRow
-							active="Creating..."
-							path={[
-								["/", "Home"],
-								["/ui/projects", "Projects"],
-								["/ui/projects/new", "New"],
-							]}
-						/>
-
-						<div className="mt-4">
-							<TaskPanel
-								taskId={ctx.taskId}
-								message={`Creating project "${ctx.data.name}" and processing uploaded file...`}
-								getTargetUrl={ctx.getTaskTargetUrl}
-							/>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
+		return <CreationTaskPanel ctx={ctx} />;
 	}
 
-	// Show regular form when no task is running
 	return (
 		<div className="container-fluid">
 			<div className="row">
@@ -219,8 +195,6 @@ export const ProjectForm = () => {
 	);
 };
 
-type Props = { ctx: FormContext };
-
 const ErrorRow = ({ ctx }: Props) => {
 	if (!ctx.error) {
 		return <></>;
@@ -284,6 +258,33 @@ const FuelCombo = ({ ctx }: Props) => {
 				onChange={e => onSelect(e.target.value)}>
 				{options}
 			</select>
+		</div>
+	);
+};
+
+const CreationTaskPanel = ({ ctx }: Props) => {
+	return (
+		<div className="container-fluid">
+			<div className="row">
+				<div className="col-md-8 offset-md-2">
+					<BreadcrumbRow
+						active="Creating..."
+						path={[
+							["/", "Home"],
+							["/ui/projects", "Projects"],
+							["/ui/projects/new", "New"],
+						]}
+					/>
+
+					<div className="mt-4">
+						<TaskPanel
+							taskId={ctx.taskId!}
+							message={`Creating project "${ctx.data.name}" and processing uploaded file...`}
+							getTargetUrl={ctx.getTaskTargetUrl}
+						/>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 };

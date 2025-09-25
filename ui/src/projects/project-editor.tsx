@@ -61,44 +61,10 @@ function useEditorContext(): EditorContext {
 
 export const ProjectEditor = () => {
 	const ctx = useEditorContext();
-
-	// Show TaskPanel when calculation task is running
 	if (ctx.taskId) {
-		return (
-			<div>
-				<div className="container">
-					<div className="row">
-						<div className="col">
-							<BreadcrumbRow
-								active={ctx.project.name}
-								path={[
-									["/", "Home"],
-									["/ui/projects", "Projects"],
-								]}
-							/>
-
-							<div className="mt-4">
-								<TaskPanel
-									taskId={ctx.taskId}
-									message={`Calculating solution for project "${ctx.project.name}"...`}
-									getTargetUrl={(result: any) => {
-										// When calculation is done, navigate to the solution view
-										if (result && result.id) {
-											return `/ui/solutions/${result.id}`;
-										} else {
-											return `/ui/projects/${ctx.project.id}`;
-										}
-									}}
-								/>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		);
+		return <CalculationTaskPanel ctx={ctx} />;
 	}
 
-	// Show regular editor when no task is running
 	return (
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-3">
@@ -227,6 +193,38 @@ const ErrorPanel = ({ ctx }: Props) => {
 				className="btn-close"
 				onClick={() => ctx.setError(null)}
 				aria-label="Close"></button>
+		</div>
+	);
+};
+
+const CalculationTaskPanel = ({ ctx }: Props) => {
+	return (
+		<div>
+			<div className="container">
+				<div className="row">
+					<div className="col">
+						<BreadcrumbRow
+							active={ctx.project.name}
+							path={[
+								["/", "Home"],
+								["/ui/projects", "Projects"],
+							]}
+						/>
+
+						<div className="mt-4">
+							<TaskPanel
+								taskId={ctx.taskId!}
+								message={`Calculating solution for project "${ctx.project.name}"...`}
+								getTargetUrl={(result: any) =>
+									result && result.id
+										? `/ui/solutions/${result.id}`
+										: `/ui/projects/${ctx.project.id}`
+								}
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 };
