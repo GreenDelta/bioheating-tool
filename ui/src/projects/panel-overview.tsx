@@ -88,7 +88,7 @@ export const OverviewPanel = ({ project }: Props) => {
 							<label className="form-label fw-bold">Solution</label>
 							<p className="form-control-plaintext">
 								<Link
-									to={`/ui/projects/${project.id}/solutions/${project.solutionId}`}
+									to={`/ui/solutions/${project.solutionId}`}
 									className="text-decoration-none"
 								>
 									Last calculated solution

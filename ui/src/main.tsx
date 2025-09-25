@@ -13,7 +13,7 @@ import {
 import { User } from "./model";
 import * as api from "./api";
 import { LoginPage } from "./login";
-import { ProjectList, ProjectForm, ProjectEditor, SolutionView, solutionLoader } from "./projects";
+import { ProjectList, ProjectForm, ProjectEditor, SolutionView } from "./projects";
 import { UserList, UserForm } from "./users";
 import { HomePage } from "./home";
 import errors, { ErrorPage } from "./components/errors";
@@ -104,7 +104,7 @@ function main() {
 						{
 							path: "solutions/:solutionId",
 							Component: SolutionView,
-							loader: solutionLoader,
+							loader: loadSolution,
 						},
 						{
 							path: "users",
@@ -179,6 +179,14 @@ async function loadProjectData({ params }: LoaderFunctionArgs) {
 		);
 	}
 	return { project: projectRes.value, fuels: fuelsRes.value };
+}
+
+async function loadSolution({ params }: LoaderFunctionArgs) {
+	const solutionId = parseInt(params.solutionId || "0", 10);
+	const solutionRes = await api.getSolution(solutionId);
+	return solutionRes.isErr
+		? errors.redirect("Failed to load solution", solutionRes)
+		: solutionRes.value;
 }
 
 main();

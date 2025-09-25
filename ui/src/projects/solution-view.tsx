@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { useLoaderData, useNavigate, Link } from "react-router-dom";
-import { Solution, Project, Fuel } from "../model";
+import React, { useState } from "react";
+import { useLoaderData, Link } from "react-router-dom";
+import { Solution } from "../model";
 import { DownloadIcon } from "../components/icons";
 import { BreadcrumbRow } from "../components/navi";
 import * as api from "../api";
 
-interface SolutionData {
-	solution: Solution;
-	project: Project;
-}
 
 export function SolutionView() {
-	const { solution, project }: SolutionData = useLoaderData();
+	const solution: Solution = useLoaderData();
 	const [error, setError] = useState<string | null>(null);
 	const [isDownloading, setDownloading] = useState(false);
 
@@ -19,7 +15,7 @@ export function SolutionView() {
 		if (isDownloading) return;
 		setDownloading(true);
 		setError(null);
-		const res = await api.getSophenaPackage(project.id);
+		const res = await api.getSophenaPackage(solution.projectId);
 		if (!res.isOk) {
 			setError(res.error);
 		}
@@ -29,10 +25,10 @@ export function SolutionView() {
 	return (
 		<div className="container">
 			<BreadcrumbRow
-				active={`Solution ${solution.id}`}
+				active={`Solution`}
 				path={[
 					["/ui/projects", "Projects"],
-					[`/ui/projects/${project.id}`, project.name]
+					[`/ui/projects/${solution.projectId}`, solution.name]
 				]}
 			/>
 
@@ -64,14 +60,7 @@ export function SolutionView() {
 							)}
 
 							<div className="mb-3">
-								<strong>Solution Name:</strong> {solution.name}
-							</div>
-
-							<div className="mb-3">
-								<strong>Project:</strong>{" "}
-								<Link to={`/ui/projects/${project.id}`} className="text-decoration-none">
-									{project.name}
-								</Link>
+								<strong>Solution for project:</strong> {solution.name}
 							</div>
 
 							{solution.calculatedAt && (
@@ -105,24 +94,4 @@ export function SolutionView() {
 			</div>
 		</div>
 	);
-}
-
-// Loader function for React Router
-export async function solutionLoader({ params }: { params: any }): Promise<SolutionData> {
-	const solutionId = parseInt(params.solutionId);
-
-	const solutionRes = await api.getSolution(solutionId);
-	if (!solutionRes.isOk) {
-		throw new Error(`Failed to load solution: ${solutionRes.error}`);
-	}
-
-	const projectRes = await api.getProject(solutionRes.value.projectId);
-	if (!projectRes.isOk) {
-		throw new Error(`Failed to load project: ${projectRes.error}`);
-	}
-
-	return {
-		solution: solutionRes.value,
-		project: projectRes.value
-	};
 }
