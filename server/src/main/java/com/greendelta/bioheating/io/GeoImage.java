@@ -50,6 +50,12 @@ public class GeoImage implements AutoCloseable {
 		}
 	}
 
+	public void draw(Polygon polygon, Color border, Color fill) {
+		if (polygon != null) {
+			drawPolygon(polygon.getCoordinates(), border, fill);
+		}
+	}
+
 	public void draw(LineString line, Color color) {
 		if (line != null) {
 			drawLine(line.getCoordinates(), color);
@@ -59,9 +65,19 @@ public class GeoImage implements AutoCloseable {
 	public void drawPolygon(Coordinate[] cs, Color color) {
 		if (cs == null || color == null)
 			return;
+		var fill = new Color(
+			color.getRed(),
+			color.getGreen(),
+			color.getBlue(),
+			128
+		);
+		drawPolygon(cs, color, fill);
+	}
+
+	public void drawPolygon(Coordinate[] cs, Color border, Color fill) {
 		var shape = shapeOf(cs);
-		shape.fillPolygon(g, color);
-		shape.drawPolygon(g, color);
+		shape.fillPolygon(g, fill);
+		shape.drawPolygon(g, border);
 	}
 
 	public void drawLine(Coordinate[] cs, Color color) {
@@ -91,13 +107,7 @@ public class GeoImage implements AutoCloseable {
 	private record Shape(int[] xs, int[] ys, int n) {
 
 		void fillPolygon(Graphics2D g2d, Color color) {
-			var fillColor = new Color(
-				color.getRed(),
-				color.getGreen(),
-				color.getBlue(),
-				128
-			);
-			g2d.setColor(fillColor);
+			g2d.setColor(color);
 			g2d.fillPolygon(xs, ys, n);
 		}
 
