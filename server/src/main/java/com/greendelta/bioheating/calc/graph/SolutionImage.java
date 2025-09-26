@@ -23,7 +23,7 @@ class SolutionImage {
 	private final Envelope envelope;
 
 	private final Color DISABLED_COLOR = new Color(144, 164, 174);
-	private final Color PIPE_COLOR = new Color(69, 39, 160);
+	private final Color PIPE_COLOR = new Color(30, 136, 229);
 	private final Color BORDER_COLOR = new Color(55, 71, 79);
 
 	private final Color PINK_1 = new Color(248, 187, 208);

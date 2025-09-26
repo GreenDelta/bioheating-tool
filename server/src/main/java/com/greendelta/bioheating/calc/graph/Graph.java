@@ -133,6 +133,8 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
 		private void joinBuildings(STRtree tree) {
 			for (var b : project.map().buildings()) {
+				if (!b.isHeated() || b.inclusion() != Inclusion.REQUIRED)
+					continue;
 				var node = BuildingNode.of(b, factory);
 				graph.addVertex(node);
 				var env = node.envelope().copy();
