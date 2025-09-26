@@ -37,7 +37,10 @@ public class MinTree {
 			try {
 
 				log.info("build full graph");
-				var g = Graph.buildFrom(project);
+				var graphRes = Graph.buildFrom(project);
+				if (graphRes.hasError())
+					return graphRes.wrapError("failed to create project graph");
+				var g = graphRes.value();
 				log.info("created graph with {} nodes and {} edges",
 					g.vertexSet().size(), g.edgeSet().size());
 

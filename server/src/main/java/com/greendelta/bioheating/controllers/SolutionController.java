@@ -79,13 +79,19 @@ public class SolutionController {
 				return Http.badRequest("not authenticated");
 
 			var task = NewTask.of(user, () -> {
+
 				var graph = Graph.buildFrom(project);
-				var tree = SteinerTree.compute(graph);
+				if (graph.hasError())
+					return graph.wrapError("failed to create project graph");
+
+				var tree = SteinerTree.compute(graph.value());
 				if (tree.hasError())
 					return tree.wrapError("failed to create Steiner-Tree");
+
 				var res = new MinTreeSolution(project, tree.value()).create();
 				if (res.hasError())
 					return res;
+
 				var solution = res.value();
 				solution.calculatedAt(System.currentTimeMillis());
 				db.insert(solution);

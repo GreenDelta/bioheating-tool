@@ -13,7 +13,9 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
 import com.greendelta.bioheating.calc.graph.Node.StreetNode;
+import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.util.Res;
 
 public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
@@ -21,8 +23,25 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 		super(Edge.class);
 	}
 
-	public static Graph buildFrom(Project project) {
-		return new Builder(project).build();
+	public static Res<Graph> buildFrom(Project project) {
+		if (project == null || project.map() == null)
+			return Res.error("empty project provided");
+		if (project.map().streets().isEmpty())
+			return Res.error("project does not contain any streets");
+		int bCount = 0;
+		for (var b : project.map().buildings()) {
+			if (b.isHeated() && b.inclusion() != Inclusion.REQUIRED) {
+				bCount++;
+			}
+		}
+		if (bCount == 0)
+			return Res.error("project does not contain any heated buildings");
+		try {
+			var g = new Builder(project).build();
+			return Res.of(g);
+		} catch (Exception e) {
+			return Res.error("failed to create graph", e);
+		}
 	}
 
 	public void add(GraphPath<Node, Edge> path) {
@@ -34,6 +53,8 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 	}
 
 	void add(Edge edge) {
+		if (edge == null)
+			return;
 		addVertex(edge.source());
 		addVertex(edge.target());
 		var b = addEdge(edge.source(), edge.target(), edge);
@@ -97,16 +118,14 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			return tree;
 		}
 
-		private StreetNode getOrCreateNode(Coordinate coordinate) {
-			// Find existing node within 1 meter
-			for (var candidate : streetNodes) {
-				if (coordinate.distance(candidate.center().getCoordinate()) < 1.0) {
-					return candidate;
+		private StreetNode getOrCreateNode(Coordinate coo) {
+			// find existing node within 1 meter
+			for (var n : streetNodes) {
+				if (coo.distance(n.center().getCoordinate()) < 1.0) {
+					return n;
 				}
 			}
-
-			// Create new node if none found within tolerance
-			var point = factory.createPoint(coordinate);
+			var point = factory.createPoint(coo);
 			var newNode = new StreetNode(ids.incrementAndGet(), point);
 			streetNodes.add(newNode);
 			return newNode;
