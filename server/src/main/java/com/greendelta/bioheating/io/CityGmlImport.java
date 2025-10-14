@@ -13,6 +13,7 @@ import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.predict.BoostPredictor;
 import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
 

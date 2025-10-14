@@ -72,7 +72,7 @@ class SolutionImage {
 	}
 
 	private Res<byte[]> create() {
-		try (var img = new GeoImage(1024, 800, envelope)) {
+		try (var img = new GeoImage(1024, envelope)) {
 			renderStreets(img);
 			renderPipes(img);
 			renderBuildings(img);

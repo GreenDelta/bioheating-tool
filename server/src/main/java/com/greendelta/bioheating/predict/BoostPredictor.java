@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.io;
+package com.greendelta.bioheating.predict;
 
 import java.util.List;
 
