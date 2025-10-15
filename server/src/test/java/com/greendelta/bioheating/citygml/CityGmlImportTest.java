@@ -59,8 +59,8 @@ public class CityGmlImportTest {
 		var cs = building.coordinates();
 		assertNotNull(cs);
 		assertEquals(5, cs.length);
-		assertEquals("31001_1010", building.function());
-		assertEquals("3100", building.roofType());
+		assertEquals("31001_1010", building.functionCode());
+		assertEquals("3100", building.roofTypeCode());
 		assertEquals(10.354, building.height(), 1e-3);
 		assertEquals(1, building.storeys());
 

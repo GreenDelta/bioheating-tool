@@ -22,11 +22,21 @@ public class Building extends BaseEntity {
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
 
-	@Column(name = "roof_type")
-	private String roofType;
+	@Column(name = "roof_type_code")
+	private String roofTypeCode;
 
-	@Column(name = "function")
-	private String function;
+	@Column(name = "roof_type_label")
+	private String roofTypeLabel;
+
+	@Column(name = "function_code")
+	private String functionCode;
+
+	@Column(name = "function_label")
+	private String functionLabel;
+
+	@Column(name = "type")
+	@Enumerated(EnumType.STRING)
+	private BuildingType type;
 
 	@Column(name = "height")
 	private double height;
@@ -93,21 +103,48 @@ public class Building extends BaseEntity {
 		return this;
 	}
 
-	public String roofType() {
-		return roofType;
+	public String roofTypeCode() {
+		return roofTypeCode;
 	}
 
-	public Building roofType(String roofType) {
-		this.roofType = roofType;
+	public Building roofTypeCode(String roofTypeCode) {
+		this.roofTypeCode = roofTypeCode;
 		return this;
 	}
 
-	public String function() {
-		return function;
+	public String roofTypeLabel() {
+		return roofTypeLabel;
 	}
 
-	public Building function(String function) {
-		this.function = function;
+	public Building roofTypeLabel(String roofTypeLabel) {
+		this.roofTypeLabel = roofTypeLabel;
+		return this;
+	}
+
+	public String functionCode() {
+		return functionCode;
+	}
+
+	public Building functionCode(String functionCode) {
+		this.functionCode = functionCode;
+		return this;
+	}
+
+	public String functionLabel() {
+		return functionLabel;
+	}
+
+	public Building functionLabel(String functionLabel) {
+		this.functionLabel = functionLabel;
+		return this;
+	}
+
+	public BuildingType type() {
+		return type;
+	}
+
+	public Building type(BuildingType type) {
+		this.type = type;
 		return this;
 	}
 

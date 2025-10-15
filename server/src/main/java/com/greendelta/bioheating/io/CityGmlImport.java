@@ -9,6 +9,7 @@ import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.model.Building;
+import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Inclusion;
@@ -128,8 +129,11 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		var building = new Building()
 			.name(nameOf(b))
 			.coordinates(cs)
-			.roofType(b.roofType())
-			.function(b.function())
+			.roofTypeCode(b.roofType())
+			.roofTypeLabel("")  // Will be filled by lookup service later
+			.functionCode(b.function())
+			.functionLabel("")  // Will be filled by lookup service later
+			.type(BuildingType.OTHER)  // Default type, can be determined from other fields later
 			.height(height)
 			.storeys(storeys)
 			.groundArea(groundArea)
