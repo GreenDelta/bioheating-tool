@@ -1,13 +1,13 @@
 package com.greendelta.bioheating.io.citygml;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
 import com.greendelta.bioheating.model.Building;
-import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
@@ -57,13 +57,18 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return mapRes.castError();
 		var map = mapRes.value();
 
-		for (var b : model.buildings()) {
-			var building = convertBuilding(b);
-			if (building != null) {
-				building.fuel(project.defaultFuel());
-				map.buildings().add(building);
-			}
+		var items = new ArrayList<BuildingItem>(model.buildings().size());
+		for (var gml : model.buildings()) {
+			var item = BuildingItem.of(gml);
+			if (item.isEmpty())
+				continue;
+			item.building().fuel(project.defaultFuel());
+			map.buildings().add(item.building());
+			items.add(item);
 		}
+
+		new NeighborAnalysis().run(items);
+		BuildingTypes.map(items);
 
 		try {
 			var buildings = map.buildings();
@@ -124,15 +129,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		double heatedArea = heatedAreaOf(totalArea, b.function());
 		double volume = volumeOf(groundArea, height, b.roofType());
 		var building = new Building()
-			.name(nameOf(b))
-			.coordinates(cs)
-			.roofTypeCode(b.roofType())
-			.roofTypeLabel("")  // Will be filled by lookup service later
-			.functionCode(b.function())
-			.functionLabel("")  // Will be filled by lookup service later
-			.type(BuildingType.OTHER)  // Default type, can be determined from other fields later
-			.constructionAge("")  // Default empty, to be set manually
-			.height(height)
+
 			.storeys(storeys)
 			.groundArea(groundArea)
 			.heatedArea(heatedArea)
