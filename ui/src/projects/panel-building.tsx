@@ -116,7 +116,27 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 					onChange={value => put({ type: value })}
 				/>
 
+				<SelectField
+					label="Construction Age"
+					value={data.constructionAge}
+					options={[
+						{ value: "", label: "(empty)" },
+						{ value: "1900-1919", label: "1900-1919" },
+						{ value: "1919-1948", label: "1919-1948" },
+						{ value: "1949-1978", label: "1949-1978" },
+						{ value: "1979-1995", label: "1979-1995" },
+						{ value: "1995-2009", label: "1995-2009" },
+						{ value: "2010-2030", label: "2010-2030" },
+					]}
+					onChange={value => put({ constructionAge: value })}
+				/>
+
 				<NumberField
+					label="Height (m)"
+					value={data.height}
+					step="0.1"
+					onChange={value => put({ height: value })}
+				/>				<NumberField
 					label="Ground Area (m²)"
 					value={data.groundArea}
 					step="0.1"

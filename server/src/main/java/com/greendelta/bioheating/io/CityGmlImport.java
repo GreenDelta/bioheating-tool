@@ -134,6 +134,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			.functionCode(b.function())
 			.functionLabel("")  // Will be filled by lookup service later
 			.type(BuildingType.OTHER)  // Default type, can be determined from other fields later
+			.constructionAge("")  // Default empty, to be set manually
 			.height(height)
 			.storeys(storeys)
 			.groundArea(groundArea)

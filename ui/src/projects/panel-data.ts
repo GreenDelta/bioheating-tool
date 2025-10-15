@@ -13,6 +13,7 @@ export interface BuildingProps {
 	functionLabel?: any;
 	function?: any; // backward compatibility
 	type?: any;
+	constructionAge?: any;
 	groundArea?: any;
 	heatedArea?: any;
 	volume?: any;
@@ -76,6 +77,7 @@ export class BuildingData {
 	functionCode: string;
 	functionLabel: string;
 	type: BuildingType;
+	constructionAge: string;
 	groundArea: number;
 	heatedArea: number;
 	volume: number;
@@ -105,6 +107,7 @@ export class BuildingData {
 			this.functionCode = d.functionCode;
 			this.functionLabel = d.functionLabel;
 			this.type = d.type;
+			this.constructionAge = d.constructionAge;
 			this.groundArea = d.groundArea;
 			this.heatedArea = d.heatedArea;
 			this.volume = d.volume;
@@ -128,6 +131,7 @@ export class BuildingData {
 			this.functionCode = stringOf(d.functionCode || d.function);
 			this.functionLabel = stringOf(d.functionLabel || d.function);
 			this.type = buildingTypeFromString(d.type || "OTHER");
+			this.constructionAge = stringOf(d.constructionAge);
 			this.groundArea = floatOf(d.groundArea);
 			this.heatedArea = floatOf(d.heatedArea);
 			this.volume = floatOf(d.volume);
@@ -171,6 +175,9 @@ export class BuildingData {
 		}
 		if (props.type) {
 			copy.type = buildingTypeFromString(props.type);
+		}
+		if (props.constructionAge) {
+			copy.constructionAge = props.constructionAge;
 		}
 		if (props.groundArea) {
 			copy.groundArea = props.groundArea;
@@ -224,6 +231,7 @@ export class BuildingData {
 		f.properties.functionCode = this.functionCode;
 		f.properties.functionLabel = this.functionLabel;
 		f.properties.type = this.type;
+		f.properties.constructionAge = this.constructionAge;
 		f.properties.groundArea = this.groundArea;
 		f.properties.heatedArea = this.heatedArea;
 		f.properties.volume = this.volume;

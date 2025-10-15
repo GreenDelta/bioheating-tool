@@ -28,6 +28,7 @@ create table tbl_buildings (
     function_code varchar,
     function_label varchar,
     type varchar,
+    construction_age varchar,
     height double precision,
     storeys int,
     ground_area double precision,

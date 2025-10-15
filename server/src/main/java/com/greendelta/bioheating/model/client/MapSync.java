@@ -68,6 +68,7 @@ public class MapSync {
 		syncString(props, "functionCode", b::functionCode);
 		syncString(props, "functionLabel", b::functionLabel);
 		syncBuildingType(props, b::type);
+		syncString(props, "constructionAge", b::constructionAge);
 		syncDouble(props, "height", b::height);
 		syncInt(props, "storeys", b::storeys);
 		syncDouble(props, "groundArea", b::groundArea);
