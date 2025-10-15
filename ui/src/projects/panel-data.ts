@@ -1,13 +1,18 @@
 import { GeoFeature } from "../model";
-import { Inclusion, inclusionFromString } from "../model";
+import { Inclusion, inclusionFromString, BuildingType, buildingTypeFromString } from "../model";
 
 export interface BuildingProps {
 	name?: any;
 	height?: any;
 	storeys?: any;
 	heatDemand?: any;
-	roofType?: any;
-	function?: any;
+	roofTypeCode?: any;
+	roofTypeLabel?: any;
+	roofType?: any; // backward compatibility
+	functionCode?: any;
+	functionLabel?: any;
+	function?: any; // backward compatibility
+	type?: any;
 	groundArea?: any;
 	heatedArea?: any;
 	volume?: any;
@@ -66,8 +71,11 @@ export class BuildingData {
 	height: number;
 	storeys: number;
 	heatDemand: number;
-	roofType: string;
-	function: string;
+	roofTypeCode: string;
+	roofTypeLabel: string;
+	functionCode: string;
+	functionLabel: string;
+	type: BuildingType;
 	groundArea: number;
 	heatedArea: number;
 	volume: number;
@@ -92,8 +100,11 @@ export class BuildingData {
 			this.height = d.height;
 			this.storeys = d.storeys;
 			this.heatDemand = d.heatDemand;
-			this.roofType = d.roofType;
-			this.function = d.function;
+			this.roofTypeCode = d.roofTypeCode;
+			this.roofTypeLabel = d.roofTypeLabel;
+			this.functionCode = d.functionCode;
+			this.functionLabel = d.functionLabel;
+			this.type = d.type;
 			this.groundArea = d.groundArea;
 			this.heatedArea = d.heatedArea;
 			this.volume = d.volume;
@@ -111,8 +122,12 @@ export class BuildingData {
 			this.height = floatOf(d.height);
 			this.storeys = intOf(d.storeys);
 			this.heatDemand = floatOf(d.heatDemand);
-			this.roofType = stringOf(d.roofType);
-			this.function = stringOf(d.function);
+			// Handle backward compatibility - if old properties exist, use them as codes
+			this.roofTypeCode = stringOf(d.roofTypeCode || d.roofType);
+			this.roofTypeLabel = stringOf(d.roofTypeLabel || d.roofType);
+			this.functionCode = stringOf(d.functionCode || d.function);
+			this.functionLabel = stringOf(d.functionLabel || d.function);
+			this.type = buildingTypeFromString(d.type || "OTHER");
 			this.groundArea = floatOf(d.groundArea);
 			this.heatedArea = floatOf(d.heatedArea);
 			this.volume = floatOf(d.volume);
@@ -142,11 +157,20 @@ export class BuildingData {
 		if (props.heatDemand) {
 			copy.heatDemand = props.heatDemand;
 		}
-		if (props.roofType) {
-			copy.roofType = props.roofType;
+		if (props.roofTypeCode) {
+			copy.roofTypeCode = props.roofTypeCode;
 		}
-		if (props.function) {
-			copy.function = props.function;
+		if (props.roofTypeLabel) {
+			copy.roofTypeLabel = props.roofTypeLabel;
+		}
+		if (props.functionCode) {
+			copy.functionCode = props.functionCode;
+		}
+		if (props.functionLabel) {
+			copy.functionLabel = props.functionLabel;
+		}
+		if (props.type) {
+			copy.type = buildingTypeFromString(props.type);
 		}
 		if (props.groundArea) {
 			copy.groundArea = props.groundArea;
@@ -195,8 +219,11 @@ export class BuildingData {
 		f.properties.height = this.height;
 		f.properties.storeys = this.storeys;
 		f.properties.heatDemand = this.heatDemand;
-		f.properties.roofType = this.roofType;
-		f.properties.function = this.function;
+		f.properties.roofTypeCode = this.roofTypeCode;
+		f.properties.roofTypeLabel = this.roofTypeLabel;
+		f.properties.functionCode = this.functionCode;
+		f.properties.functionLabel = this.functionLabel;
+		f.properties.type = this.type;
 		f.properties.groundArea = this.groundArea;
 		f.properties.heatedArea = this.heatedArea;
 		f.properties.volume = this.volume;

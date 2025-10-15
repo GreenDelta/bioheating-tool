@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { GeoFeature, Inclusion, Fuel } from "../model";
+import { GeoFeature, Inclusion, Fuel, BuildingType } from "../model";
 import { BuildingData, BuildingProps } from "./panel-data";
 import { StringField, NumberField, CheckboxField, SelectField } from "./fields";
 
@@ -88,14 +88,32 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 
 				<StringField
 					label="Roof Type"
-					value={data.roofType}
-					onChange={value => put({ roofType: value })}
+					value={data.roofTypeLabel}
+					onChange={value => put({ roofTypeLabel: value })}
 				/>
 
 				<StringField
 					label="Function"
-					value={data.function}
-					onChange={value => put({ function: value })}
+					value={data.functionLabel}
+					onChange={value => put({ functionLabel: value })}
+				/>
+
+				<SelectField
+					label="Building Type"
+					value={data.type}
+					options={[
+						{ value: BuildingType.HIGH_RISE, label: "High Rise" },
+						{ value: BuildingType.MULTI_FAMILY_SMALL, label: "Multi Family Small" },
+						{ value: BuildingType.MULTI_FAMILY_MEDIUM, label: "Multi Family Medium" },
+						{ value: BuildingType.MULTI_FAMILY_LARGE, label: "Multi Family Large" },
+						{ value: BuildingType.BUILDING_PART, label: "Building Part" },
+						{ value: BuildingType.SINGLE_FAMILY, label: "Single Family" },
+						{ value: BuildingType.END_TERRACE, label: "End Terrace" },
+						{ value: BuildingType.MID_TERRACE, label: "Mid Terrace" },
+						{ value: BuildingType.HOUSE_GROUP, label: "House Group" },
+						{ value: BuildingType.OTHER, label: "Other" },
+					]}
+					onChange={value => put({ type: value })}
 				/>
 
 				<NumberField
