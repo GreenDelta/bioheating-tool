@@ -3,9 +3,6 @@ package com.greendelta.bioheating.io.citygml;
 import java.io.File;
 import java.util.concurrent.Callable;
 
-import org.locationtech.jts.geom.Coordinate;
-
-import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
@@ -13,7 +10,6 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
 import com.greendelta.bioheating.util.Res;
@@ -113,13 +109,13 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	}
 
 	private Building convertBuilding(GmlBuilding b) {
+
 		if (b == null)
 			return null;
 		var cs = coordinatesOf(b);
 		if (cs == null)
 			return null;
 
-		double height = b.height();
 		int storeys = storeysOf(b, height);
 		double groundArea = b.groundSurface() != null
 			? b.groundSurface().getArea()
@@ -143,34 +139,12 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			.volume(volume)
 			.climateZone(climateZoneOf(b))
 			.isHeated(b.address() != null)
-			.inclusion(Inclusion.EXCLUDED);
-		mapAddress(b.address(), building);
+		;
+
 		return building;
 	}
 
-	private String nameOf(GmlBuilding b) {
-		var address = b.address();
-		if (address == null)
-			return b.id();
 
-		var street = address.street();
-		var number = address.number();
-		if (Strings.isNil(street))
-			return b.id();
-		return Strings.isNil(number)
-			? street
-			: street + " " + number;
-	}
-
-	private Coordinate[] coordinatesOf(GmlBuilding b) {
-		var polygon = b.groundSurface();
-		if (polygon == null)
-			return null;
-		var shell = polygon.getExteriorRing();
-		return shell != null
-			? shell.getCoordinates()
-			: null;
-	}
 
 	private int storeysOf(GmlBuilding b, double height) {
 		int storeys = b.storeys();
@@ -204,20 +178,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		return blockVolume * f;
 	}
 
-	private void mapAddress(GmlAddress a, Building b) {
-		if (a == null)
-			return;
-		b.country(a.country())
-			.locality(a.locality())
-			.postalCode(a.postalCode())
-			.street(a.street())
-			.streetNumber(a.number());
-	}
 
-	private int climateZoneOf(GmlBuilding building) {
-		var key = building.attributes().get("Gemeindeschluessel");
-		return key != null
-			? mappings.weatherStation(key).orElse(0)
-			: 0;
-	}
+
+
 }
