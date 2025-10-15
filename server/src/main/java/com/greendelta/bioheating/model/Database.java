@@ -75,18 +75,18 @@ public class Database implements AutoCloseable {
 	}
 
 	private void withTransaction(Consumer<EntityManager> fn) {
-		var em = entityFactory.createEntityManager();
-		try {
-			em.getTransaction().begin();
-			fn.accept(em);
-			em.getTransaction().commit();
-		} catch (Exception e) {
-			if (em.getTransaction().isActive()) {
-				em.getTransaction().rollback();
+		try (var em = entityFactory.createEntityManager()) {
+			try {
+				em.getTransaction().begin();
+				fn.accept(em);
+				em.getTransaction().commit();
+			} catch (Exception e) {
+				var transaction = em.getTransaction();
+				if (transaction.isActive()) {
+					transaction.rollback();
+				}
+				throw e;
 			}
-			throw e;
-		} finally {
-			em.close();
 		}
 	}
 

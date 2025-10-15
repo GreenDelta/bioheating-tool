@@ -112,11 +112,11 @@ public class UserService {
 
 		if (user.id() == 0) {
 			db.insert(user);
-		} else {
-			user = db.update(user);
+			return Res.of(UserInfo.of(user));
 		}
 
-		return Res.of(UserInfo.of(user));
+		var updated = db.update(user);
+		return Res.of(UserInfo.of(updated));
 	}
 
 	public record UserInfo(

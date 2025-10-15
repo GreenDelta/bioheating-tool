@@ -55,13 +55,17 @@
 		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
+			<!-- version managed by SpringBoot
 			<version>6.3.0</version>
+			-->
 		</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
+			<!-- version managed by SpringBoot
 			<version>42.7.6</version>
+			-->
 		</dependency>
 
 		<dependency>
