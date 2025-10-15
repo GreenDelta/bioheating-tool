@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.io;
+package com.greendelta.bioheating.io.citygml;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -8,6 +8,7 @@ import org.locationtech.jts.geom.Coordinate;
 import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
+import com.greendelta.bioheating.io.CrsId;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.Database;

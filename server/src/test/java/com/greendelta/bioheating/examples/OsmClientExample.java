@@ -1,6 +1,6 @@
 package com.greendelta.bioheating.examples;
 
-import com.greendelta.bioheating.io.OsmClient;
+import com.greendelta.bioheating.io.citygml.OsmClient;
 
 public class OsmClientExample {
 

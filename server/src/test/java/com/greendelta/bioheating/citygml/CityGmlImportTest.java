@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.greendelta.bioheating.Tests;
-import com.greendelta.bioheating.io.CityGmlImport;
+import com.greendelta.bioheating.io.citygml.CityGmlImport;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 

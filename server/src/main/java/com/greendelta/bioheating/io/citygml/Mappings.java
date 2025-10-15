@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.io;
+package com.greendelta.bioheating.io.citygml;
 
 import java.util.HashMap;
 import java.util.Map;

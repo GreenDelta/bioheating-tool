@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greendelta.bioheating.io.citygml.OsmStreet;
 
 public class OsmStreetTest {
 

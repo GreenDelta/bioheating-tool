@@ -1,7 +1,8 @@
-package com.greendelta.bioheating.io;
+package com.greendelta.bioheating.io.citygml;
 
 import org.locationtech.jts.geom.Coordinate;
 
+import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Street;
