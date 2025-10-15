@@ -34,7 +34,7 @@ public class Building extends BaseEntity {
 	@Column(name = "function_label")
 	private String functionLabel;
 
-	@Column(name = "type")
+	@Column(name = "building_type")
 	@Enumerated(EnumType.STRING)
 	private BuildingType type;
 
