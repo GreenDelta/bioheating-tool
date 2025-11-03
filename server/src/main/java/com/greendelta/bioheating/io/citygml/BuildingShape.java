@@ -1,6 +1,8 @@
 package com.greendelta.bioheating.io.citygml;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -16,18 +18,24 @@ record BuildingShape(
 	double blockVolume,
 	Set<String> neighbors) {
 
-	static BuildingShape of(GmlBuilding gml) {
-		if (gml == null || gml.groundSurface() == null)
-			return new BuildingShape(gml, null, 0, 0, null);
+	static List<BuildingShape> allOf(List<GmlBuilding> gmls) {
+		if (gmls == null || gmls.isEmpty())
+			return List.of();
+		var shapes = new ArrayList<BuildingShape>(gmls.size());
+		for (var gml : gmls) {
+			if (gml.groundSurface() == null)
+				continue;
+			shapes.add(of(gml));
+		}
+		return shapes;
+	}
+
+	private static BuildingShape of(GmlBuilding gml) {
 		double groundArea = gml.groundSurface().getArea();
 		double blockVolume = gml.height() * groundArea;
 		var envelope = gml.groundSurface().getEnvelopeInternal();
 		return new BuildingShape(
 			gml, envelope, groundArea, blockVolume, new HashSet<>());
-	}
-
-	boolean isEmpty() {
-		return gml == null || envelope == null;
 	}
 
 	String id() {

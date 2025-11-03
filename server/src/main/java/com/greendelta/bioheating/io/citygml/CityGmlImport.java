@@ -1,19 +1,14 @@
 package com.greendelta.bioheating.io.citygml;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-import org.locationtech.jts.geom.Coordinate;
-
-import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
 import com.greendelta.bioheating.util.Res;
@@ -24,17 +19,14 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	private final Database db;
 	private final Project project;
 	private final File file;
-	private final Mappings mappings;
 	private final BoostPredictor booster;
 	private boolean withOsmImport = false;
 
 	public CityGmlImport(
-		Database db, Project project, File file
-	) {
+		Database db, Project project, File file) {
 		this.db = db;
 		this.project = project;
 		this.file = file;
-		this.mappings = Mappings.read().orElse(null);
 		this.booster = BoostPredictor.getDefault();
 	}
 
@@ -49,9 +41,8 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return Res.error("project cannot be null");
 		if (file == null || !file.exists())
 			return Res.error("file does not exist");
-		if (mappings == null)
-			return Res.error("failed to load mappings");
 
+		// parse the CityGML model and initialize the map
 		var res = GmlModel.readFrom(file);
 		if (res.hasError())
 			return res.castError();
@@ -61,17 +52,13 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return mapRes.castError();
 		var map = mapRes.value();
 
-		var shapes = new ArrayList<BuildingShape>(model.buildings().size());
-		for (var gml : model.buildings()) {
-			var shape = BuildingShape.of(gml);
-			if (shape.isEmpty())
-				continue;
-
-			items.add(item);
-		}
-
-		new NeighborAnalysis().run(items);
-		BuildingTypes.map(items);
+		// process the building data
+		var shapes = BuildingShape.allOf(model.buildings());
+		if (shapes.isEmpty())
+			return Res.error("No valid buildings found in CityGML model");
+		var naRes = NeighborAnalysis.run(shapes);
+		if (naRes.hasError())
+			return naRes.wrapError("Failed to run neighbor analysis of buildings");
 
 		try {
 			var buildings = map.buildings();
@@ -108,7 +95,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return Strings.eq(crsId, map.crs())
 				? Res.of(map)
 				: Res.error("different CSR of model and current project map: "
-				+ map.crs() + " vs. " + crsId);
+					+ map.crs() + " vs. " + crsId);
 		}
 
 		map = new GeoMap().crs(crsId);
@@ -124,15 +111,6 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		if (cs == null)
 			return null;
 
-		var building = new Building()
-			.name(nameOf(gml))
-			.coordinates(cs)
-			.height(gml.height())
-			.storeys(storeys)
-			.groundArea(groundArea)
-			.inclusion(Inclusion.EXCLUDED);
-		mapAddress(gml.address(), building);
-
 		int storeys = storeysOf(b, height);
 		double groundArea = b.groundSurface() != null
 			? b.groundSurface().getArea()
@@ -147,79 +125,9 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			.heatedArea(heatedArea)
 			.volume(volume)
 			.climateZone(climateZoneOf(b))
-			.isHeated(b.address() != null)
-		;
+			.isHeated(b.address() != null);
 
 		return building;
 	}
 
-
-	private static String nameOf(GmlBuilding b) {
-		var address = b.address();
-		if (address == null)
-			return b.id();
-
-		var street = address.street();
-		var number = address.number();
-		if (Strings.isNil(street))
-			return b.id();
-		return Strings.isNil(number)
-			? street
-			: street + " " + number;
-	}
-
-	private static Coordinate[] coordinatesOf(GmlBuilding b) {
-		if (b == null)
-			return null;
-		var polygon = b.groundSurface();
-		if (polygon == null)
-			return null;
-		var shell = polygon.getExteriorRing();
-		return shell != null
-			? shell.getCoordinates()
-			: null;
-	}
-
-	private static void mapAddress(GmlAddress a, Building b) {
-		if (a == null)
-			return;
-		b.country(a.country())
-			.locality(a.locality())
-			.postalCode(a.postalCode())
-			.street(a.street())
-			.streetNumber(a.number());
-	}
-
-	private static int storeysOf(GmlBuilding gml, Mappings mappings) {
-		int storeys = gml.storeys();
-		if (storeys > 0)
-			return storeys;
-		var function = gml.function();
-		if (function == null || gml.height() == 0)
-			return 1;
-		var hs = mappings.defaultStoryHeight(function);
-		if (hs.isEmpty())
-			return 1;
-		storeys = (int) Math.round(gml.height() / hs.getAsDouble());
-		return Math.max(storeys, 1);
-	}
-
-
-	private double heatedAreaOf(double totalArea, String function) {
-		var functionType = mappings.functionType(function);
-		if (functionType.isPresent()) {
-			var areaFactor = mappings.areaFactor(functionType.getAsInt());
-			if (areaFactor.isPresent())
-				return totalArea * areaFactor.getAsDouble();
-		}
-		return totalArea * 0.85;
-	}
-
-	private double volumeOf(
-		double groundArea, double height, String roofType
-	) {
-		double blockVolume = groundArea * height;
-		var f = mappings.roofTypeFactor(roofType).orElse(0.9);
-		return blockVolume * f;
-	}
 }
