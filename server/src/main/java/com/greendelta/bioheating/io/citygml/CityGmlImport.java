@@ -4,12 +4,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
+import org.locationtech.jts.geom.Coordinate;
+
+import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
 import com.greendelta.bioheating.util.Res;
@@ -57,13 +61,12 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return mapRes.castError();
 		var map = mapRes.value();
 
-		var items = new ArrayList<BuildingItem>(model.buildings().size());
+		var shapes = new ArrayList<BuildingShape>(model.buildings().size());
 		for (var gml : model.buildings()) {
-			var item = BuildingItem.of(gml);
-			if (item.isEmpty())
+			var shape = BuildingShape.of(gml);
+			if (shape.isEmpty())
 				continue;
-			item.building().fuel(project.defaultFuel());
-			map.buildings().add(item.building());
+
 			items.add(item);
 		}
 
@@ -121,6 +124,15 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		if (cs == null)
 			return null;
 
+		var building = new Building()
+			.name(nameOf(gml))
+			.coordinates(cs)
+			.height(gml.height())
+			.storeys(storeys)
+			.groundArea(groundArea)
+			.inclusion(Inclusion.EXCLUDED);
+		mapAddress(gml.address(), building);
+
 		int storeys = storeysOf(b, height);
 		double groundArea = b.groundSurface() != null
 			? b.groundSurface().getArea()
@@ -142,20 +154,56 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	}
 
 
+	private static String nameOf(GmlBuilding b) {
+		var address = b.address();
+		if (address == null)
+			return b.id();
 
-	private int storeysOf(GmlBuilding b, double height) {
-		int storeys = b.storeys();
+		var street = address.street();
+		var number = address.number();
+		if (Strings.isNil(street))
+			return b.id();
+		return Strings.isNil(number)
+			? street
+			: street + " " + number;
+	}
+
+	private static Coordinate[] coordinatesOf(GmlBuilding b) {
+		if (b == null)
+			return null;
+		var polygon = b.groundSurface();
+		if (polygon == null)
+			return null;
+		var shell = polygon.getExteriorRing();
+		return shell != null
+			? shell.getCoordinates()
+			: null;
+	}
+
+	private static void mapAddress(GmlAddress a, Building b) {
+		if (a == null)
+			return;
+		b.country(a.country())
+			.locality(a.locality())
+			.postalCode(a.postalCode())
+			.street(a.street())
+			.streetNumber(a.number());
+	}
+
+	private static int storeysOf(GmlBuilding gml, Mappings mappings) {
+		int storeys = gml.storeys();
 		if (storeys > 0)
 			return storeys;
-		var function = b.function();
-		if (function == null || height == 0)
+		var function = gml.function();
+		if (function == null || gml.height() == 0)
 			return 1;
 		var hs = mappings.defaultStoryHeight(function);
 		if (hs.isEmpty())
 			return 1;
-		storeys = (int) Math.round(height / hs.getAsDouble());
+		storeys = (int) Math.round(gml.height() / hs.getAsDouble());
 		return Math.max(storeys, 1);
 	}
+
 
 	private double heatedAreaOf(double totalArea, String function) {
 		var functionType = mappings.functionType(function);
@@ -174,8 +222,4 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		var f = mappings.roofTypeFactor(roofType).orElse(0.9);
 		return blockVolume * f;
 	}
-
-
-
-
 }

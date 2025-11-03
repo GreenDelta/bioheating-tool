@@ -12,7 +12,7 @@ class NeighborAnalysis {
 	private final double treshold = 0.15;
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	void run(List<BuildingItem> data) {
+	void run(List<BuildingShape> data) {
 		if (data == null)
 			return;
 		log.info("run neighbor analysis of {} buildings", data.size());
@@ -34,7 +34,7 @@ class NeighborAnalysis {
 			for (var candidate : index.query(q)) {
 				if (d == candidate)
 					continue;
-				if (!(candidate instanceof BuildingItem other)
+				if (!(candidate instanceof BuildingShape other)
 					|| other.isEmpty()
 					|| d.neighbors().contains(other.id()))
 					continue;

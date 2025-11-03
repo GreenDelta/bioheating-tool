@@ -12,20 +12,17 @@ class Mappings {
 
 	private final Map<String, Double> defaultStoryHeights;
 	private final Map<String, Integer> functionTypes;
-	private final Map<String, Double> roofTypeFactors;
 	private final Map<String, Integer> weatherStations;
 	private final Map<Integer, Double> areaFactors;
 
 	private Mappings(
 		Map<String, Double> defaultStoryHeights,
 		Map<String, Integer> functionTypes,
-		Map<String, Double> roofTypeFactors,
 		Map<String, Integer> weatherStations,
 		Map<Integer, Double> areaFactors
 	) {
 		this.defaultStoryHeights = defaultStoryHeights;
 		this.functionTypes = functionTypes;
-		this.roofTypeFactors = roofTypeFactors;
 		this.weatherStations = weatherStations;
 		this.areaFactors = areaFactors;
 	}
@@ -42,13 +39,6 @@ class Mappings {
 		return v == null
 			? OptionalInt.empty()
 			: OptionalInt.of(v);
-	}
-
-	OptionalDouble roofTypeFactor(String roofType) {
-		var v = roofTypeFactors.get(roofType);
-		return v == null
-			? OptionalDouble.empty()
-			: OptionalDouble.of(v);
 	}
 
 	OptionalInt weatherStation(String municipalityKey) {
@@ -89,7 +79,6 @@ class Mappings {
 		return Res.of(new Mappings(
 			defaultStoryHeights.value(),
 			functionTypes.value(),
-			roofTypeFactors.value(),
 			weatherStations.value(),
 			areaFactors.value()));
 	}
@@ -128,24 +117,6 @@ class Mappings {
 			}
 		}
 		return Res.of(functionTypes);
-	}
-
-	private static Res<Map<String, Double>> readRoofTypeFactors() {
-		var rtf = readProps("roof_type_factors.properties");
-		if (rtf.hasError())
-			return rtf.wrapError("failed to read roof type factors");
-		var roofTypeFactors = new HashMap<String, Double>();
-		for (var e : rtf.value().entrySet()) {
-			if (!(e.getKey() instanceof String key)
-				|| !(e.getValue() instanceof String value))
-				continue;
-			try {
-				roofTypeFactors.put(key, Double.parseDouble(value));
-			} catch (Exception ex) {
-				return Res.error("Invalid roof type factor: " + value, ex);
-			}
-		}
-		return Res.of(roofTypeFactors);
 	}
 
 	private static Res<Map<String, Integer>> readWeatherStations() {

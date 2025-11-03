@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
-public record GmlRoofType(String code, String label) {
+public record GmlRoofType(String code, String label, double volumeFactor) {
 
 	public static Map<String, GmlRoofType> getAll() {
 
@@ -33,9 +33,8 @@ public record GmlRoofType(String code, String label) {
 					continue;
 				var code = row.get(0);
 				var label = row.get(1);
-				if (code != null && !code.isBlank()) {
-					types.put(code, new GmlRoofType(code, label));
-				}
+				var factor = Double.parseDouble(row.get(2));
+				types.put(code, new GmlRoofType(code, label, factor));
 			}
 			return types;
 		} catch (Exception e) {

@@ -9,24 +9,24 @@ import com.greendelta.bioheating.model.BuildingType;
 
 class BuildingTypes {
 
-	private final List<BuildingItem> items;
+	private final List<BuildingShape> shapes;
 	private final Map<String, GmlFunctionType> functionTypes;
 	private final Map<String, GmlRoofType> roofTypes;
 
-	private BuildingTypes(List<BuildingItem> items) {
-		this.items = items;
+	private BuildingTypes(List<BuildingShape> shapes) {
+		this.shapes = shapes;
 		this.functionTypes = GmlFunctionType.getAll();
 		this.roofTypes = GmlRoofType.getAll();
 	}
 
-	static void map(List<BuildingItem> items) {
+	static void map(List<BuildingShape> items) {
 		if (items == null || items.isEmpty())
 			return;
 		new BuildingTypes(items).runMapping();
 	}
 
 	private void runMapping() {
-		for (var item : items) {
+		for (var shape : shapes) {
 			mapRoofType(item);
 			mapFunctionType(item);
 			// the heated-flag needs to be set now
@@ -35,7 +35,7 @@ class BuildingTypes {
 		}
 	}
 
-	private void mapRoofType(BuildingItem item) {
+	private void mapRoofType(BuildingShape item) {
 		var type = roofTypes.get(item.gml().roofType());
 		if (type != null) {
 			item.building()
@@ -44,7 +44,7 @@ class BuildingTypes {
 		}
 	}
 
-	private void mapFunctionType(BuildingItem item) {
+	private void mapFunctionType(BuildingShape item) {
 		var type = functionTypes.get(item.gml().function());
 		if (type != null) {
 			item.building()
@@ -59,7 +59,7 @@ class BuildingTypes {
 		}
 	}
 
-	private BuildingType buildingTypeOf(BuildingItem item) {
+	private static BuildingType buildingTypeOf(BuildingShape item) {
 		if (!item.building().isHeated())
 			return BuildingType.OTHER;
 		if (item.height() > 25)
@@ -72,9 +72,9 @@ class BuildingTypes {
 				: BuildingType.MULTI_FAMILY_LARGE;
 		}
 
-		if (item.groundArea() > 150)
+		if (item.building().groundArea() > 150)
 			return BuildingType.MULTI_FAMILY_SMALL;
-		if (item.groundArea() < 30)
+		if (item.building().groundArea() < 30)
 			return BuildingType.BUILDING_PART;
 
 		return switch (item.neighborCount()) {
@@ -84,5 +84,4 @@ class BuildingTypes {
 			default -> BuildingType.HOUSE_GROUP;
 		};
 	}
-
 }

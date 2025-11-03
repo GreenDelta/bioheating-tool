@@ -1,16 +1,16 @@
-Code,Dachtyp
-1000,Flachdach
-2100,Pultdach
-2200,Versetztes Pultdach
-3100,Satteldach
-3200,Walmdach
-3300,Krüppelwalmdach
-3400,Mansardendach
-3500,Zeltdach
-3600,Kegeldach
-3700,Kuppeldach
-3800,Sheddach
-3900,Bogendach
-4000,Turmdach
-5000,Mischform
-9999,Sonstiges
+Code,Label,Volume factor
+1000,Flachdach,1.0
+2100,Pultdach,0.95
+2200,Versetztes Pultdach,0.9
+3100,Satteldach,0.85
+3200,Walmdach,0.8
+3300,Krüppelwalmdach,0.85
+3400,Mansardendach,0.9
+3500,Zeltdach,0.75
+3600,Kegeldach,0.7
+3700,Kuppeldach,0.85
+3800,Sheddach,0.9
+3900,Bogendach,0.85
+4000,Turmdach,0.7
+5000,Mischform,0.85
+9999,Sonstiges,0.85
