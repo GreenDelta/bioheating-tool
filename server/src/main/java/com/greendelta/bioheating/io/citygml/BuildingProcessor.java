@@ -13,6 +13,7 @@ import com.greendelta.bioheating.citygml.GmlRoofType;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.Inclusion;
+import com.greendelta.bioheating.predict.FeatureValue;
 import com.greendelta.bioheating.util.Res;
 import com.greendelta.bioheating.util.Strings;
 
@@ -61,7 +62,7 @@ class BuildingProcessor {
 			: BuildingType.OTHER;
 
 		int storeys = storeysOf(gml, type);
-		var heatedArea = shape.groundArea() * storeys * type.heatedAreaFactor();
+		var heatedArea = shape.groundArea() * storeys * FeatureValue.heatedAreaFactor(type);
 		var netVolume = roofType != null
 			? shape.blockVolume() * roofType.volumeFactor()
 			: shape.blockVolume() * 0.85;
@@ -152,7 +153,7 @@ class BuildingProcessor {
 	private static int storeysOf(GmlBuilding gml, BuildingType type) {
 		if (gml.storeys() > 0)
 			return gml.storeys();
-		var hs = type.defaultStoreyHeight();
+		var hs = FeatureValue.defaultStoreyHeight(type);
 		var storeys = (int) Math.round(gml.height() / hs);
 		return Math.max(storeys, 1);
 	}

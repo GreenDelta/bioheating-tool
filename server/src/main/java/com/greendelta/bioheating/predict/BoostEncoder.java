@@ -27,7 +27,7 @@ class BoostEncoder {
 		if (region == null || buildings == null || buildings.isEmpty())
 			return Res.error("Climate region or building data missing");
 
-		float regionParam = FeatureValue.ofClimateRegion(region.number());
+		float regionParam = FeatureValue.climateRegionFactor(region.number());
 		return new BoostEncoder(regionParam, buildings).run();
 	}
 
@@ -49,7 +49,7 @@ class BoostEncoder {
 		data[p] = (float) b.height();
 		data[p+1] = (float) b.storeys();
 		data[p+2] = (float) b.groundArea();
-		data[p + 3] = FeatureValue.ofBuildingType(b.type());
+		data[p + 3] = FeatureValue.typeFactor(b.type());
 		data[p+4] = regionParam;
 		// TODO: other parameters
 	}
