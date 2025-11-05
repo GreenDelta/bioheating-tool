@@ -10,7 +10,7 @@ import ml.dmlc.xgboost4j.java.DMatrix;
 
 class BuildingEncoder {
 
-	private static final int PARAMS = 5;
+	private static final int PARAMS = 7;
 
 	private final float regionParam;
 	private final List<Building> buildings;
@@ -45,12 +45,13 @@ class BuildingEncoder {
 	}
 
 	private void encode(int offset, Building b) {
-		int p = offset;
+		int p = offset * PARAMS;
 		data[p] = (float) b.height();
-		data[p+1] = (float) b.storeys();
-		data[p+2] = (float) b.groundArea();
+		data[p + 1] = (float) b.storeys();
+		data[p + 2] = (float) b.groundArea();
 		data[p + 3] = FeatureValue.typeFactor(b.type());
-		data[p+4] = regionParam;
-		// TODO: other parameters
+		data[p + 4] = regionParam;
+		data[p + 5] = FeatureValue.averageHeatDemand(b.constructionAge());
+		data[p + 6] = FeatureValue.roofTypeFacor(b.roofTypeCode());
 	}
 }
