@@ -8,7 +8,7 @@ import com.greendelta.bioheating.util.Res;
 
 import ml.dmlc.xgboost4j.java.DMatrix;
 
-class BoostEncoder {
+class BuildingEncoder {
 
 	private static final int PARAMS = 5;
 
@@ -16,7 +16,7 @@ class BoostEncoder {
 	private final List<Building> buildings;
 	private final float[] data;
 
-	private BoostEncoder(float regionParam, List<Building> buildings) {
+	private BuildingEncoder(float regionParam, List<Building> buildings) {
 		this.regionParam = regionParam;
 		this.buildings = buildings;
 		this.data = new float[PARAMS * buildings.size()];
@@ -28,7 +28,7 @@ class BoostEncoder {
 			return Res.error("Climate region or building data missing");
 
 		float regionParam = FeatureValue.climateRegionFactor(region.number());
-		return new BoostEncoder(regionParam, buildings).run();
+		return new BuildingEncoder(regionParam, buildings).run();
 	}
 
 	private Res<DMatrix> run() {

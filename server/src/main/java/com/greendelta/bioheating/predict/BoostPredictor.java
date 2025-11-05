@@ -38,7 +38,7 @@ public record BoostPredictor(Booster booster) {
 	}
 
 	public Res<float[]> predictAll(ClimateRegion region, List<Building> bs) {
-		var encoded = BoostEncoder.encode(region, bs);
+		var encoded = BuildingEncoder.encode(region, bs);
 		return encoded.hasError()
 			? encoded.wrapError("Failed to encode building data")
 			: predict(encoded.value());
