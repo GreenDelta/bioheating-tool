@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { GeoFeature, Inclusion, Fuel, BuildingType } from "../model";
+import { GeoFeature, Inclusion, Fuel, BuildingType, ConstructionAge, constructionAgeToString } from "../model";
 import { BuildingData, BuildingProps } from "./panel-data";
 import { StringField, NumberField, CheckboxField, SelectField } from "./fields";
 
@@ -120,13 +120,13 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 					label="Construction Age"
 					value={data.constructionAge}
 					options={[
-						{ value: "", label: "(empty)" },
-						{ value: "1900-1919", label: "1900-1919" },
-						{ value: "1919-1948", label: "1919-1948" },
-						{ value: "1949-1978", label: "1949-1978" },
-						{ value: "1979-1995", label: "1979-1995" },
-						{ value: "1995-2009", label: "1995-2009" },
-						{ value: "2010-2030", label: "2010-2030" },
+						{ value: ConstructionAge.UNKNOWN, label: constructionAgeToString(ConstructionAge.UNKNOWN) },
+						{ value: ConstructionAge.AGE_1900_1919, label: constructionAgeToString(ConstructionAge.AGE_1900_1919) },
+						{ value: ConstructionAge.AGE_1919_1948, label: constructionAgeToString(ConstructionAge.AGE_1919_1948) },
+						{ value: ConstructionAge.AGE_1949_1978, label: constructionAgeToString(ConstructionAge.AGE_1949_1978) },
+						{ value: ConstructionAge.AGE_1979_1995, label: constructionAgeToString(ConstructionAge.AGE_1979_1995) },
+						{ value: ConstructionAge.AGE_1995_2009, label: constructionAgeToString(ConstructionAge.AGE_1995_2009) },
+						{ value: ConstructionAge.AGE_2010_2030, label: constructionAgeToString(ConstructionAge.AGE_2010_2030) },
 					]}
 					onChange={value => put({ constructionAge: value })}
 				/>
@@ -136,7 +136,9 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 					value={data.height}
 					step="0.1"
 					onChange={value => put({ height: value })}
-				/>				<NumberField
+				/>
+
+				<NumberField
 					label="Ground Area (m²)"
 					value={data.groundArea}
 					step="0.1"

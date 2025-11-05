@@ -1,5 +1,5 @@
 import { GeoFeature } from "../model";
-import { Inclusion, inclusionFromString, BuildingType, buildingTypeFromString } from "../model";
+import { Inclusion, inclusionFromString, BuildingType, buildingTypeFromString, ConstructionAge, constructionAgeFromString } from "../model";
 
 export interface BuildingProps {
 	name?: any;
@@ -76,7 +76,7 @@ export class BuildingData {
 	functionCode: string;
 	functionLabel: string;
 	type: BuildingType;
-	constructionAge: string;
+	constructionAge: ConstructionAge;
 	groundArea: number;
 	heatedArea: number;
 	volume: number;
@@ -128,7 +128,7 @@ export class BuildingData {
 			this.functionCode = stringOf(d.functionCode || d.function);
 			this.functionLabel = stringOf(d.functionLabel || d.function);
 			this.type = buildingTypeFromString(d.type || "OTHER");
-			this.constructionAge = stringOf(d.constructionAge);
+			this.constructionAge = constructionAgeFromString(d.constructionAge || "UNKNOWN");
 			this.groundArea = floatOf(d.groundArea);
 			this.heatedArea = floatOf(d.heatedArea);
 			this.volume = floatOf(d.volume);
@@ -173,7 +173,7 @@ export class BuildingData {
 			copy.type = buildingTypeFromString(props.type);
 		}
 		if (props.constructionAge) {
-			copy.constructionAge = props.constructionAge;
+			copy.constructionAge = constructionAgeFromString(props.constructionAge);
 		}
 		if (props.groundArea) {
 			copy.groundArea = props.groundArea;

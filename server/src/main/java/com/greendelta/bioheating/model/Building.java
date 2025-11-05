@@ -39,7 +39,8 @@ public class Building extends BaseEntity {
 	private BuildingType type;
 
 	@Column(name = "construction_age")
-	private String constructionAge;
+	@Enumerated(EnumType.STRING)
+	private ConstructionAge constructionAge;
 
 	@Column(name = "height")
 	private double height;
@@ -148,11 +149,11 @@ public class Building extends BaseEntity {
 		return this;
 	}
 
-	public String constructionAge() {
+	public ConstructionAge constructionAge() {
 		return constructionAge;
 	}
 
-	public Building constructionAge(String constructionAge) {
+	public Building constructionAge(ConstructionAge constructionAge) {
 		this.constructionAge = constructionAge;
 		return this;
 	}

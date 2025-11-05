@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
+import com.greendelta.bioheating.model.ConstructionAge;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.GeoMap;
@@ -68,7 +69,7 @@ public class MapSync {
 		syncString(props, "functionCode", b::functionCode);
 		syncString(props, "functionLabel", b::functionLabel);
 		syncBuildingType(props, b::type);
-		syncString(props, "constructionAge", b::constructionAge);
+		syncConstructionAge(props, b::constructionAge);
 		syncDouble(props, "height", b::height);
 		syncInt(props, "storeys", b::storeys);
 		syncDouble(props, "groundArea", b::groundArea);
@@ -150,6 +151,19 @@ public class MapSync {
 			try {
 				var type = BuildingType.valueOf((String) value);
 				setter.apply(type);
+			} catch (IllegalArgumentException e) {
+				// ignore, use default
+			}
+		}
+	}
+
+	private void syncConstructionAge(
+		Map<String, Object> props, Function<ConstructionAge, ?> setter) {
+		var value = props.get("constructionAge");
+		if (value instanceof String) {
+			try {
+				var age = ConstructionAge.valueOf((String) value);
+				setter.apply(age);
 			} catch (IllegalArgumentException e) {
 				// ignore, use default
 			}
