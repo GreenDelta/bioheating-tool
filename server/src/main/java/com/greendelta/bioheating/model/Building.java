@@ -71,9 +71,6 @@ public class Building extends BaseEntity {
 	@Column(name = "street_number")
 	private String streetNumber;
 
-	@Column(name = "climate_zone")
-	private int climateZone;
-
 	@Column(name = "heat_demand")
 	private double heatDemand;
 
@@ -247,14 +244,6 @@ public class Building extends BaseEntity {
 
 	public Building streetNumber(String streetNumber) {
 		this.streetNumber = streetNumber;
-		return this;
-	}
-
-	public int climateZone() {
-		return climateZone;
-	}
-	public Building climateZone(int climateZone) {
-		this.climateZone = climateZone;
 		return this;
 	}
 

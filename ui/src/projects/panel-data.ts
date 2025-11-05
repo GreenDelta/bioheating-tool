@@ -22,7 +22,6 @@ export interface BuildingProps {
 	postalCode?: any;
 	street?: any;
 	streetNumber?: any;
-	climateZone?: any;
 	isHeated?: any;
 	inclusion?: any;
 	fuelId?: any;
@@ -86,7 +85,6 @@ export class BuildingData {
 	postalCode: string;
 	street: string;
 	streetNumber: string;
-	climateZone: number;
 	isHeated: boolean;
 	inclusion: Inclusion;
 	fuelId?: number;
@@ -116,7 +114,6 @@ export class BuildingData {
 			this.postalCode = d.postalCode;
 			this.street = d.street;
 			this.streetNumber = d.streetNumber;
-			this.climateZone = d.climateZone;
 			this.isHeated = d.isHeated;
 			this.inclusion = d.inclusion;
 			this.fuelId = d.fuelId;
@@ -140,7 +137,6 @@ export class BuildingData {
 			this.postalCode = stringOf(d.postalCode);
 			this.street = stringOf(d.street);
 			this.streetNumber = stringOf(d.streetNumber);
-			this.climateZone = intOf(d.climateZone);
 			this.isHeated = boolOf(d.isHeated);
 			this.inclusion = inclusionFromString(d.inclusion || "REQUIRED");
 			this.fuelId = d.fuelId ? intOf(d.fuelId) : undefined;
@@ -203,9 +199,6 @@ export class BuildingData {
 		if (props.streetNumber) {
 			copy.streetNumber = props.streetNumber;
 		}
-		if (props.climateZone) {
-			copy.climateZone = props.climateZone;
-		}
 		if (props.isHeated !== undefined) {
 			copy.isHeated = props.isHeated;
 		}
@@ -240,7 +233,6 @@ export class BuildingData {
 		f.properties.postalCode = this.postalCode;
 		f.properties.street = this.street;
 		f.properties.streetNumber = this.streetNumber;
-		f.properties.climateZone = this.climateZone;
 		f.properties.isHeated = this.isHeated;
 		f.properties.inclusion = this.inclusion;
 		if (this.fuelId !== undefined) {

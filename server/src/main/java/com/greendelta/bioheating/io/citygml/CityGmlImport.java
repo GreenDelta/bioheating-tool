@@ -3,10 +3,8 @@ package com.greendelta.bioheating.io.citygml;
 import java.io.File;
 import java.util.concurrent.Callable;
 
-import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
-import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
@@ -19,7 +17,6 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	private final Database db;
 	private final Project project;
 	private final File file;
-	private final BoostPredictor booster;
 	private boolean withOsmImport = false;
 
 	public CityGmlImport(
@@ -27,7 +24,6 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		this.db = db;
 		this.project = project;
 		this.file = file;
-		this.booster = BoostPredictor.getDefault();
 	}
 
 	public CityGmlImport withOsmImport(boolean b) {
@@ -59,15 +55,23 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		var naRes = NeighborAnalysis.run(shapes);
 		if (naRes.hasError())
 			return naRes.wrapError("Failed to run neighbor analysis of buildings");
+		var buildingRes = BuildingProcessor.map(shapes);
+		if (buildingRes.hasError())
+			return buildingRes.wrapError("Failed to map building data");
+		var buildings = buildingRes.value();
+		map.buildings().addAll(buildings);
 
-		try {
-			var buildings = map.buildings();
-			var demands = booster.predictAll(buildings);
-			for (int i = 0; i < demands.length; i++) {
-				buildings.get(i).heatDemand(demands[i]);
-			}
-		} catch (Exception e) {
-			return Res.error("failed to predict heat demands", e);
+		// predict the heat demands
+		var predictor = BoostPredictor.getDefault();
+		if (predictor.hasError())
+			return predictor.wrapError("Failed to load the heat demand predictor");
+		var predictions = predictor.value().predictAll(
+			project.climateRegion(), buildings);
+		if (predictions.hasError())
+			return predictions.wrapError("Failed to predict heat demands");
+		var demands = predictions.value();
+		for (int i = 0; i < buildings.size(); i++) {
+			buildings.get(i).heatDemand(demands[i]);
 		}
 
 		if (withOsmImport) {
@@ -102,32 +106,4 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		project.map(map);
 		return Res.of(map);
 	}
-
-	private Building convertBuilding(GmlBuilding b) {
-
-		if (b == null)
-			return null;
-		var cs = coordinatesOf(b);
-		if (cs == null)
-			return null;
-
-		int storeys = storeysOf(b, height);
-		double groundArea = b.groundSurface() != null
-			? b.groundSurface().getArea()
-			: 0;
-		double totalArea = groundArea * storeys;
-		double heatedArea = heatedAreaOf(totalArea, b.function());
-		double volume = volumeOf(groundArea, height, b.roofType());
-		var building = new Building()
-
-			.storeys(storeys)
-			.groundArea(groundArea)
-			.heatedArea(heatedArea)
-			.volume(volume)
-			.climateZone(climateZoneOf(b))
-			.isHeated(b.address() != null);
-
-		return building;
-	}
-
 }

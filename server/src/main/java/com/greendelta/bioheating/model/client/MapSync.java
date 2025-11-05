@@ -79,7 +79,6 @@ public class MapSync {
 		syncString(props, "postalCode", b::postalCode);
 		syncString(props, "street", b::street);
 		syncString(props, "streetNumber", b::streetNumber);
-		syncInt(props, "climateZone", b::climateZone);
 		syncDouble(props, "heatDemand", b::heatDemand);
 		syncBool(props, "isHeated", b::isHeated);
 		syncInclusion(props, b::inclusion);

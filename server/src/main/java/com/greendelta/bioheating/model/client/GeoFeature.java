@@ -39,7 +39,6 @@ public record GeoFeature(
 		props.put("postalCode", b.postalCode());
 		props.put("street", b.street());
 		props.put("streetNumber", b.streetNumber());
-		props.put("climateZone", b.climateZone());
 		props.put("heatDemand", b.heatDemand());
 		props.put("isHeated", b.isHeated());
 		props.put("inclusion", b.inclusion());

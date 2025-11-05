@@ -190,12 +190,6 @@ export const BuildingPanel = ({ feature, fuels, onChange }: Props) => {
 					onChange={value => put({ streetNumber: value })}
 				/>
 
-				<NumberField
-					label="Climate Zone"
-					value={data.climateZone}
-					step="1"
-					onChange={value => put({ climateZone: value })}
-				/>
 			</div>
 		</div>
 	);

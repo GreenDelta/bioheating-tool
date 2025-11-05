@@ -3,6 +3,8 @@ package com.greendelta.bioheating.predict;
 import java.util.List;
 
 import com.greendelta.bioheating.model.Building;
+import com.greendelta.bioheating.model.ClimateRegion;
+import com.greendelta.bioheating.util.Res;
 
 import ml.dmlc.xgboost4j.java.Booster;
 import ml.dmlc.xgboost4j.java.DMatrix;
@@ -10,29 +12,36 @@ import ml.dmlc.xgboost4j.java.XGBoost;
 
 public record BoostPredictor(Booster booster) {
 
-	public static BoostPredictor getDefault() {
+	public static Res<BoostPredictor> getDefault() {
 		var stream = BoostPredictor.class.getResourceAsStream("model.json");
 		if (stream == null)
-			throw new RuntimeException("default model not found");
+			return Res.error("Default model not found");
 		try (stream) {
 			var booster = XGBoost.loadModel(stream);
-			return new BoostPredictor(booster);
+			var predictor = new BoostPredictor(booster);
+			return Res.of(predictor);
 		} catch (Exception e) {
-			throw new RuntimeException("failed to load default model", e);
+			return Res.error("Failed to load default model", e);
 		}
 	}
 
-	public float predict(Building b) {
-		return b != null
-			? predictOne(BoostEncoder.encode(b))
-			: 0;
+	public Res<Float> predict(ClimateRegion region, Building b) {		
+		if (b == null)
+			return Res.error("No building data provided");
+		var res = predictAll(region, List.of(b));
+		if (res.hasError())
+			return res.castError();
+		var xs = res.value();
+		return xs.length == 0
+			? Res.error("Invalid value predicted")
+			: Res.of(xs[0]);
 	}
 
-	public float[] predictAll(List<Building> bs) {
-		if (bs == null || bs.isEmpty())
-			return new float[0];
-		var data = BoostEncoder.encodeBuildingData(bs);
-		return predictAll(data);
+	public Res<float[]> predictAll(ClimateRegion region, List<Building> bs) {
+		var encoded = BoostEncoder.encode(region, bs);
+		return encoded.hasError()
+			? encoded.wrapError("Failed to encode building data")
+			: predict(encoded.value());
 	}
 
 	private float predictOne(float[] data) {
@@ -45,19 +54,16 @@ public record BoostPredictor(Booster booster) {
 		}
 	}
 
-	private float[] predictAll(DMatrix matrix) {
+	private Res<float[]> predict(DMatrix matrix) {
 		try {
 			var predictions = booster.predict(matrix);
 			var ret = new float[predictions.length];
 			for (int i = 0; i < predictions.length; i++) {
 				ret[i] = predictions[i][0];
 			}
-			return ret;
+			return Res.of(ret);
 		} catch (Exception e) {
-			throw new RuntimeException("failed to predict values", e);
+			return Res.error("Prediction failed", e);
 		}
-	}
-
-	public record PredictedValue<T>(T entity, double value) {
 	}
 }
