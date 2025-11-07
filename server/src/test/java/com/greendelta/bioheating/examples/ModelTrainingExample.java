@@ -8,7 +8,7 @@ import com.greendelta.bioheating.predict.Training;
 public class ModelTrainingExample {
 
 	public static void main(String[] args) {
-		try (var out = new FileOutputStream(new File("./target/model.json"))) {
+		try (var out = new FileOutputStream(new File("./target/model.bin"))) {
 			System.out.println("Read training data & train model ...");
 			var path = "C:/Users/ms/Projects/Bioheating/data/ai-training-data/"
 				+ "training-data.csv";

@@ -35,7 +35,7 @@ class BuildingEncoder {
 		try {
 			for (var i = 0; i < buildings.size(); i++) {
 				var b = buildings.get(i);
-				encode(i, b);
+				encode(i * PARAMS, b);
 			}
 			var matrix = new DMatrix(data, buildings.size(), PARAMS, Float.NaN);
 			return Res.of(matrix);
@@ -45,7 +45,7 @@ class BuildingEncoder {
 	}
 
 	private void encode(int offset, Building b) {
-		int p = offset * PARAMS;
+		int p = offset;
 		data[p] = (float) b.height();
 		data[p + 1] = (float) b.storeys();
 		data[p + 2] = (float) b.groundArea();
