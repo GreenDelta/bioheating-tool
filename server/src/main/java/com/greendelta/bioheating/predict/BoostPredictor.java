@@ -13,7 +13,7 @@ import ml.dmlc.xgboost4j.java.XGBoost;
 public record BoostPredictor(Booster booster) {
 
 	public static Res<BoostPredictor> getDefault() {
-		var stream = BoostPredictor.class.getResourceAsStream("model.json");
+		var stream = BoostPredictor.class.getResourceAsStream("model.bin");
 		if (stream == null)
 			return Res.error("Default model not found");
 		try (stream) {

@@ -27,7 +27,7 @@ create table tbl_buildings (
     roof_type_label varchar,
     function_code varchar,
     function_label varchar,
-    type varchar,
+    building_type varchar,
     construction_age varchar,
     height double precision,
     storeys int,

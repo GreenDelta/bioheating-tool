@@ -4,21 +4,20 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 
+import com.greendelta.bioheating.predict.BoostPredictor;
 import com.greendelta.bioheating.predict.ModelValidator;
-
-import ml.dmlc.xgboost4j.java.XGBoost;
 
 public class ModelValidationExample {
 
 	public static void main(String[] args) {
 		try {
-			System.out.println("Loading model ...");
-			var modelFile = new File("./target/model.bin");
-			var model = XGBoost.loadModel(modelFile.getAbsolutePath());
+			var model = BoostPredictor.getDefault()
+				.orElseThrow()
+				.booster();
 
 			System.out.println("Loading validation data ...");
 			var dataPath = "C:/Users/ms/Projects/Bioheating/data/ai-training-data/"
-				+ "training-data.csv";
+				+ "validation-data.csv";
 			var dataFile = new File(dataPath);
 
 			System.out.println("Validating model ...");

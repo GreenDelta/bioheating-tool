@@ -1,3 +1,5 @@
+src/main/resources/com/greendelta/bioheating/predict/model.bin
+
 HELP.md
 target/
 static/

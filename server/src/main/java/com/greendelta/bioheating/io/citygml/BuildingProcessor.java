@@ -89,7 +89,7 @@ class BuildingProcessor {
 		}
 		mapAddress(gml.address(), building);
 
-		return null;
+		return building;
 	}
 
 	private BuildingType typeOf(BuildingShape shape) {

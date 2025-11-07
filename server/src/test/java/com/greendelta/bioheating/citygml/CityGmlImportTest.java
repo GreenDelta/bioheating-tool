@@ -1,6 +1,9 @@
 package com.greendelta.bioheating.citygml;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import com.greendelta.bioheating.Tests;
 import com.greendelta.bioheating.io.citygml.CityGmlImport;
+import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 
@@ -40,13 +44,13 @@ public class CityGmlImportTest {
 
 	@Test
 	public void testImport() {
-		var project = new Project().name("test project");
-
-		var res = new CityGmlImport(db, project, file)
+		var region = db.insert(new ClimateRegion().number(13));
+		var project = new Project().name("test project")
+			.climateRegion(region);
+		project = new CityGmlImport(db, project, file)
 			.withOsmImport(WITH_OSM)
-			.call();
-		assertFalse(res.hasError());
-		project = res.value();
+			.call()
+			.orElseThrow();
 
 		var map = project.map();
 		assertNotNull(map);
@@ -76,12 +80,13 @@ public class CityGmlImportTest {
 		assertTrue(building.volume() > 0);
 
 		// check heat demand prediction is calculated
-		assertTrue(building.heatDemand() >= 0);
+		assertTrue(building.heatDemand() > 0);
 
 		if (WITH_OSM) {
 			assertFalse(map.streets().isEmpty());
 		}
 
 		db.delete(project);
+		db.delete(region);
 	}
 }
