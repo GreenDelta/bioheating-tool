@@ -153,32 +153,16 @@ async function loadProjectFormData() {
 			regRes.isErr ? regRes : "No climate regions returned from the server.",
 		);
 	}
-	const fuelRes = await api.getFuels();
-	if (fuelRes.isErr || fuelRes.value.length === 0) {
-		return errors.redirect(
-			"Fuels unavailable",
-			fuelRes.isErr ? fuelRes : "No fuels returned from the server",
-		);
-	}
-	return { regions: regRes.value, fuels: fuelRes.value };
+	return { regions: regRes.value };
 }
 
 async function loadProjectData({ params }: LoaderFunctionArgs) {
 	const projectId = parseInt(params.id || "0", 10);
-	const [projectRes, fuelsRes] = await Promise.all([
-		api.getProject(projectId),
-		api.getFuels(),
-	]);
+	const projectRes = await api.getProject(projectId);
 	if (projectRes.isErr) {
 		return errors.redirect("Failed to load project", projectRes);
 	}
-	if (fuelsRes.isErr || fuelsRes.value.length === 0) {
-		return errors.redirect(
-			"Fuels unavailable",
-			fuelsRes.isErr ? fuelsRes : "No fuels returned from the server",
-		);
-	}
-	return { project: projectRes.value, fuels: fuelsRes.value };
+	return { project: projectRes.value };
 }
 
 async function loadSolution({ params }: LoaderFunctionArgs) {

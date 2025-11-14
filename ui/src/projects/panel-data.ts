@@ -24,7 +24,6 @@ export interface BuildingProps {
 	streetNumber?: any;
 	isHeated?: any;
 	inclusion?: any;
-	fuelId?: any;
 }
 
 function stringOf(field: any): string {
@@ -87,7 +86,6 @@ export class BuildingData {
 	streetNumber: string;
 	isHeated: boolean;
 	inclusion: Inclusion;
-	fuelId?: number;
 
 	static of(f: GeoFeature): BuildingData {
 		const props = f.properties || {};
@@ -116,7 +114,6 @@ export class BuildingData {
 			this.streetNumber = d.streetNumber;
 			this.isHeated = d.isHeated;
 			this.inclusion = d.inclusion;
-			this.fuelId = d.fuelId;
 		} else {
 			this.name = stringOf(d.name);
 			this.height = floatOf(d.height);
@@ -139,7 +136,6 @@ export class BuildingData {
 			this.streetNumber = stringOf(d.streetNumber);
 			this.isHeated = boolOf(d.isHeated);
 			this.inclusion = inclusionFromString(d.inclusion || "REQUIRED");
-			this.fuelId = d.fuelId ? intOf(d.fuelId) : undefined;
 		}
 	}
 
@@ -205,9 +201,6 @@ export class BuildingData {
 		if (props.inclusion !== undefined) {
 			copy.inclusion = inclusionFromString(props.inclusion);
 		}
-		if (props.fuelId !== undefined) {
-			copy.fuelId = props.fuelId ? intOf(props.fuelId) : undefined;
-		}
 		return copy;
 	}
 
@@ -235,9 +228,6 @@ export class BuildingData {
 		f.properties.streetNumber = this.streetNumber;
 		f.properties.isHeated = this.isHeated;
 		f.properties.inclusion = this.inclusion;
-		if (this.fuelId !== undefined) {
-			f.properties.fuelId = this.fuelId;
-		}
 	}
 
 	isValid(): boolean {

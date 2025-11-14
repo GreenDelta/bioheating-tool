@@ -82,10 +82,6 @@ public class Building extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Inclusion inclusion;
 
-	@ManyToOne
-	@JoinColumn(name = "f_fuel")
-	private Fuel fuel;
-
 	public String name() {
 		return name;
 	}
@@ -272,15 +268,6 @@ public class Building extends BaseEntity {
 
 	public Building inclusion(Inclusion inclusion) {
 		this.inclusion = inclusion;
-		return this;
-	}
-
-	public Fuel fuel() {
-		return fuel;
-	}
-
-	public Building fuel(Fuel fuel) {
-		this.fuel = fuel;
 		return this;
 	}
 

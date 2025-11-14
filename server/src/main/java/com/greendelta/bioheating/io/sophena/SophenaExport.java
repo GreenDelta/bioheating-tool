@@ -87,20 +87,15 @@ public class SophenaExport {
 			.put("name", "Standard 1979-1994");
 		obj.set("buildingState", stateObj);
 
-		// fuel consumption
-		var fuel = b.fuel();
-		if (fuel == null)
-			return obj;
-
 		var fuelObj = json.objectNode()
-			.put("id", fuel.refId())
-			.put("name", fuel.name());
+			.put("id", "031987ab-4a0d-43b3-b3e5-8f50d8e5df1e")
+			.put("name", "Warmwasser");
 
 		var consObj = json.objectNode()
 			.put("id", UUID.randomUUID().toString())
 			.put("utilisationRate", 85.73)
 			.put("waterContent", 0.0)
-			.put("amount", b.heatDemand() / (fuel.calorificValue() * 0.8573))
+			.put("amount", b.heatDemand() / 0.8573)
 			.set("fuel", fuelObj);
 		obj.set("fuelConsumptions", json.arrayNode(1).add(consObj));
 

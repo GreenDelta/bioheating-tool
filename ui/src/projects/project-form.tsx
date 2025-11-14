@@ -1,26 +1,23 @@
 import React, { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router-dom";
 import * as api from "../api";
-import { ClimateRegion, Fuel } from "../model";
+import { ClimateRegion } from "../model";
 import { BreadcrumbRow } from "../components/navi";
 import { TaskPanel } from "../components/tasks";
 
 interface FormInput {
 	regions: ClimateRegion[];
-	fuels: Fuel[];
 }
 
 interface FormData {
 	name: string;
 	description?: string;
 	region: ClimateRegion;
-	fuel: Fuel;
 	file?: File | null;
 }
 
 interface FormContext {
 	regions: ClimateRegion[];
-	fuels: Fuel[];
 	data: FormData;
 	error: string | null;
 	taskId: string | null;
@@ -36,7 +33,7 @@ type Props = { ctx: FormContext };
 
 function useFormContext(): FormContext {
 	const navigate = useNavigate();
-	const { regions, fuels }: FormInput = useLoaderData();
+	const { regions }: FormInput = useLoaderData();
 	const [isLoading, setLoading] = useState(false);
 	const [isComplete, setComplete] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -44,7 +41,6 @@ function useFormContext(): FormContext {
 	const [data, setData] = useState<FormData>({
 		name: "New project",
 		region: regions[0],
-		fuel: fuels[0],
 	});
 
 	const update = (diff: Partial<FormData>) => {
@@ -61,7 +57,6 @@ function useFormContext(): FormContext {
 		setLoading(true);
 		const res = await api.createProject({
 			climateRegionId: data.region.id,
-			fuelId: data.fuel.id,
 			name: data.name!,
 			file: data.file!,
 			description: data.description,
@@ -89,7 +84,6 @@ function useFormContext(): FormContext {
 
 	return {
 		regions,
-		fuels,
 		data,
 		error,
 		taskId,
@@ -143,8 +137,6 @@ export const ProjectForm = () => {
 					</div>
 
 					<RegionCombo ctx={ctx} />
-
-					<FuelCombo ctx={ctx} />
 
 					<div className="mb-3">
 						<label className="form-label">CityGML</label>
@@ -227,34 +219,6 @@ const RegionCombo = ({ ctx }: Props) => {
 			<select
 				className="form-select"
 				value={ctx.data.region.id}
-				onChange={e => onSelect(e.target.value)}>
-				{options}
-			</select>
-		</div>
-	);
-};
-
-const FuelCombo = ({ ctx }: Props) => {
-	const options = ctx.fuels.map(f => (
-		<option key={f.id} value={f.id}>
-			{f.name} ({f.unit})
-		</option>
-	));
-
-	const onSelect = (sid: string) => {
-		const id = parseInt(sid);
-		const fuel = ctx.fuels.find(f => f.id === id);
-		if (fuel) {
-			ctx.update({ fuel });
-		}
-	};
-
-	return (
-		<div className="mb-3">
-			<label className="form-label">Default fuel</label>
-			<select
-				className="form-select"
-				value={ctx.data.fuel.id}
 				onChange={e => onSelect(e.target.value)}>
 				{options}
 			</select>

@@ -2,7 +2,6 @@ package com.greendelta.bioheating.model.client;
 
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.util.Res;
@@ -12,7 +11,6 @@ public record ClientProject(
 	String name,
 	String description,
 	ClimateRegion climateRegion,
-	Fuel defaultFuel,
 	ClientMap map,
 	Long solutionId
 ) {
@@ -28,7 +26,6 @@ public record ClientProject(
 			project.name(),
 			project.description(),
 			project.climateRegion(),
-			project.defaultFuel(),
 			map.value(),
 			findSolutionId(db, project)
 		);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLoaderData } from "react-router-dom";
-import { GeoFeature, Project, Fuel, isBuilding } from "../model";
+import { GeoFeature, Project, isBuilding } from "../model";
 import { Map } from "./map";
 import { BuildingPanel } from "./panel-building";
 import { StreetPanel } from "./panel-street";
@@ -13,12 +13,10 @@ import { BreadcrumbRow } from "../components/navi";
 
 interface InputData {
 	project: Project;
-	fuels: Fuel[];
 }
 
 interface EditorContext {
 	project: Project;
-	fuels: Fuel[];
 
 	selection: GeoFeature[];
 	setSelection: (features: GeoFeature[]) => void;
@@ -34,7 +32,7 @@ interface EditorContext {
 }
 
 function useEditorContext(): EditorContext {
-	const { project, fuels }: InputData = useLoaderData();
+	const { project }: InputData = useLoaderData();
 	const [selection, setSelection] = useState<GeoFeature[]>([]);
 	const [isDirty, _setDirty] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -47,7 +45,6 @@ function useEditorContext(): EditorContext {
 
 	return {
 		project,
-		fuels,
 		selection,
 		setSelection,
 		isDirty,
@@ -112,7 +109,7 @@ const SelectionPanel = ({ ctx }: Props) => {
 	}
 	const f = selection[0];
 	return isBuilding(f) ? (
-		<BuildingPanel feature={f} fuels={ctx.fuels} onChange={onChange} />
+		<BuildingPanel feature={f} onChange={onChange} />
 	) : (
 		<StreetPanel feature={f} onChange={onChange} />
 	);

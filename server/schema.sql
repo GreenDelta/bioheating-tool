@@ -42,8 +42,7 @@ create table tbl_buildings (
     climate_zone int,
     heat_demand double precision,
     is_heated boolean,
-    inclusion varchar,
-    f_fuel int
+    inclusion varchar
 );
 
 drop table if exists tbl_streets cascade;
@@ -86,8 +85,7 @@ create table tbl_projects (
     description text,
     f_map int,
     f_user int,
-    f_climate_region int,
-    f_default_fuel int
+    f_climate_region int
 );
 
 drop table if exists tbl_solutions cascade;

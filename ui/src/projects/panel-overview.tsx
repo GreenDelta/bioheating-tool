@@ -65,25 +65,10 @@ export const OverviewPanel = ({ project }: Props) => {
 									Station: {project.climateRegion.stationName}
 								</small>
 							</p>
-						</div>
-					)}
+					</div>
+				)}
 
-					{project.defaultFuel && (
-						<div className="col-12">
-							<label className="form-label fw-bold">Default fuel</label>
-							<p className="form-control-plaintext">
-								{project.defaultFuel.name} ({project.defaultFuel.unit})
-								<br />
-								<small className="text-muted">
-									Calorific value:{" "}
-									{project.defaultFuel.calorificValue.toLocaleString()} kWh/
-									{project.defaultFuel.unit}
-								</small>
-							</p>
-						</div>
-					)}
-
-					{project.solutionId && (
+				{project.solutionId && (
 						<div className="col-12">
 							<label className="form-label fw-bold">Solution</label>
 							<p className="form-control-plaintext">

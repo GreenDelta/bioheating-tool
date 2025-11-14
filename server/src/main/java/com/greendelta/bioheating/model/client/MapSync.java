@@ -8,7 +8,6 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
 import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Street;
@@ -83,11 +82,6 @@ public class MapSync {
 		syncDouble(props, "heatDemand", b::heatDemand);
 		syncBool(props, "isHeated", b::isHeated);
 		syncInclusion(props, b::inclusion);
-
-		if (props.get("fuelId") instanceof Number num) {
-			var fuel = db.getForId(Fuel.class, num.longValue());
-			b.fuel(fuel);
-		}
 
 	}
 
