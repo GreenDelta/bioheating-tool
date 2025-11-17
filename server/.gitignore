@@ -1,4 +1,5 @@
 src/main/resources/com/greendelta/bioheating/predict/model.bin
+model-training/.venv
 
 HELP.md
 target/

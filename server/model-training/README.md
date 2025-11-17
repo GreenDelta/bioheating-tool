@@ -1,35 +1,33 @@
 # Model Training
 
-This directory contains the training script for the XGBoost heat demand prediction model used in the BioHeating application.
+This directory contains the script for training the XGBoost model used in the application.
 
-## Overview
+### Setting up the environment with `uv`
 
-The `train.py` script trains an XGBoost gradient boosting model to predict the annual heat demand of buildings based on their characteristics. The model is trained on synthetic building data and uses the same training logic as the Java `Training.java` class.
-
-## Requirements
-
-- Python 3.7 or higher
-- XGBoost library
-
-Install the required dependencies:
+Create a virtual environment and install dependencies:
 
 ```bash
-pip install xgboost numpy
+cd server/model-training
+uv venv --python 3.13
+uv pip install xgboost-cpu numpy
 ```
 
-## Running the Training
-
-To train the model, simply run:
+Activate the virtual environment:
 
 ```bash
-python train.py
+source .venv/bin/activate
 ```
 
-Or make the script executable and run it directly:
+or on Windows:
+
+```powershell
+.venv\Scripts\activate
+```
+
+Then, run the training script:
 
 ```bash
-chmod +x train.py
-./train.py
+uv run train.py
 ```
 
 ## Input Data Format
