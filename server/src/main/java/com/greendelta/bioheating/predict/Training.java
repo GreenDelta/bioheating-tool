@@ -43,7 +43,7 @@ public class Training {
 		var config = new HashMap<String, Object>();
 		config.put("objective", "reg:squarederror"); // Regression task
 		config.put("tree_method", "hist");
-		config.put("reg_aplha", 0.1);
+		config.put("reg_alpha", 0.1);
 		config.put("eta", 0.5); // Learning rate
 		config.put("max_depth", 6); // Maximum tree depth
 		return config;

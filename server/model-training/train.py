@@ -1,19 +1,11 @@
-#!/usr/bin/env python3
-"""
-Training script for XGBoost heat demand prediction model.
-
-This script trains an XGBoost model using building data to predict heat demand.
-It follows the exact same training logic as Training.java in the Java codebase.
-"""
-
-import os
 import csv
 import numpy as np
 import xgboost as xgb
 
+from pathlib import Path
 
-def get_building_type_factor(code):
-    """Returns the building type factor based on building type code."""
+
+def get_building_type_factor(code: int) -> float:
     mapping = {
         1: 0.65,  # HIGH_RISE
         2: 0.8,  # MULTI_FAMILY_SMALL
@@ -29,8 +21,7 @@ def get_building_type_factor(code):
     return mapping.get(code, 0.8)
 
 
-def get_climate_region_factor(code):
-    """Returns the climate region factor based on climate region code."""
+def get_climate_region_factor(code: int):
     mapping = {
         1: 0.85,
         2: 1.08,
@@ -52,7 +43,6 @@ def get_climate_region_factor(code):
 
 
 def get_average_heat_demand(age_code):
-    """Returns the average heat demand in kWh/m²/year based on construction age."""
     mapping = {
         0: 130.0,  # UNKNOWN
         1: 180.0,  # AGE_1900_1919
@@ -65,38 +55,18 @@ def get_average_heat_demand(age_code):
     return mapping.get(age_code, 130.0)
 
 
-def read_csv_data(csv_file):
-    """
-    Reads CSV data and returns features and labels.
-
-    CSV columns:
-    0: buildingId
-    1: height (meters)
-    2: storeys
-    3: groundArea (square meters)
-    4: buildingTypeCode
-    5: climateRegionCode
-    6: constructionAgeCode
-    7: roofTypeFactor
-    8: heatDemand (kWh)
-
-    Returns:
-        tuple: (features, labels, building_ids) where features is a 2D array with 7 features per row
-    """
+def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
     features = []
     labels = []
-    building_ids = []
 
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
-        next(reader)  # Skip header
+        next(reader)  # skip header
 
         for row in reader:
             if len(row) < 9:
                 continue
 
-            # Parse CSV columns
-            building_id = row[0].strip().strip('"')
             height = float(row[1])
             storeys = int(row[2])
             ground_area = float(row[3])
@@ -106,15 +76,6 @@ def read_csv_data(csv_file):
             roof_type_factor = float(row[7])
             heat_demand = float(row[8])
 
-            # Encode features (same order as CsvEncoder.java)
-            # The 7 features are:
-            # 0: height
-            # 1: storeys
-            # 2: groundArea
-            # 3: buildingTypeFactor
-            # 4: climateRegionFactor
-            # 5: averageHeatDemand
-            # 6: roofTypeFactor
             feature_vector = [
                 height,
                 storeys,
@@ -127,134 +88,59 @@ def read_csv_data(csv_file):
 
             features.append(feature_vector)
             labels.append(heat_demand)
-            building_ids.append(building_id)
 
-    return (
-        np.array(features, dtype=np.float32),
-        np.array(labels, dtype=np.float32),
-        building_ids,
-    )
+    return (np.array(features, dtype=np.float32), np.array(labels, dtype=np.float32))
 
 
-def train_model(training_file, output_model_file):
-    """
-    Trains an XGBoost model using the training data.
-
-    Args:
-        training_file: Path to CSV file with training data
-        output_model_file: Path where the trained model will be saved
-    """
-    print(f"Reading training data from: {training_file}")
-    features, labels, _ = read_csv_data(training_file)
-    print(f"Loaded {len(features)} training samples with {features.shape[1]} features")
-
-    # Create DMatrix (XGBoost's internal data structure)
+def train_model(training_file: Path, output_model_file: Path) -> xgb.Booster:
+    print(f"Read training data from: {training_file.name}")
+    features, labels = read_csv_data(training_file)
     dtrain = xgb.DMatrix(features, label=labels)
 
-    # Configure training parameters (same as Training.java)
+    print("Train model...")
     params = {
-        "objective": "reg:squarederror",  # Regression task
+        "objective": "reg:squarederror",
         "tree_method": "hist",
-        "reg_alpha": 0.1,  # Note: Java code has typo "reg_aplha", using correct name
-        "eta": 0.5,  # Learning rate
-        "max_depth": 6,  # Maximum tree depth
+        "reg_alpha": 0.1,
+        "eta": 0.5,
+        "max_depth": 6,
     }
-
-    # Train the model
-    print("Training model...")
     num_rounds = 1000
     model = xgb.train(params, dtrain, num_rounds)
 
-    # Save the model
-    print(f"Saving model to: {output_model_file}")
-    os.makedirs(os.path.dirname(output_model_file), exist_ok=True)
+    print(f"Saving model to: {output_model_file.name}")
+    output_model_file.parent.mkdir(exist_ok=True, parents=True)
     model.save_model(output_model_file)
-    print("Model saved successfully!")
-
     return model
 
 
-def validate_model(model, validation_file, output_file):
-    """
-    Validates the model on validation data and saves predictions.
-
-    Args:
-        model: Trained XGBoost model
-        validation_file: Path to CSV file with validation data
-        output_file: Path where validation results will be saved
-    """
-    print(f"\nReading validation data from: {validation_file}")
-    features, labels, building_ids = read_csv_data(validation_file)
-    print(f"Loaded {len(features)} validation samples")
-
-    # Create DMatrix for prediction (without labels)
+def validate_model(model: xgb.Booster, validation_file: Path, out_file: Path):
+    print(f"Validate model with {validation_file.name}")
+    features, labels = read_csv_data(validation_file)
     dvalid = xgb.DMatrix(features)
-
-    # Make predictions
-    print("Making predictions...")
     predictions = model.predict(dvalid)
-
-    # Calculate metrics
-    errors = labels - predictions
-    squared_errors = errors**2
-    absolute_errors = np.abs(errors)
-
-    rmse = np.sqrt(np.mean(squared_errors))
-    mae = np.mean(absolute_errors)
-    mse = np.mean(squared_errors)
-
-    # Calculate R²
-    mean_actual = np.mean(labels)
-    ss_total = np.sum((labels - mean_actual) ** 2)
-    ss_residual = np.sum(squared_errors)
-    r2 = 1.0 - (ss_residual / ss_total) if ss_total != 0 else 0.0
-
-    print("\nValidation Metrics:")
-    print(f"  RMSE: {rmse:.2f}")
-    print(f"  MAE:  {mae:.2f}")
-    print(f"  MSE:  {mse:.2f}")
-    print(f"  R²:   {r2:.4f}")
-
-    # Save predictions to file
-    print(f"\nSaving validation results to: {output_file}")
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, "w") as f:
-        f.write("expected\tpredicted\n")
+    out_file.parent.mkdir(exist_ok=True, parents=True)
+    with open(out_file, "w") as f:
         for expected, predicted in zip(labels, predictions):
             f.write(f"{expected}\t{predicted}\n")
-    print("Validation results saved!")
 
 
 def main():
-    # Get script directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = Path(__file__).parent
+    data_dir = script_dir / "data"
+    model_output_file = (
+        script_dir / "../src/main/resources/com/greendelta/bioheating/predict/model.ubj"
+    )
+    model = train_model(data_dir / "training-data.csv", model_output_file)
 
-    # Define file paths
-    training_file = os.path.join(script_dir, "data", "training-data.csv")
-    validation_file = os.path.join(script_dir, "data", "validation-data.csv")
-    validation_output_file = os.path.join(script_dir, "data", "validation-check.txt")
-
-    # Model output path (in Java project resources)
-    model_output_file = os.path.join(
-        script_dir,
-        "..",
-        "src",
-        "main",
-        "resources",
-        "com",
-        "greendelta",
-        "bioheating",
-        "predict",
-        "model.bin",
+    validate_model(
+        model, data_dir / "training-data.csv", data_dir / "self-check.txt"
+    )
+    validate_model(
+        model, data_dir / "validation-data.csv", data_dir / "validation-check.txt"
     )
 
-    # Train the model
-    model = train_model(training_file, model_output_file)
-
-    # Validate the model
-    validate_model(model, validation_file, validation_output_file)
-
-    print("\n✓ Training and validation completed successfully!")
+    print("All done!")
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ import ml.dmlc.xgboost4j.java.XGBoost;
 public record BoostPredictor(Booster booster) {
 
 	public static Res<BoostPredictor> getDefault() {
-		var stream = BoostPredictor.class.getResourceAsStream("model.bin");
+		var stream = BoostPredictor.class.getResourceAsStream("model.ubj");
 		if (stream == null)
 			return Res.error("Default model not found");
 		try (stream) {
@@ -25,7 +25,7 @@ public record BoostPredictor(Booster booster) {
 		}
 	}
 
-	public Res<Float> predict(ClimateRegion region, Building b) {		
+	public Res<Float> predict(ClimateRegion region, Building b) {
 		if (b == null)
 			return Res.error("No building data provided");
 		var res = predictAll(region, List.of(b));
