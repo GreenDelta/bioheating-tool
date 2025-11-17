@@ -1,6 +1,6 @@
 # Model training
 
-This directory contains the script for training the XGBoost model used in the application.
+This directory contains the Python script for training the XGBoost model used in the application. The model can be also trained from Java, see the ModelTrainingExample.
 
 ## Setup & usage
 
@@ -49,14 +49,11 @@ The files need to have the following format:
 The trained model is saved to:
 
 ```
-../src/main/resources/com/greendelta/bioheating/predict/model.bin
+../src/main/resources/com/greendelta/bioheating/predict/model.ubj
 ```
 
-This is the location expected by the server application, which loads the model at runtime. The script also runs a validation on `data/validation-data.csv` and writes a tab-separated file `data/validation-check.txt` of the following format:
-
-```
-expected	predicted
-5657.60	5789.32
-7833.60	7901.45
-...
-```
+This is the location expected by the server application, which loads the model
+at runtime. The script also runs a validation on `data/validation-data.csv` and
+a self check with its own training data. It writes the tab-separated files
+`data/validation-check.txt` and `data/self-check.txt`. These files can be then
+nicely plotted using GnuPlot, see the `model-check-plot.plt` script.
