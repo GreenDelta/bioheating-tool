@@ -15,8 +15,8 @@ public class ModelTrainingExample {
 				.orElseThrow();
 
 			var modelFile = new File(
-				"./src/main/resources/com/greendelta/bioheating/predict/model.json");
-			Training.saveAsJson(model, modelFile);
+				"./src/main/resources/com/greendelta/bioheating/predict/model.ubj");
+			Training.save(model, modelFile).orElseThrow();
 
 			System.out.println("All done!");
 		} catch (Exception e) {

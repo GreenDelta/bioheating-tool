@@ -130,7 +130,7 @@ def main():
     script_dir = Path(__file__).parent
     data_dir = script_dir / "data"
     model_output_file = (
-        script_dir / "../src/main/resources/com/greendelta/bioheating/predict/model.json"
+        script_dir / "../src/main/resources/com/greendelta/bioheating/predict/model.ubj"
     )
     model = train_model(data_dir / "training-data.csv", model_output_file)
 

@@ -51,20 +51,13 @@ public class Training {
 		return config;
 	}
 
-	/**
-	 * Saves the booster model to a file in JSON format for cross-platform compatibility.
-	 *
-	 * @param booster the trained model
-	 * @param file the output file (should have .json extension)
-	 * @throws IOException if writing fails
-	 */
-	public static void saveAsJson(Booster booster, File file) throws IOException {
+	public static Res<Void> save(Booster booster, File file) throws IOException {
 		try {
-			// Save model in JSON format using the "json" format specifier
-			byte[] jsonBytes = booster.toByteArray("json");
-			Files.write(file.toPath(), jsonBytes);
+			byte[] ubj = booster.toByteArray("ubj");
+			Files.write(file.toPath(), ubj);
+			return Res.VOID;
 		} catch (Exception e) {
-			throw new IOException("Failed to save model as JSON", e);
+			return Res.error("Failed to save model to file: " + file, e);
 		}
 	}
 }
