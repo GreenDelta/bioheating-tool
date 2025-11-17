@@ -1,2 +1,4 @@
 app/
 data/
+*.tar
+*.gz
