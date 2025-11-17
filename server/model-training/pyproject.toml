@@ -1,0 +1,9 @@
+[project]
+name = "model-training"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.3.5",
+    "xgboost-cpu>=3.1.1",
+]

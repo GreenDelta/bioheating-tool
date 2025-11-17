@@ -1,22 +1,25 @@
 # Model training
 
-This directory contains the script for training the XGBoost model used in the application. In order to run it, you first need to setup an environment, e.g. with `uv`:
+This directory contains the script for training the XGBoost model used in the application.
+
+## Setup & usage
+
+The project uses [uv](https://docs.astral.sh/uv/) for Python dependency management. The required dependencies and Python version (3.13) are configured in `pyproject.toml`.
 
 ```bash
 cd server/model-training
-uv venv --python 3.13
 
-# training it on the CPU is fast enough for now
-uv pip install xgboost-cpu numpy
+# install dependencies (creates .venv automatically)
+uv sync
 
-# activate the environment
-source .venv/bin/activate
-
-# or on Windows PowerShell
-.venv\Scripts\activate
-
-# then, run the script
+# run the training script
 uv run train.py
+
+# clean up generated check files
+uv run clean.py
+
+# Clean up including model files
+uv run clean.py --all
 ```
 
 ## Data format
