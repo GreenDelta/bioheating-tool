@@ -1,6 +1,8 @@
 package com.greendelta.bioheating.predict;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -47,5 +49,22 @@ public class Training {
 		config.put("eta", 0.5); // Learning rate
 		config.put("max_depth", 6); // Maximum tree depth
 		return config;
+	}
+
+	/**
+	 * Saves the booster model to a file in JSON format for cross-platform compatibility.
+	 *
+	 * @param booster the trained model
+	 * @param file the output file (should have .json extension)
+	 * @throws IOException if writing fails
+	 */
+	public static void saveAsJson(Booster booster, File file) throws IOException {
+		try {
+			// Save model in JSON format using the "json" format specifier
+			byte[] jsonBytes = booster.toByteArray("json");
+			Files.write(file.toPath(), jsonBytes);
+		} catch (Exception e) {
+			throw new IOException("Failed to save model as JSON", e);
+		}
 	}
 }

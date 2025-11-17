@@ -110,6 +110,7 @@ def train_model(training_file: Path, output_model_file: Path) -> xgb.Booster:
 
     print(f"Saving model to: {output_model_file.name}")
     output_model_file.parent.mkdir(exist_ok=True, parents=True)
+    # Save in JSON format for better cross-platform compatibility
     model.save_model(output_model_file)
     return model
 
@@ -129,7 +130,7 @@ def main():
     script_dir = Path(__file__).parent
     data_dir = script_dir / "data"
     model_output_file = (
-        script_dir / "../src/main/resources/com/greendelta/bioheating/predict/model.ubj"
+        script_dir / "../src/main/resources/com/greendelta/bioheating/predict/model.json"
     )
     model = train_model(data_dir / "training-data.csv", model_output_file)
 
