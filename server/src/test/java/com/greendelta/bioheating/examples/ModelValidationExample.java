@@ -2,6 +2,7 @@ package com.greendelta.bioheating.examples;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import com.greendelta.bioheating.predict.BoostPredictor;
@@ -10,44 +11,38 @@ import com.greendelta.bioheating.predict.ModelValidator;
 public class ModelValidationExample {
 
 	public static void main(String[] args) {
-		try {
-			var model = BoostPredictor.getDefault()
-				.orElseThrow()
-				.booster();
 
-			System.out.println("Loading validation data ...");
-			var dataPath = "C:/Users/ms/Projects/Bioheating/data/ai-training-data/"
-				+ "validation-data.csv";
-			var dataFile = new File(dataPath);
+		var model = BoostPredictor.getDefault()
+			.orElseThrow()
+			.booster();
 
-			System.out.println("Validating model ...");
-			var result = ModelValidator.validate(model, dataFile).orElseThrow();
+		var dataDir = new File("./model-training/data");
 
-			System.out.println("Validation metrics:");
-			System.out.println(result.metrics());
+		var selfCheck = ModelValidator.validate(model,
+				new File(dataDir, "training-data.csv"))
+			.orElseThrow();
+		writeResults(selfCheck, new File(dataDir, "self-check.txt"));
 
-			System.out.println("Writing validation results to CSV ...");
-			var outputFile = new File("./target/model-validation.csv");
-			try (var writer = new PrintWriter(new FileWriter(outputFile))) {
-				// Write header
-				writer.println("buildingId,actual,predicted,error,absoluteError");
+		var validationCheck = ModelValidator.validate(model,
+				new File(dataDir, "validation-data.csv"))
+			.orElseThrow();
+		writeResults(validationCheck, new File(dataDir, "validation-check.txt"));
 
-				// Write each validation pair
-				for (var pair : result.pairs()) {
-					writer.printf("%s,%.2f,%.2f,%.2f,%.2f%n",
-						pair.buildingId(),
-						pair.actual(),
-						pair.predicted(),
-						pair.error(),
-						pair.absoluteError()
-					);
-				}
+		System.out.println("All done!");
+	}
+
+	private static void writeResults(
+		ModelValidator.ValidationResult result,
+		File outputFile
+	) {
+		try (var w = new PrintWriter(new FileWriter(outputFile))) {
+			for (var pair : result.pairs()) {
+				w.printf("%f\t%f%n",
+					pair.actual(),
+					pair.predicted()
+				);
 			}
-
-			System.out.println("Validation complete!");
-			System.out.println("Results written to: " + outputFile.getAbsolutePath());
-
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
