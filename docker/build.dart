@@ -1,9 +1,9 @@
+import "dart:convert";
 import "dart:io";
 
 typedef Dir = Directory;
 
 void main(List<String> args) async {
-
   var root = Dir.current;
   int levels = 0;
   while (!isRoot(root) && levels < 10) {
@@ -19,30 +19,27 @@ void main(List<String> args) async {
     await build.all();
   } else {
     switch (args.first) {
-
-      case "docker-db":  {
-        await build
-        ..withDocker
-        ..db();
-      }
-
+      case "docker-db":
+        {
+          await build
+            ..withDocker()
+            ..db();
+        }
     }
   }
-
 
   print("Build done!");
 }
 
 bool isRoot(Dir dir) {
-    final subs = ["ui", "server", "docker"];
-    for (final sub in subs) {
-      if(!Dir(join(dir, sub)).existsSync()) {
-        return false;
-      }
+  final subs = ["ui", "server", "docker"];
+  for (final sub in subs) {
+    if (!Dir(join(dir, sub)).existsSync()) {
+      return false;
     }
-    return true;
   }
-
+  return true;
+}
 
 String cmd(String command) {
   if (Platform.isWindows) {
@@ -80,11 +77,14 @@ Future<Dir> freshDir(String path) async {
   return dir;
 }
 
-Future<void> run(String exec, List<String> args, Dir workDir) async {
+Future<String> run(String exec, List<String> args, Dir workDir) async {
+  print("\$ cd ${workDir.path}");
+  print("\$ $exec $args");
   final process = await Process.run(
     cmd(exec),
     args,
     workingDirectory: workDir.path,
+    stdoutEncoding: Encoding.getByName("UTF-8"),
   );
   print(process.stdout);
   if (process.exitCode != 0) {
@@ -92,12 +92,13 @@ Future<void> run(String exec, List<String> args, Dir workDir) async {
     print("Command $exec failed; exit build");
     exit(1);
   }
+  return process.stdout is String ? process.stdout : "";
 }
 
 class Build {
   final Dir root;
   final Dir appDir;
-  bool withDocker = false;
+  bool _withDocker = false;
 
   Dir get uiDir => Dir(join(root, "ui"));
   Dir get dockerDir => Dir(join(root, "docker"));
@@ -111,6 +112,11 @@ class Build {
     return Build(root, appDir);
   }
 
+  Build withDocker() {
+    _withDocker = true;
+    return this;
+  }
+
   Future<void> all() async {
     await app();
     await db();
@@ -120,6 +126,10 @@ class Build {
     await File(
       "${serverDir.path}/schema.sql",
     ).copy("${appDir.path}/schema.sql");
+
+    if (_withDocker) {
+      await DockerImage.db(dockerDir).build();
+    }
   }
 
   Future<void> app() async {
@@ -163,3 +173,32 @@ class Build {
   }
 }
 
+class DockerImage {
+  final Dir dir;
+  final String name;
+  final String file;
+
+  DockerImage(this.dir, this.name, this.file);
+  DockerImage.db(this.dir)
+    : this.name = "bioheating-db",
+      this.file = "db.Dockerfile";
+  DockerImage.app(this.dir)
+    : this.name = "bioheating-app",
+      this.file = "app.Dockerfile";
+
+  build() async {
+    // TODO: check that the DB is not running
+
+    // delete the existing image if it already exist
+    final existing = (await run("docker", ["images"], dir))
+        .split("\n")
+        .where((line) => line.trim().split(RegExp(r"\s+")).first == name)
+        .firstOrNull;
+    if (existing != null) {
+      await run("docker", ["rmi", name], dir);
+    }
+
+    // build the image
+    await run("docker", ["build", "-t", name, ".", "-f", file], dir);
+  }
+}
