@@ -27,13 +27,12 @@ class OsmStreetFetch {
 	private Res<Void> doIt() {
 
 		// calculate the map bounds
-		var boundsRes = Bounds.of(map);
+		var boundsRes = OsmBounds.of(map);
 		if (boundsRes.isError())
 			return boundsRes.wrapError("failed to get map bound");
-		var bs = boundsRes.value();
 
 		// fetch the streets within these bounds
-		var streets = client.queryStreets(bs.south, bs.west, bs.north, bs.east);
+		var streets = client.queryStreets(boundsRes.value());
 		if (streets.isError())
 			return streets.wrapError("failed to fetch streets");
 
@@ -84,55 +83,4 @@ class OsmStreetFetch {
 		return Res.ok(street);
 	}
 
-	private record Bounds(
-		double south, double west, double north, double east
-	) {
-
-		static Res<Bounds> of(GeoMap map) {
-			if (map == null || map.buildings().isEmpty())
-				return Res.error("no buildings to calculate bound from");
-
-			double minX = Double.MAX_VALUE;
-			double minY = Double.MAX_VALUE;
-			double maxX = -Double.MIN_VALUE;
-			double maxY = -Double.MIN_VALUE;
-			boolean updated = false;
-
-			for (var building : map.buildings()) {
-				var cs = building.coordinates();
-				if (cs == null)
-					continue;
-				for (var c : cs) {
-					minX = Math.min(minX, c.x);
-					minY = Math.min(minY, c.y);
-					maxX = Math.max(maxX, c.x);
-					maxY = Math.max(maxY, c.y);
-					updated = true;
-				}
-			}
-
-			if (!updated)
-				return Res.error("no coordinates found for buildings in map");
-
-			var transRes = CoordinateTransformer.toWgs84From(map);
-			if (transRes.isError())
-				return transRes.wrapError("could not create CRS converter");
-			var trans = transRes.value();
-
-			// add a 50 m buffer on each side
-			var minRes = trans.project(minX - 50, minY - 50);
-			if (minRes.isError())
-				return minRes.wrapError("bounds transform failed");
-			var southWest = minRes.value();
-
-			var maxRes = trans.project(maxX + 50, maxY + 50);
-			if (maxRes.isError())
-				return maxRes.wrapError("bounds transform failed");
-			var northEast = maxRes.value();
-
-			return Res.ok(new Bounds(
-				southWest.y, southWest.x, northEast.y, northEast.x));
-		}
-
-	}
 }

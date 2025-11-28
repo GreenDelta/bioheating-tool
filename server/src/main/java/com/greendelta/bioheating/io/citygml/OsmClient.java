@@ -34,14 +34,12 @@ public class OsmClient implements AutoCloseable {
 		return new OsmClient("https://overpass-api.de/api/interpreter");
 	}
 
-	public Res<List<OsmStreet>> queryStreets(
-		double south, double west, double north, double east
-	) {
+	public Res<List<OsmStreet>> queryStreets(OsmBounds bounds) {
 		try {
 
 			var query = String.format(
 				"[out:json];way[highway](%f,%f,%f,%f);out geom;",
-				south, west, north, east);
+				bounds.south(), bounds.west(), bounds.north(), bounds.east());
 			var formData = "data=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
 			var request = HttpRequest.newBuilder()
 				.uri(URI.create(api))

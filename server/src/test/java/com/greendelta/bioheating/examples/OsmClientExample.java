@@ -1,14 +1,18 @@
 package com.greendelta.bioheating.examples;
 
+import com.greendelta.bioheating.io.citygml.OsmBounds;
 import com.greendelta.bioheating.io.citygml.OsmClient;
 
 public class OsmClientExample {
 
 	public static void main(String[] args) {
 		try (var client = OsmClient.getDefault()) {
-			var streets = client.queryStreets(
-				48.82975561604209, 11.486790292463866, 48.832196854541195, 11.491462553643487
-			);
+			var bounds = new OsmBounds(
+				48.82975561604209, // south
+				11.486790292463866, // west
+				48.832196854541195, // north
+				11.491462553643487); // east
+			var streets = client.queryStreets(bounds);
 			if (streets.isError()) {
 				System.out.println("ERROR: " + streets.error());
 				return;
