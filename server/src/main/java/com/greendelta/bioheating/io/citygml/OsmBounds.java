@@ -59,4 +59,11 @@ public record OsmBounds(
 		return Res.ok(new OsmBounds(
 			southWest.y, southWest.x, northEast.y, northEast.x));
 	}
+
+	@Override
+	public String toString() {
+		return "Bounds [SW=(" + south + ", " + west + "), NE=("
+			+ north + ", " + east + ")]";
+	}
+
 }

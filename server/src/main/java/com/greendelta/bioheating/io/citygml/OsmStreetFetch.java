@@ -1,7 +1,11 @@
 package com.greendelta.bioheating.io.citygml;
 
+import java.util.List;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.openlca.commons.Res;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.GeoMap;
@@ -10,12 +14,11 @@ import com.greendelta.bioheating.model.Street;
 
 class OsmStreetFetch {
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final GeoMap map;
-	private final OsmClient client;
 
 	private OsmStreetFetch(GeoMap map) {
 		this.map = map;
-		this.client = OsmClient.getDefault();
 	}
 
 	public static Res<Void> into(GeoMap map) {
@@ -25,16 +28,7 @@ class OsmStreetFetch {
 	}
 
 	private Res<Void> doIt() {
-
-		// calculate the map bounds
-		var boundsRes = OsmBounds.of(map);
-		if (boundsRes.isError())
-			return boundsRes.wrapError("failed to get map bound");
-
-		// fetch the streets within these bounds
-		var streets = client.queryStreets(boundsRes.value());
-		if (streets.isError())
-			return streets.wrapError("failed to fetch streets");
+		log.info("Fetching streets from OSM");
 
 		// initialize the projector
 		var transRes = CoordinateTransformer.fromWgs84To(map.crs());
@@ -42,8 +36,20 @@ class OsmStreetFetch {
 			return transRes.wrapError("failed to load projector");
 		var trans = transRes.value();
 
-		// create the streets
-		for (var s : streets.value()) {
+		// calculate the map bounds
+		var bounds = OsmBounds.of(map);
+		if (bounds.isError())
+			return bounds.wrapError("Failed to get map bounds.");
+
+		// fetch the streets within these bounds
+		var osm = fetchStreets(bounds.value());
+		if (osm.isError())
+			return osm.wrapError("Failed to fetch OSM streets");
+		var streets = osm.value();
+
+		// convert the streets
+		log.info("Fetched {} streets; convert them", streets.size());
+		for (var s : streets) {
 			var geometry = s.geometry();
 			if (geometry == null || geometry.isEmpty())
 				continue;
@@ -52,8 +58,41 @@ class OsmStreetFetch {
 				continue;  // we just skip conversion errors currently
 			map.streets().add(street.value());
 		}
+		log.info("Added {} streets to map", map.streets().size());
 
 		return Res.ok();
+	}
+
+	/// Fetch streets from OSM. Trys several times if it failes (the OSM servers
+	/// block requests, when there are too many of them at the same time).
+	private Res<List<OsmStreet>> fetchStreets(OsmBounds bounds) {
+		try (var client = OsmClient.getDefault()) {
+			int trial = 0;
+			do {
+
+				if (trial > 0) {
+					log.warn("Fetching OSM streets in trial {} failed; "
+						+ "waiting for next trial", trial);
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						return Res.error("Waiting for OSM fetch was interrupted", e);
+					}
+				}
+
+				trial++;
+				log.info(
+					"Fetch OSM streets for bounds={}; trial={}", bounds, trial);
+				var res = client.queryStreets(bounds);
+				if (res.isOk())
+					return res;
+
+			} while (trial < 10);
+			return Res.error("Failed to fetch OSM streets after several trials");
+		} catch (Exception e) {
+			return Res.error("Failed to fetch OSM streets", e);
+		}
 	}
 
 	private Res<Street> convert(OsmStreet s, CoordinateTransformer trans) {
