@@ -24,6 +24,8 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 	}
 
 	public static Res<Graph> buildFrom(Project project) {
+
+		// first check that we have a project with streets and buildings
 		if (project == null || project.map() == null)
 			return Res.error("empty project provided");
 		if (project.map().streets().isEmpty())
@@ -35,13 +37,16 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			}
 		}
 		if (bCount == 0)
-			return Res.error("project does not contain any heated buildings");
+			return Res.error("Project does not contain any heated buildings");
+
+		// try to build the graph
 		try {
 			var g = new Builder(project).build();
 			return Res.ok(g);
 		} catch (Exception e) {
-			return Res.error("failed to create graph", e);
+			return Res.error("Failed to create graph", e);
 		}
+
 	}
 
 	public void add(GraphPath<Node, Edge> path) {
@@ -87,13 +92,18 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
 		Graph build() {
 			var tree = indexStreets();
-			joinBuildings(tree);
+			linkBuildings(tree);
 			return graph;
 		}
 
+		/// Creates the nodes and edges for the street segments and creates
+		/// a search index for these segments.
 		private STRtree indexStreets() {
 			var tree = new STRtree();
 			for (var s : project.map().streets()) {
+				if (s.inclusion() == Inclusion.EXCLUDED)
+					continue;
+
 				var cs = s.coordinates();
 				if (cs == null || cs.length < 2)
 					continue;
@@ -131,29 +141,40 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			return newNode;
 		}
 
-		private void joinBuildings(STRtree tree) {
+		/// Create the building nodes and link them with the street
+		/// segments. This will create new street segments for the
+		/// connection points that are not equal (or close) to an
+		/// endpoint of an existing street segment.
+		private void linkBuildings(STRtree tree) {
 			for (var b : project.map().buildings()) {
 				if (!b.isHeated() || b.inclusion() != Inclusion.REQUIRED)
 					continue;
+
+				// search for close street segments in 10m steps
 				var node = BuildingNode.of(b, factory);
-				graph.addVertex(node);
 				var env = node.envelope().copy();
 				List<Edge> edges = List.of();
 				int i = 0;
-				while (edges.isEmpty() && i < 100) {
+				while (i < 100) {
 					i++;
 					env.expandBy(10);
 					var rs = tree.query(env);
 					if (rs == null || rs.isEmpty())
 						continue;
+					edges = new ArrayList<>(rs.size());
 					for (var obj : rs) {
-						edges = new ArrayList<>(rs.size());
 						if (obj instanceof Edge e) {
 							edges.add(e);
 						}
 					}
+					if (!edges.isEmpty())
+						break;
 				}
 
+				// include and connect the building node
+				if (edges.isEmpty())
+					continue;
+				graph.addVertex(node);
 				for (var e : edges) {
 					var cs = DistanceOp.nearestPoints(node.polygon(), e.line());
 					var split = splitPointOf(cs[1], e);

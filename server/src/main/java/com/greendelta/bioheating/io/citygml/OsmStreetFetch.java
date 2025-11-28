@@ -54,8 +54,10 @@ class OsmStreetFetch {
 			if (geometry == null || geometry.isEmpty())
 				continue;
 			var street = convert(s, trans);
-			if (street.isError())
-				continue;  // we just skip conversion errors currently
+			if (street.isError()) {
+				log.debug("Error in street conversion: {}", street.error());
+				continue;
+			}
 			map.streets().add(street.value());
 		}
 		log.info("Added {} streets to map", map.streets().size());
