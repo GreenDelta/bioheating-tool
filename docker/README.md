@@ -49,6 +49,32 @@ docker run --rm -it \
 A running database container is also useful when developing the application.
 
 
+### Running the database for development
+
+For development, you can use the `docker-compose.db-dev.yaml` file to run just the database container:
+
+```bash
+cd docker
+
+# start the database (Ctrl+C to stop)
+docker compose -f docker-compose.dev.yaml up
+
+# or in detached mode
+docker compose -f docker-compose.dev.yaml up -d
+
+# stop the database (e.g. when running in detached mode)
+docker compose -f docker-compose.dev.yaml down
+```
+
+This will store the database data in the `docker/data/bioheating-db` folder, making it persistent across container restarts.
+
+**Note:** The `data/bioheating-db` folder will be owned by the Docker container's postgres user (typically root), so you may need `sudo` to delete it:
+
+```bash
+sudo rm -rf docker/data/bioheating-db
+```
+
+
 ## Building the application image
 
 For the application image, use the `app.Dockerfile`. **Make sure** to run the

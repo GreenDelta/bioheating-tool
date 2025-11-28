@@ -41,15 +41,6 @@ bool isRoot(Dir dir) {
   return true;
 }
 
-String cmd(String command) {
-  if (Platform.isWindows) {
-    if (command == "mvn" || command == "npm") {
-      return "$command.cmd";
-    }
-  }
-  return command;
-}
-
 String nameOf(FileSystemEntity e) => e.path.split(Platform.pathSeparator).last;
 
 String join(Dir dir, String name) =>
@@ -68,20 +59,17 @@ Future<void> copyDir(Directory source, Dir dest) async {
   }
 }
 
-Future<Dir> freshDir(String path) async {
-  final dir = new Dir(path);
-  if (await dir.exists()) {
-    await dir.delete(recursive: true);
-  }
-  await dir.create(recursive: true);
-  return dir;
-}
-
+/// Runs an executable with the given arguments.
 Future<String> run(String exec, List<String> args, Dir workDir) async {
+  // add "cmd" extension for some commands on Windows
+  final cmd = Platform.isWindows && (exec == "mvn" || exec == "npm")
+      ? "$exec.cmd"
+      : exec;
+
   print("\$ cd ${workDir.path}");
-  print("\$ $exec $args");
+  print("\$ $cmd $args");
   final process = await Process.run(
-    cmd(exec),
+    cmd,
     args,
     workingDirectory: workDir.path,
     stdoutEncoding: Encoding.getByName("UTF-8"),
@@ -89,7 +77,7 @@ Future<String> run(String exec, List<String> args, Dir workDir) async {
   print(process.stdout);
   if (process.exitCode != 0) {
     print(process.stderr);
-    print("Command $exec failed; exit build");
+    print("Command $cmd failed; exit build");
     exit(1);
   }
   return process.stdout is String ? process.stdout : "";
@@ -106,9 +94,14 @@ class Build {
 
   Build(this.root, this.appDir);
 
+  /// Initializes the build with a fresh docker/app folder
   static Future<Build> init(Dir root) async {
     final dockDir = Dir(join(root, "docker"));
-    final appDir = await freshDir(join(dockDir, "app"));
+    final appDir = Dir(join(dockDir, "app"));
+    if (await appDir.exists()) {
+      await appDir.delete(recursive: true);
+    }
+    await appDir.create(recursive: true);
     return Build(root, appDir);
   }
 
