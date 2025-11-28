@@ -7,7 +7,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.index.strtree.ItemBoundable;
+import org.locationtech.jts.index.strtree.ItemDistance;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.operation.distance.DistanceOp;
 import org.openlca.commons.Res;
@@ -32,7 +35,7 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			return Res.error("project does not contain any streets");
 		int bCount = 0;
 		for (var b : project.map().buildings()) {
-			if (b.isHeated() && b.inclusion() != Inclusion.REQUIRED) {
+			if (b.isHeated() && b.inclusion() == Inclusion.REQUIRED) {
 				bCount++;
 			}
 		}
@@ -92,6 +95,7 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
 		Graph build() {
 			var tree = indexStreets();
+			tree.build();
 			linkBuildings(tree);
 			return graph;
 		}
@@ -146,43 +150,26 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 		/// connection points that are not equal (or close) to an
 		/// endpoint of an existing street segment.
 		private void linkBuildings(STRtree tree) {
+
+			var distanceFunc = new DistanceFunction();
+
 			for (var b : project.map().buildings()) {
 				if (!b.isHeated() || b.inclusion() != Inclusion.REQUIRED)
 					continue;
 
-				// search for close street segments in 10m steps
 				var node = BuildingNode.of(b, factory);
-				var env = node.envelope().copy();
-				List<Edge> edges = List.of();
-				int i = 0;
-				while (i < 100) {
-					i++;
-					env.expandBy(10);
-					var rs = tree.query(env);
-					if (rs == null || rs.isEmpty())
-						continue;
-					edges = new ArrayList<>(rs.size());
-					for (var obj : rs) {
-						if (obj instanceof Edge e) {
-							edges.add(e);
-						}
-					}
-					if (!edges.isEmpty())
-						break;
-				}
-
-				// include and connect the building node
-				if (edges.isEmpty())
+				var n = tree.nearestNeighbour(
+					node.envelope(), node.polygon(), distanceFunc);
+				if (!(n instanceof Edge streetSegment))
 					continue;
+
 				graph.addVertex(node);
-				for (var e : edges) {
-					var cs = DistanceOp.nearestPoints(node.polygon(), e.line());
-					var split = splitPointOf(cs[1], e);
-					var line = factory.createLineString(cs);
-					var edge = new Edge(
-						ids.incrementAndGet(), node, split, line, line.getLength());
-					graph.add(edge);
-				}
+				var cs = DistanceOp.nearestPoints(node.polygon(), streetSegment.line());
+				var split = splitPointOf(cs[1], streetSegment);
+				var line = factory.createLineString(cs);
+				var edge = new Edge(
+					ids.incrementAndGet(), node, split, line, line.getLength());
+				graph.add(edge);
 			}
 		}
 
@@ -211,6 +198,28 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
 		private static boolean isClose(Coordinate cs, Node node) {
 			return cs.distance(node.center().getCoordinate()) < 1;
+		}
+	}
+
+	private static class DistanceFunction implements ItemDistance {
+
+		@Override
+		public double distance(ItemBoundable i, ItemBoundable j) {
+			var gi = geometryOf(i);
+			var gj = geometryOf(j);
+			return gi.distance(gj);
+		}
+
+		private Geometry geometryOf(ItemBoundable i) {
+			var item = i.getItem();
+			return switch (item) {
+				case Edge e -> e.line();
+				case BuildingNode n -> n.polygon();
+				case StreetNode n -> n.center();
+				case Geometry g -> g;
+				case null, default -> throw new RuntimeException(
+					"Unexpected object type for distance calculation: " + item);
+			};
 		}
 	}
 }
