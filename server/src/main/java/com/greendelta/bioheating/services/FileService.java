@@ -8,12 +8,11 @@ import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.function.Function;
 
+import org.openlca.commons.Res;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.greendelta.bioheating.util.Res;
 
 @Service
 public class FileService {

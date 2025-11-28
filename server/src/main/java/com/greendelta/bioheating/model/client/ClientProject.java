@@ -1,10 +1,11 @@
 package com.greendelta.bioheating.model.client;
 
+import org.openlca.commons.Res;
+
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
-import com.greendelta.bioheating.util.Res;
 
 public record ClientProject(
 	long id,
@@ -19,7 +20,7 @@ public record ClientProject(
 		if (project == null)
 			return Res.error("project is null");
 		var map = ClientMap.of(project.map());
-		if (map.hasError())
+		if (map.isError())
 			return map.castError();
 		var p = new ClientProject(
 			project.id(),
@@ -29,7 +30,7 @@ public record ClientProject(
 			map.value(),
 			findSolutionId(db, project)
 		);
-		return Res.of(p);
+		return Res.ok(p);
 	}
 
 	private static Long findSolutionId(Database db, Project project) {

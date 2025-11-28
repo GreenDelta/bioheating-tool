@@ -81,15 +81,15 @@ public class SolutionController {
 			var task = NewTask.of(user, () -> {
 
 				var graph = Graph.buildFrom(project);
-				if (graph.hasError())
+				if (graph.isError())
 					return graph.wrapError("failed to create project graph");
 
 				var tree = SteinerTree.compute(graph.value());
-				if (tree.hasError())
+				if (tree.isError())
 					return tree.wrapError("failed to create Steiner-Tree");
 
 				var res = new MinTreeSolution(project, tree.value()).create();
-				if (res.hasError())
+				if (res.isError())
 					return res;
 
 				var solution = res.value();

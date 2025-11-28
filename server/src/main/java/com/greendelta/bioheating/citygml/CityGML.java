@@ -11,10 +11,9 @@ import org.citygml4j.core.model.core.CityModel;
 import org.citygml4j.xml.CityGMLContext;
 import org.citygml4j.xml.reader.CityGMLReadException;
 import org.citygml4j.xml.reader.CityGMLReader;
+import org.openlca.commons.Res;
 import org.xmlobjects.gml.model.basictypes.Code;
 import org.xmlobjects.gml.model.deprecated.StringOrRef;
-
-import com.greendelta.bioheating.util.Res;
 
 class CityGML {
 
@@ -64,7 +63,7 @@ class CityGML {
 			var next = reader.next();
 			if (!(next instanceof CityModel model))
 				return Res.error("no CityModel found");
-			return Res.of(model);
+			return Res.ok(model);
 		}
 	}
 

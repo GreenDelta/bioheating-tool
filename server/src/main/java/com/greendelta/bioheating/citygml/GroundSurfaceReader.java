@@ -6,11 +6,10 @@ import org.citygml4j.core.model.building.Building;
 import org.citygml4j.core.model.construction.GroundSurface;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.openlca.commons.Res;
 import org.xmlobjects.gml.model.geometry.aggregates.MultiSurface;
 import org.xmlobjects.gml.model.geometry.primitives.AbstractRingProperty;
 import org.xmlobjects.gml.model.geometry.primitives.Polygon;
-
-import com.greendelta.bioheating.util.Res;
 
 class GroundSurfaceReader {
 
@@ -34,7 +33,7 @@ class GroundSurfaceReader {
 		}
 		var ring = factory.createLinearRing(coordinates);
 		var polygon =  factory.createPolygon(ring);
-		return Res.of(polygon);
+		return Res.ok(polygon);
 	}
 
 	private static List<Double> coosOf(Building b) {

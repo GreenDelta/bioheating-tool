@@ -33,7 +33,7 @@ public record Solution(
 			if (b.inclusion() == Inclusion.EXCLUDED)
 				continue;
 			var res = fun.polygonOf(b);
-			if (!res.hasError()) {
+			if (!res.isError()) {
 				// TODO: log errors
 				bps.add(res.value());
 			}
@@ -45,7 +45,7 @@ public record Solution(
 			if (s.inclusion() == Inclusion.EXCLUDED)
 				continue;
 			var res = fun.lineOf(s);
-			if (!res.hasError()) {
+			if (!res.isError()) {
 				sls.add(res.value());
 			}
 		}
@@ -56,7 +56,7 @@ public record Solution(
 		for (var bp : bps) {
 			for (var sl : sls) {
 				var con = fun.connectorOf(bp, sl);
-				if (!con.hasError()) {
+				if (!con.isError()) {
 					buff.add(con.value());
 				}
 			}

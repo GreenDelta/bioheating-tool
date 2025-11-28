@@ -10,12 +10,12 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.operation.distance.DistanceOp;
+import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
 import com.greendelta.bioheating.calc.graph.Node.StreetNode;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.util.Res;
 
 public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
@@ -38,7 +38,7 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			return Res.error("project does not contain any heated buildings");
 		try {
 			var g = new Builder(project).build();
-			return Res.of(g);
+			return Res.ok(g);
 		} catch (Exception e) {
 			return Res.error("failed to create graph", e);
 		}

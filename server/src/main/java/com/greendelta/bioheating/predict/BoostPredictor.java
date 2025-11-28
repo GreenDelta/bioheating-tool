@@ -2,9 +2,10 @@ package com.greendelta.bioheating.predict;
 
 import java.util.List;
 
+import org.openlca.commons.Res;
+
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.ClimateRegion;
-import com.greendelta.bioheating.util.Res;
 
 import ml.dmlc.xgboost4j.java.Booster;
 import ml.dmlc.xgboost4j.java.DMatrix;
@@ -19,7 +20,7 @@ public record BoostPredictor(Booster booster) {
 		try (stream) {
 			var booster = XGBoost.loadModel(stream);
 			var predictor = new BoostPredictor(booster);
-			return Res.of(predictor);
+			return Res.ok(predictor);
 		} catch (Exception e) {
 			return Res.error("Failed to load default model", e);
 		}
@@ -29,17 +30,17 @@ public record BoostPredictor(Booster booster) {
 		if (b == null)
 			return Res.error("No building data provided");
 		var res = predictAll(region, List.of(b));
-		if (res.hasError())
+		if (res.isError())
 			return res.castError();
 		var xs = res.value();
 		return xs.length == 0
 			? Res.error("Invalid value predicted")
-			: Res.of(xs[0]);
+			: Res.ok(xs[0]);
 	}
 
 	public Res<float[]> predictAll(ClimateRegion region, List<Building> bs) {
 		var encoded = BuildingEncoder.encode(region, bs);
-		return encoded.hasError()
+		return encoded.isError()
 			? encoded.wrapError("Failed to encode building data")
 			: predict(encoded.value());
 	}
@@ -61,7 +62,7 @@ public record BoostPredictor(Booster booster) {
 			for (int i = 0; i < predictions.length; i++) {
 				ret[i] = predictions[i][0];
 			}
-			return Res.of(ret);
+			return Res.ok(ret);
 		} catch (Exception e) {
 			return Res.error("Prediction failed", e);
 		}

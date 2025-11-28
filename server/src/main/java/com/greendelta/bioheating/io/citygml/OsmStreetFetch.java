@@ -1,12 +1,12 @@
 package com.greendelta.bioheating.io.citygml;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Street;
-import com.greendelta.bioheating.util.Res;
 
 class OsmStreetFetch {
 
@@ -28,18 +28,18 @@ class OsmStreetFetch {
 
 		// calculate the map bounds
 		var boundsRes = Bounds.of(map);
-		if (boundsRes.hasError())
+		if (boundsRes.isError())
 			return boundsRes.wrapError("failed to get map bound");
 		var bs = boundsRes.value();
 
 		// fetch the streets within these bounds
 		var streets = client.queryStreets(bs.south, bs.west, bs.north, bs.east);
-		if (streets.hasError())
+		if (streets.isError())
 			return streets.wrapError("failed to fetch streets");
 
 		// initialize the projector
 		var transRes = CoordinateTransformer.fromWgs84To(map.crs());
-		if (transRes.hasError())
+		if (transRes.isError())
 			return transRes.wrapError("failed to load projector");
 		var trans = transRes.value();
 
@@ -49,12 +49,12 @@ class OsmStreetFetch {
 			if (geometry == null || geometry.isEmpty())
 				continue;
 			var street = convert(s, trans);
-			if (street.hasError())
+			if (street.isError())
 				continue;  // we just skip conversion errors currently
 			map.streets().add(street.value());
 		}
 
-		return Res.VOID;
+		return Res.ok();
 	}
 
 	private Res<Street> convert(OsmStreet s, CoordinateTransformer trans) {
@@ -67,7 +67,7 @@ class OsmStreetFetch {
 			cs[i] = new Coordinate(osmCoord.lon(), osmCoord.lat());
 		}
 		var transformed = trans.transform(cs);
-		if (transformed.hasError())
+		if (transformed.isError())
 			return transformed.castError();
 
 		var name = s.tags() != null
@@ -81,7 +81,7 @@ class OsmStreetFetch {
 			.name(name)
 			.inclusion(Inclusion.OPTIONAL)
 			.coordinates(transformed.value());
-		return Res.of(street);
+		return Res.ok(street);
 	}
 
 	private record Bounds(
@@ -115,22 +115,22 @@ class OsmStreetFetch {
 				return Res.error("no coordinates found for buildings in map");
 
 			var transRes = CoordinateTransformer.toWgs84From(map);
-			if (transRes.hasError())
+			if (transRes.isError())
 				return transRes.wrapError("could not create CRS converter");
 			var trans = transRes.value();
 
 			// add a 50 m buffer on each side
 			var minRes = trans.project(minX - 50, minY - 50);
-			if (minRes.hasError())
+			if (minRes.isError())
 				return minRes.wrapError("bounds transform failed");
 			var southWest = minRes.value();
 
 			var maxRes = trans.project(maxX + 50, maxY + 50);
-			if (maxRes.hasError())
+			if (maxRes.isError())
 				return maxRes.wrapError("bounds transform failed");
 			var northEast = maxRes.value();
 
-			return Res.of(new Bounds(
+			return Res.ok(new Bounds(
 				southWest.y, southWest.x, northEast.y, northEast.x));
 		}
 

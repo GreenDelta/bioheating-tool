@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.openlca.commons.Res;
 import org.springframework.stereotype.Service;
 
 import com.greendelta.bioheating.io.citygml.CityGmlImport;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
-import com.greendelta.bioheating.util.Res;
 
 @Service
 public class ProjectService {
@@ -56,7 +56,7 @@ public class ProjectService {
 			return Res.error("no project given");
 		try {
 			db.delete(project);
-			return Res.VOID;
+			return Res.ok();
 		} catch (Exception e) {
 			return Res.error("failed to delete project", e);
 		}
@@ -67,7 +67,7 @@ public class ProjectService {
 			return Res.error("project is null");
 		try {
 			db.update(project);
-			return Res.of(project);
+			return Res.ok(project);
 		} catch (Exception e) {
 			return Res.error("failed to save project", e);
 		}

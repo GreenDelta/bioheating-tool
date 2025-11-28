@@ -52,7 +52,7 @@ public class UserController {
 		if (Http.isNotAdmin(users, auth))
 			return Http.badRequest("only admins can create or update users");
 		var res = users.create(data);
-		return res.hasError()
+		return res.isError()
 			? Http.badRequest("invalid user data: " + res.error())
 			: Http.ok(res.value());
 	}
@@ -65,7 +65,7 @@ public class UserController {
 		if (req.isError())
 			return req.error();
 		var res = users.update(req.user(), data);
-		return res.hasError()
+		return res.isError()
 			? Http.badRequest("invalid user data: " + res.error())
 			: Http.ok(res.value());
 	}
@@ -89,7 +89,7 @@ public class UserController {
 		if (req.isError())
 			return req.error();
 		var res = users.delete(req.user());
-		return res.hasError()
+		return res.isError()
 			? Http.badRequest(res.error())
 			: Http.ok("User deleted successfully");
 	}

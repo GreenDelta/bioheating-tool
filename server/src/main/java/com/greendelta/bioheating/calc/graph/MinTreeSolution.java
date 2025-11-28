@@ -4,20 +4,20 @@ import java.util.HashMap;
 import java.util.function.Function;
 
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
+import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.SolutionEdge;
 import com.greendelta.bioheating.model.SolutionNode;
-import com.greendelta.bioheating.util.Res;
 
 public record MinTreeSolution(Project project, SpanningTree<Edge> tree) {
 
 	public Res<Solution> create() {
 
 		var image = SolutionImage.create(project, tree);
-		if (image.hasError())
+		if (image.isError())
 			return image.wrapError("failed to create solution image");
 
 		var solution = new Solution()
@@ -51,6 +51,6 @@ public record MinTreeSolution(Project project, SpanningTree<Edge> tree) {
 			solution.edges().add(edge);
 		}
 
-		return Res.of(solution);
+		return Res.ok(solution);
 	}
 }

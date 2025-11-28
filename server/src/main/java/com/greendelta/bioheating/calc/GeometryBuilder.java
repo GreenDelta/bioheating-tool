@@ -3,13 +3,13 @@ package com.greendelta.bioheating.calc;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.operation.distance.DistanceOp;
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 
 import com.greendelta.bioheating.io.CrsId;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
-import com.greendelta.bioheating.util.Res;
-import com.greendelta.bioheating.util.Strings;
 
 public class GeometryBuilder {
 
@@ -24,7 +24,7 @@ public class GeometryBuilder {
 	}
 
 	public static GeometryBuilder of(GeoMap map) {
-		if (map == null || Strings.isNil(map.crs()))
+		if (map == null || Strings.isBlank(map.crs()))
 			return getDefault();
 		var crs = CrsId.parse(map.crs());
 		if (!crs.isValid())
@@ -39,7 +39,7 @@ public class GeometryBuilder {
 			return Res.error("no building coordinates");
 		try {
 			var polygon = factory.createPolygon(building.coordinates());
-			return Res.of(new BuildingPolygon(building, polygon));
+			return Res.ok(new BuildingPolygon(building, polygon));
 		} catch (Exception e) {
 			return Res.error("failed to create polygon", e);
 		}
@@ -50,7 +50,7 @@ public class GeometryBuilder {
 			return Res.error("no street coordinates");
 		try {
 			var line = factory.createLineString(street.coordinates());
-			return Res.of(new StreetLine(street, line));
+			return Res.ok(new StreetLine(street, line));
 		} catch (Exception e) {
 			return Res.error("failed to create line-string", e);
 		}
@@ -65,7 +65,7 @@ public class GeometryBuilder {
 				return Res.error("failed to calculate distance: less than 2 points");
 			var line = factory.createLineString(points);
 			var con = new Connector(bp, sl, line, line.getLength());
-			return Res.of(con);
+			return Res.ok(con);
 		} catch (Exception e) {
 			return Res.error("failed to calculate connector", e);
 		}

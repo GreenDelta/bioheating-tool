@@ -1,8 +1,7 @@
 package com.greendelta.bioheating.model;
 
+import org.openlca.commons.Res;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import com.greendelta.bioheating.util.Res;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -64,6 +63,6 @@ public class User extends BaseEntity {
 		if (pw == null || pw.isBlank())
 			return Res.error("invalid password provided");
 		var hash = new BCryptPasswordEncoder().encode(pw);
-		return Res.of(hash);
+		return Res.ok(hash);
 	}
 }

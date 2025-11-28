@@ -2,9 +2,10 @@ package com.greendelta.bioheating.predict;
 
 import java.util.List;
 
+import org.openlca.commons.Res;
+
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.ClimateRegion;
-import com.greendelta.bioheating.util.Res;
 
 import ml.dmlc.xgboost4j.java.DMatrix;
 
@@ -38,7 +39,7 @@ class BuildingEncoder {
 				encode(i * PARAMS, b);
 			}
 			var matrix = new DMatrix(data, buildings.size(), PARAMS, Float.NaN);
-			return Res.of(matrix);
+			return Res.ok(matrix);
 		} catch (Exception e) {
 			return Res.error("Failed to encode building data", e);
 		}

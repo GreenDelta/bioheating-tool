@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.openlca.commons.Res;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greendelta.bioheating.util.Res;
 
 public record OsmStreet(
     String type,
@@ -32,7 +33,7 @@ public record OsmStreet(
 				return Res.error("failed to parse street");
 			}
 		}
-		return Res.of(streets);
+		return Res.ok(streets);
 	}
 
 	public record OsmBounds(

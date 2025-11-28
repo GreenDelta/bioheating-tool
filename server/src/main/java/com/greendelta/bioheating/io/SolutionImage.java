@@ -9,9 +9,9 @@ import javax.imageio.ImageIO;
 
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.calc.Solution;
-import com.greendelta.bioheating.util.Res;
 
 public class SolutionImage {
 
@@ -61,7 +61,7 @@ public class SolutionImage {
 
 			ImageIO.write(image, "png", file);
 			g2d.dispose();
-			return Res.VOID;
+			return Res.ok();
 		} catch (Exception e) {
 			return Res.error("failed to create solution image", e);
 		}

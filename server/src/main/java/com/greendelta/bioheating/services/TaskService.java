@@ -9,6 +9,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -19,8 +21,6 @@ import com.greendelta.bioheating.model.User;
 import com.greendelta.bioheating.services.TaskService.Task.Error;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
 import com.greendelta.bioheating.services.TaskService.Task.Result;
-import com.greendelta.bioheating.util.Res;
-import com.greendelta.bioheating.util.Strings;
 
 @Service
 public class TaskService {
@@ -38,7 +38,7 @@ public class TaskService {
 	}
 
 	public void schedule(NewTask<?> task) {
-		if (task == null || Strings.isNil(task.id))
+		if (task == null || Strings.isBlank(task.id))
 			return;
 		if (task.func == null) {
 			store.put(task.id, task.toError("No function provided"));
@@ -51,7 +51,7 @@ public class TaskService {
 	private void exec(NewTask<?> task) {
 		try {
 			var res = task.func.get();
-			if (res.hasError()) {
+			if (res.isError()) {
 				store.put(task.id, task.toError(res.error()));
 			} else {
 				store.put(task.id, task.toResult(res.value()));
@@ -74,7 +74,7 @@ public class TaskService {
 	}
 
 	public Optional<TaskState> getState(User user, String id) {
-		if (user == null || Strings.isNil(id))
+		if (user == null || Strings.isBlank(id))
 			return Optional.empty();
 		var task = store.get(id);
 		return task != null && task.userId() == user.id()
@@ -83,7 +83,7 @@ public class TaskService {
 	}
 
 	public boolean remove(User user, String id) {
-		if (user == null || Strings.isNil(id))
+		if (user == null || Strings.isBlank(id))
 			return false;
 		var task = store.get(id);
 		if (task == null || task.userId() != user.id())

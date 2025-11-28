@@ -3,6 +3,8 @@ package com.greendelta.bioheating.controllers;
 import java.nio.file.Files;
 import java.util.function.Function;
 
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,8 +29,6 @@ import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.util.Http;
-import com.greendelta.bioheating.util.Res;
-import com.greendelta.bioheating.util.Strings;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -71,7 +71,7 @@ public class ProjectController {
 	) {
 		return withProject(auth, id, project -> {
 			var res = ClientProject.of(db, project);
-			return res.hasError()
+			return res.isError()
 				? Http.serverError("failed to convert project: " + res.error())
 				: Http.ok(res.value());
 		});
@@ -84,18 +84,18 @@ public class ProjectController {
 		return withProject(auth, id, project -> {
 			Res<byte[]> bytes = files.withTempFile(".zip", file -> {
 				var res = SophenaExport.write(project, file);
-				if (res.hasError())
+				if (res.isError())
 					return res.wrapError(
 						"failed to write Sophena package: " + res.error());
 				try {
 					var bs = Files.readAllBytes(file.toPath());
-					return Res.of(bs);
+					return Res.ok(bs);
 				} catch (Exception e) {
 					return Res.error("failed to read exported Sophena package", e);
 				}
 			});
 
-			var name = Strings.isNotNil(project.name())
+			var name = Strings.isNotBlank(project.name())
 				? project.name().replaceAll("\\W+", "_")
 				: "project";
 			return ResponseEntity.ok()
@@ -119,7 +119,7 @@ public class ProjectController {
 		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null)
 			return Http.badRequest("not authenticated");
-		if (Strings.isNil(name))
+		if (Strings.isBlank(name))
 			return Http.badRequest("a project name is required");
 		if (file.isEmpty())
 			return Http.badRequest("a CityGML file is required");
@@ -146,7 +146,7 @@ public class ProjectController {
 	) {
 		return withProject(auth, id, project -> {
 			var err = projects.delete(project);
-			return err.hasError()
+			return err.isError()
 				? Http.badRequest("failed to delete project: " + err.error())
 				: Http.ok("project deleted successfully");
 		});
@@ -159,7 +159,7 @@ public class ProjectController {
 		return withProject(auth, id, project -> {
 			data.writeUpdatesTo(db, project);
 			var res = projects.updateProject(project);
-			return res.hasError()
+			return res.isError()
 				? Http.serverError("failed to save project: " + res.error())
 				: Http.ok(ProjectInfo.of(project));
 		});

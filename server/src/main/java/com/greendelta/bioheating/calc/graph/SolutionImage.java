@@ -8,13 +8,13 @@ import javax.imageio.ImageIO;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
 import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.util.Res;
 
 class SolutionImage {
 
@@ -79,7 +79,7 @@ class SolutionImage {
 
 			try (var bos = new ByteArrayOutputStream()) {
 				ImageIO.write(img.getImage(), "png", bos);
-				return Res.of(bos.toByteArray());
+				return Res.ok(bos.toByteArray());
 			}
 		} catch (Exception e) {
 			return Res.error("failed to create the solution image", e);

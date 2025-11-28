@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 
 import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
@@ -14,8 +16,6 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.predict.FeatureValue;
-import com.greendelta.bioheating.util.Res;
-import com.greendelta.bioheating.util.Strings;
 
 /// Maps the building attributes of the CityGML model to the domain model.
 class BuildingProcessor {
@@ -43,7 +43,7 @@ class BuildingProcessor {
 				var building = buildingOf(shape);
 				buildings.add(building);
 			}
-			return Res.of(buildings);
+			return Res.ok(buildings);
 		} catch (Exception e) {
 			return Res.error("Failed to map building attributes", e);
 		}
@@ -123,9 +123,9 @@ class BuildingProcessor {
 
 		var street = address.street();
 		var number = address.number();
-		if (Strings.isNil(street))
+		if (Strings.isBlank(street))
 			return gml.id();
-		return Strings.isNil(number)
+		return Strings.isBlank(number)
 			? street
 			: street + " " + number;
 	}

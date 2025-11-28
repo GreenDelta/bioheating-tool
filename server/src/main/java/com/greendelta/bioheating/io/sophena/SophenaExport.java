@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.openlca.commons.Res;
+
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.util.Res;
 
 public class SophenaExport {
 
@@ -25,7 +26,7 @@ public class SophenaExport {
 	public static Res<Void> write(Project project, File file) {
 		try (var pack = DataPack.create(file)) {
 			new SophenaExport(project, pack).run();
-			return Res.VOID;
+			return Res.ok();
 		} catch (Exception e) {
 			return Res.error("failed to export project", e);
 		}

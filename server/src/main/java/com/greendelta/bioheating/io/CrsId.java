@@ -2,7 +2,7 @@ package com.greendelta.bioheating.io;
 
 import java.util.OptionalInt;
 
-import com.greendelta.bioheating.util.Strings;
+import org.openlca.commons.Strings;
 
 public record CrsId(int code, String value) {
 
@@ -39,7 +39,7 @@ public record CrsId(int code, String value) {
 	}
 
 	public boolean isValid() {
-		return code > 0 && !Strings.isNil(value);
+		return code > 0 && !Strings.isBlank(value);
 	}
 
 	public static CrsId parse(String id) {

@@ -3,10 +3,11 @@ package com.greendelta.bioheating.model.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openlca.commons.Res;
+
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Street;
-import com.greendelta.bioheating.util.Res;
 
 public record GeoFeature(
 	String type, Geometry geometry, Map<String, Object> properties
@@ -16,7 +17,7 @@ public record GeoFeature(
 		if (b == null || wgs84 == null)
 			return Res.error("no building or coordinate transformer");
 		var cs = wgs84.transform(b.coordinates());
-		if (cs.hasError())
+		if (cs.isError())
 			return cs.wrapError("failed to project coordinates of building: " + b);
 		var polygon = Geometry.polygonOf(cs.value());
 		var props = new HashMap<String, Object>();
@@ -42,14 +43,14 @@ public record GeoFeature(
 		props.put("heatDemand", b.heatDemand());
 		props.put("isHeated", b.isHeated());
 		props.put("inclusion", b.inclusion());
-		return Res.of(new GeoFeature("Feature", polygon, props));
+		return Res.ok(new GeoFeature("Feature", polygon, props));
 	}
 
 	static Res<GeoFeature> of(Street s, CoordinateTransformer wgs84) {
 		if (s == null || wgs84 == null)
 			return Res.error("no street or coordinate transformer");
 		var cs = wgs84.transform(s.coordinates());
-		if (cs.hasError())
+		if (cs.isError())
 			return cs.wrapError("failed to project coordinates of street: " + s);
 		var line = Geometry.lineOf(cs.value());
 		var props = new HashMap<String, Object>();
@@ -57,6 +58,6 @@ public record GeoFeature(
 		props.put("id", s.id());
 		props.put("name", s.name());
 		props.put("inclusion", s.inclusion());
-		return Res.of(new GeoFeature("Feature", line, props));
+		return Res.ok(new GeoFeature("Feature", line, props));
 	}
 }

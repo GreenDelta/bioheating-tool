@@ -9,7 +9,7 @@ public class OsmClientExample {
 			var streets = client.queryStreets(
 				48.82975561604209, 11.486790292463866, 48.832196854541195, 11.491462553643487
 			);
-			if (streets.hasError()) {
+			if (streets.isError()) {
 				System.out.println("ERROR: " + streets.error());
 				return;
 			}

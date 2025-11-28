@@ -2,9 +2,10 @@ package com.greendelta.bioheating.predict;
 
 import java.util.List;
 
+import org.openlca.commons.Res;
+
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
-import com.greendelta.bioheating.util.Res;
 
 import ml.dmlc.xgboost4j.java.DMatrix;
 
@@ -35,17 +36,17 @@ class CsvEncoder {
 	Res<DMatrix> encode(List<CsvItem> items) {
 		if (items == null || items.isEmpty())
 			return Res.error("CSV item data missing");
-		
+
 		try {
 			var data = new float[PARAMS * items.size()];
-			
+
 			for (var i = 0; i < items.size(); i++) {
 				var item = items.get(i);
 				encodeFeatures(i * PARAMS, item, data);
 			}
-			
+
 			var matrix = new DMatrix(data, items.size(), PARAMS, Float.NaN);
-			
+
 			if (includeLabels) {
 				var labels = new float[items.size()];
 				for (var i = 0; i < items.size(); i++) {
@@ -53,8 +54,8 @@ class CsvEncoder {
 				}
 				matrix.setLabel(labels);
 			}
-			
-			return Res.of(matrix);
+
+			return Res.ok(matrix);
 		} catch (Exception e) {
 			return Res.error("Failed to encode CSV data", e);
 		}

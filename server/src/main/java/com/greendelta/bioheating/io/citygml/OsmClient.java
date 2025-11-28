@@ -9,9 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greendelta.bioheating.util.Res;
-import com.greendelta.bioheating.util.Strings;
 
 public class OsmClient implements AutoCloseable {
 
@@ -24,7 +25,7 @@ public class OsmClient implements AutoCloseable {
 	}
 
 	public static OsmClient of(String api) {
-		return Strings.isNil(api)
+		return Strings.isBlank(api)
 			? getDefault()
 			: new OsmClient(api);
 	}

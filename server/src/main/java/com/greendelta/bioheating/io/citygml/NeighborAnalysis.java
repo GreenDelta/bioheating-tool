@@ -4,10 +4,9 @@ import java.util.List;
 
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.operation.distance.DistanceOp;
+import org.openlca.commons.Res;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.greendelta.bioheating.util.Res;
 
 class NeighborAnalysis {
 
@@ -30,7 +29,7 @@ class NeighborAnalysis {
 		try {
 			var index = buildIndex();
 			findNeighbors(index);
-			return Res.VOID;
+			return Res.ok();
 		} catch (Exception e) {
 			return Res.error("Neighbor analysis of buildings failed", e);
 		}

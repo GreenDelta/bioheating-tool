@@ -5,9 +5,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.greendelta.bioheating.util.Res;
+import org.openlca.commons.Res;
 
-/// Contains training or validation data of a building for the heat demand 
+/// Contains training or validation data of a building for the heat demand
 /// prediction model.
 ///
 /// @param buildingId Column 0 - a unique identifier.
@@ -43,11 +43,11 @@ public record CsvItem(
 				}
 				var row = line.split(",");
 				var item = fromRow(row);
-				if (item.hasError())
+				if (item.isError())
 					return Res.error("Failed to read CSV row " + (items.size() + 1));
 				items.add(item.value());
 			}
-			return Res.of(items);
+			return Res.ok(items);
 		} catch (Exception e) {
 			return Res.error("Failed to read CSV file", e);
 		}
@@ -63,7 +63,7 @@ public record CsvItem(
 				id = id.substring(1, id.length() - 1);
 			}
 
-			return Res.of(new CsvItem(
+			return Res.ok(new CsvItem(
 				id,
 				Double.parseDouble(row[1]), // height
 				Integer.parseInt(row[2]), // storeys

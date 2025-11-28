@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
-import com.greendelta.bioheating.util.Res;
-import com.greendelta.bioheating.util.Strings;
 
 @Service
 public class UserService {
@@ -41,10 +41,10 @@ public class UserService {
 	}
 
 	private Optional<User> getForName(String name) {
-		if (Strings.isNil(name))
+		if (Strings.isBlank(name))
 			return Optional.empty();
 		for (var u : db.getAll(User.class)) {
-			if (Strings.eq(name, u.name()))
+			if (Strings.equalsIgnoreCase(name, u.name()))
 				return Optional.of(u);
 		}
 		return Optional.empty();
@@ -89,7 +89,7 @@ public class UserService {
 			}
 		}
 		db.delete(user);
-		return Res.VOID;
+		return Res.ok();
 	}
 
 	private Res<UserInfo> apply(User user, UserData data) {
@@ -102,7 +102,7 @@ public class UserService {
 			return Res.error("Another user with this name exists");
 
 		var hash = User.hashPassword(data.password.strip());
-		if (hash.hasError())
+		if (hash.isError())
 			return Res.error("Failed to process password");
 
 		user.name(data.name.strip())
@@ -112,11 +112,11 @@ public class UserService {
 
 		if (user.id() == 0) {
 			db.insert(user);
-			return Res.of(UserInfo.of(user));
+			return Res.ok(UserInfo.of(user));
 		}
 
 		var updated = db.update(user);
-		return Res.of(UserInfo.of(updated));
+		return Res.ok(UserInfo.of(updated));
 	}
 
 	public record UserInfo(
@@ -145,13 +145,13 @@ public class UserService {
 
 		String validate() {
 
-			if (Strings.isNil(name))
+			if (Strings.isBlank(name))
 				return "User name is empty";
 			var n = name.strip();
 			if (n.length() < 2)
 				return "User name is shorter than 2 characters.";
 
-			if (Strings.isNil(password))
+			if (Strings.isBlank(password))
 				return "Password is empty";
 			var p = password.strip();
 			if (p.length() < 4)

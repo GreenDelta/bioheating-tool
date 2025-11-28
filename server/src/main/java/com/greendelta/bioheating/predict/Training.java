@@ -1,13 +1,12 @@
 package com.greendelta.bioheating.predict;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import com.greendelta.bioheating.util.Res;
+import org.openlca.commons.Res;
 
 import ml.dmlc.xgboost4j.java.Booster;
 import ml.dmlc.xgboost4j.java.XGBoost;
@@ -22,7 +21,7 @@ public class Training {
 
 	public static Res<Booster> trainFrom(File csv) {
 		var items = CsvItem.readFrom(csv);
-		return items.hasError()
+		return items.isError()
 			? items.wrapError("Failed to read training data")
 			: new Training(items.value()).train();
 	}
@@ -30,12 +29,12 @@ public class Training {
 	private Res<Booster> train() {
 		try {
 			var data = CsvEncoder.withLabels().encode(items);
-			if (data.hasError())
+			if (data.isError())
 				return data.wrapError("Failed to encode training data");
 			var config = getConfig();
 			var model = XGBoost.train(
 				data.value(), config, 1000, new HashMap<>(), null, null);
-			return Res.of(model);
+			return Res.ok(model);
 		} catch (Exception e) {
 			return Res.error("Failed to train model", e);
 		}
@@ -51,11 +50,11 @@ public class Training {
 		return config;
 	}
 
-	public static Res<Void> save(Booster booster, File file) throws IOException {
+	public static Res<Void> save(Booster booster, File file) {
 		try {
 			byte[] ubj = booster.toByteArray("ubj");
 			Files.write(file.toPath(), ubj);
-			return Res.VOID;
+			return Res.ok();
 		} catch (Exception e) {
 			return Res.error("Failed to save model to file: " + file, e);
 		}

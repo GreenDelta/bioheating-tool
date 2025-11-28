@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.greendelta.bioheating.util.Res;
+import org.openlca.commons.Res;
 
 import ml.dmlc.xgboost4j.java.Booster;
 
@@ -21,7 +21,7 @@ public class ModelValidator {
 
 	public static Res<ValidationResult> validate(Booster model, File csvFile) {
 		var itemsRes = CsvItem.readFrom(csvFile);
-		if (itemsRes.hasError())
+		if (itemsRes.isError())
 			return itemsRes.wrapError("Failed to read validation data");
 		return new ModelValidator(model, itemsRes.value()).run();
 	}
@@ -36,7 +36,7 @@ public class ModelValidator {
 		try {
 			// Encode features without labels for prediction
 			var matrixRes = CsvEncoder.withoutLabels().encode(items);
-			if (matrixRes.hasError())
+			if (matrixRes.isError())
 				return matrixRes.wrapError("Failed to encode validation data");
 
 			// Get predictions
@@ -73,7 +73,7 @@ public class ModelValidator {
 				calculateR2(results, sumActual / n) // R²
 			);
 
-			return Res.of(new ValidationResult(results, metrics));
+			return Res.ok(new ValidationResult(results, metrics));
 		} catch (Exception e) {
 			return Res.error("Validation failed", e);
 		}

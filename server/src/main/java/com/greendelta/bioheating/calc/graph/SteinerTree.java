@@ -11,9 +11,9 @@ import org.jgrapht.alg.interfaces.ManyToManyShortestPathsAlgorithm.ManyToManySho
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
 import org.jgrapht.alg.shortestpath.CHManyToManyShortestPaths;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
+import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
-import com.greendelta.bioheating.util.Res;
 
 public class SteinerTree {
 
@@ -69,7 +69,7 @@ public class SteinerTree {
 		if (terminals.size() == 1) {
 			var result = new Graph();
 			result.addVertex(terminals.iterator().next());
-			return Res.of(mstOf(result));
+			return Res.ok(mstOf(result));
 		}
 
 		var paths = new CHManyToManyShortestPaths<>(g, exec)
@@ -77,7 +77,7 @@ public class SteinerTree {
 		var closure = metricClosureOf(terminals, paths);
 		var closureTree = mstOf(closure);
 		var subGraph = subGraphOf(closureTree, paths);
-		return Res.of(mstOf(subGraph));
+		return Res.ok(mstOf(subGraph));
 	}
 
 	private SpanningTree<Edge> mstOf(Graph g) {

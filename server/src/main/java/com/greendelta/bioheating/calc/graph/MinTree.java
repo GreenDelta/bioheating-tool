@@ -5,12 +5,12 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
+import org.openlca.commons.Res;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
 import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.util.Res;
 
 public class MinTree {
 
@@ -38,7 +38,7 @@ public class MinTree {
 
 				log.info("build full graph");
 				var graphRes = Graph.buildFrom(project);
-				if (graphRes.hasError())
+				if (graphRes.isError())
 					return graphRes.wrapError("failed to create project graph");
 				var g = graphRes.value();
 				log.info("created graph with {} nodes and {} edges",
@@ -71,7 +71,7 @@ public class MinTree {
 				var tree = new KruskalMinimumSpanningTree<>(minGraph).getSpanningTree();
 				log.info("created tree with {} edges", tree.getEdges().size());
 
-				return Res.of(tree);
+				return Res.ok(tree);
 			} catch (Exception e) {
 				return Res.error("failed to build minimal spanning tree", e);
 			}
