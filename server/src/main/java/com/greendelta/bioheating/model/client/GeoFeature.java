@@ -42,6 +42,7 @@ public record GeoFeature(
 		props.put("streetNumber", b.streetNumber());
 		props.put("heatDemand", b.heatDemand());
 		props.put("isHeated", b.isHeated());
+		props.put("isSupplyCenter", b.isSupplyCenter());
 		props.put("inclusion", b.inclusion());
 		return Res.ok(new GeoFeature("Feature", polygon, props));
 	}

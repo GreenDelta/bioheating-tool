@@ -23,6 +23,7 @@ export interface BuildingProps {
 	street?: any;
 	streetNumber?: any;
 	isHeated?: any;
+	isSupplyCenter?: any;
 	inclusion?: any;
 }
 
@@ -85,6 +86,7 @@ export class BuildingData {
 	street: string;
 	streetNumber: string;
 	isHeated: boolean;
+	isSupplyCenter: boolean;
 	inclusion: Inclusion;
 
 	static of(f: GeoFeature): BuildingData {
@@ -113,6 +115,7 @@ export class BuildingData {
 			this.street = d.street;
 			this.streetNumber = d.streetNumber;
 			this.isHeated = d.isHeated;
+			this.isSupplyCenter = d.isSupplyCenter;
 			this.inclusion = d.inclusion;
 		} else {
 			this.name = stringOf(d.name);
@@ -135,6 +138,7 @@ export class BuildingData {
 			this.street = stringOf(d.street);
 			this.streetNumber = stringOf(d.streetNumber);
 			this.isHeated = boolOf(d.isHeated);
+			this.isSupplyCenter = boolOf(d.isSupplyCenter);
 			this.inclusion = inclusionFromString(d.inclusion || "REQUIRED");
 		}
 	}
@@ -198,6 +202,9 @@ export class BuildingData {
 		if (props.isHeated !== undefined) {
 			copy.isHeated = props.isHeated;
 		}
+		if (props.isSupplyCenter !== undefined) {
+			copy.isSupplyCenter = props.isSupplyCenter;
+		}
 		if (props.inclusion !== undefined) {
 			copy.inclusion = inclusionFromString(props.inclusion);
 		}
@@ -227,6 +234,7 @@ export class BuildingData {
 		f.properties.street = this.street;
 		f.properties.streetNumber = this.streetNumber;
 		f.properties.isHeated = this.isHeated;
+		f.properties.isSupplyCenter = this.isSupplyCenter;
 		f.properties.inclusion = this.inclusion;
 	}
 

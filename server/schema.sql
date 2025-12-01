@@ -42,6 +42,7 @@ create table tbl_buildings (
     climate_zone int,
     heat_demand double precision,
     is_heated boolean,
+    is_supply_center boolean,
     inclusion varchar
 );
 

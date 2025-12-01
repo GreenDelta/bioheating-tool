@@ -78,6 +78,9 @@ public class Building extends BaseEntity {
 	@Column(name = "is_heated")
 	private boolean isHeated;
 
+	@Column(name = "is_supply_center")
+	private boolean isSupplyCenter;
+
 	@Column(name = "inclusion")
 	@Enumerated(EnumType.STRING)
 	private Inclusion inclusion;
@@ -259,6 +262,15 @@ public class Building extends BaseEntity {
 
 	public Building isHeated(boolean isHeated) {
 		this.isHeated = isHeated;
+		return this;
+	}
+
+	public boolean isSupplyCenter() {
+		return isSupplyCenter;
+	}
+
+	public Building isSupplyCenter(boolean isSupplyCenter) {
+		this.isSupplyCenter = isSupplyCenter;
 		return this;
 	}
 

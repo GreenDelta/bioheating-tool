@@ -36,6 +36,12 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					onChange={checked => put({ isHeated: checked })}
 				/>
 
+				<CheckboxField
+					label="Is supply center"
+					checked={data.isSupplyCenter}
+					onChange={checked => put({ isSupplyCenter: checked })}
+				/>
+
 			<NumberField
 				label="Heat demand (kWh)"
 				value={data.heatDemand}
