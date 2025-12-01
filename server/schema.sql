@@ -32,8 +32,6 @@ create table tbl_buildings (
     height double precision,
     storeys int,
     ground_area double precision,
-    heated_area double precision,
-    volume double precision,
     country varchar,
     locality varchar,
     postal_code varchar,

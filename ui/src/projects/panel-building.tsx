@@ -136,20 +136,6 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					onChange={value => put({ groundArea: value })}
 				/>
 
-				<NumberField
-					label="Heated Area (m²)"
-					value={data.heatedArea}
-					step="0.1"
-					onChange={value => put({ heatedArea: value })}
-				/>
-
-				<NumberField
-					label="Volume (m³)"
-					value={data.volume}
-					step="0.1"
-					onChange={value => put({ volume: value })}
-				/>
-
 				<hr />
 				<h6>Address Information</h6>
 

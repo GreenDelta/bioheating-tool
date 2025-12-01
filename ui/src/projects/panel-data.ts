@@ -15,8 +15,6 @@ export interface BuildingProps {
 	type?: any;
 	constructionAge?: any;
 	groundArea?: any;
-	heatedArea?: any;
-	volume?: any;
 	country?: any;
 	locality?: any;
 	postalCode?: any;
@@ -78,8 +76,6 @@ export class BuildingData {
 	type: BuildingType;
 	constructionAge: ConstructionAge;
 	groundArea: number;
-	heatedArea: number;
-	volume: number;
 	country: string;
 	locality: string;
 	postalCode: string;
@@ -107,8 +103,6 @@ export class BuildingData {
 			this.type = d.type;
 			this.constructionAge = d.constructionAge;
 			this.groundArea = d.groundArea;
-			this.heatedArea = d.heatedArea;
-			this.volume = d.volume;
 			this.country = d.country;
 			this.locality = d.locality;
 			this.postalCode = d.postalCode;
@@ -130,8 +124,6 @@ export class BuildingData {
 			this.type = buildingTypeFromString(d.type || "OTHER");
 			this.constructionAge = constructionAgeFromString(d.constructionAge || "UNKNOWN");
 			this.groundArea = floatOf(d.groundArea);
-			this.heatedArea = floatOf(d.heatedArea);
-			this.volume = floatOf(d.volume);
 			this.country = stringOf(d.country);
 			this.locality = stringOf(d.locality);
 			this.postalCode = stringOf(d.postalCode);
@@ -178,12 +170,6 @@ export class BuildingData {
 		if (props.groundArea) {
 			copy.groundArea = props.groundArea;
 		}
-		if (props.heatedArea) {
-			copy.heatedArea = props.heatedArea;
-		}
-		if (props.volume) {
-			copy.volume = props.volume;
-		}
 		if (props.country) {
 			copy.country = props.country;
 		}
@@ -226,8 +212,6 @@ export class BuildingData {
 		f.properties.type = this.type;
 		f.properties.constructionAge = this.constructionAge;
 		f.properties.groundArea = this.groundArea;
-		f.properties.heatedArea = this.heatedArea;
-		f.properties.volume = this.volume;
 		f.properties.country = this.country;
 		f.properties.locality = this.locality;
 		f.properties.postalCode = this.postalCode;

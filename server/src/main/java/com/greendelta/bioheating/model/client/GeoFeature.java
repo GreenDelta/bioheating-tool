@@ -33,8 +33,6 @@ public record GeoFeature(
 		props.put("height", b.height());
 		props.put("storeys", b.storeys());
 		props.put("groundArea", b.groundArea());
-		props.put("heatedArea", b.heatedArea());
-		props.put("volume", b.volume());
 		props.put("country", b.country());
 		props.put("locality", b.locality());
 		props.put("postalCode", b.postalCode());

@@ -60,12 +60,7 @@ class BuildingProcessor {
 		var type = isHeated
 			? typeOf(shape)
 			: BuildingType.OTHER;
-
 		int storeys = storeysOf(gml, type);
-		var heatedArea = shape.groundArea() * storeys * FeatureValue.heatedAreaFactor(type);
-		var netVolume = roofType != null
-			? shape.blockVolume() * roofType.volumeFactor()
-			: shape.blockVolume() * 0.85;
 
 		var building = new Building()
 			.name(nameOf(gml))
@@ -75,8 +70,6 @@ class BuildingProcessor {
 			.height(gml.height())
 			.storeys(storeys)
 			.groundArea(shape.groundArea())
-			.heatedArea(heatedArea)
-			.volume(netVolume)
 			.inclusion(Inclusion.EXCLUDED);
 
 		if (func != null) {

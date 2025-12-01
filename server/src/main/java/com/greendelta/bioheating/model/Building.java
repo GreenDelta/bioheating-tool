@@ -51,12 +51,6 @@ public class Building extends BaseEntity {
 	@Column(name = "ground_area")
 	private double groundArea;
 
-	@Column(name = "heated_area")
-	private double heatedArea;
-
-	@Column(name = "volume")
-	private double volume;
-
 	@Column(name = "country")
 	private String country;
 
@@ -181,24 +175,6 @@ public class Building extends BaseEntity {
 
 	public Building groundArea(double groundArea) {
 		this.groundArea = groundArea;
-		return this;
-	}
-
-	public double heatedArea() {
-		return heatedArea;
-	}
-
-	public Building heatedArea(double heatedArea) {
-		this.heatedArea = heatedArea;
-		return this;
-	}
-
-	public double volume() {
-		return volume;
-	}
-
-	public Building volume(double volume) {
-		this.volume = volume;
 		return this;
 	}
 

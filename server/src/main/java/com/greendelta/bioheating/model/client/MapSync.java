@@ -72,8 +72,6 @@ public class MapSync {
 		syncDouble(props, "height", b::height);
 		syncInt(props, "storeys", b::storeys);
 		syncDouble(props, "groundArea", b::groundArea);
-		syncDouble(props, "heatedArea", b::heatedArea);
-		syncDouble(props, "volume", b::volume);
 		syncString(props, "country", b::country);
 		syncString(props, "locality", b::locality);
 		syncString(props, "postalCode", b::postalCode);
