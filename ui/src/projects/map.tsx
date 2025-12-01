@@ -123,9 +123,10 @@ function styleOf(feature: any, ids: Set<any>) {
 	const id = f.properties?.id;
 	const isSelected = id && ids.has(id);
 	const color = isSelected ? "#fff59d" : colorOf(f);
+	const weight = isBuilding(f) ? 2 : 4;
 	return {
 		fillColor: color,
-		weight: isSelected ? 3 : 2,
+		weight: isSelected ? weight + 1 : weight,
 		opacity: 1,
 		color: color,
 		dashArray: "",
@@ -139,6 +140,9 @@ function colorOf(f: GeoFeature): string {
 
 	// building
 	if (isBuilding(f)) {
+		if (props.isSupplyCenter) {
+			return "#ff9800";
+		}
 		if (!props.isHeated) {
 			return "#607d8b";
 		}

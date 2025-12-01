@@ -42,24 +42,28 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					onChange={checked => put({ isSupplyCenter: checked })}
 				/>
 
-			<NumberField
-				label="Heat demand (kWh)"
-				value={data.heatDemand}
-				step="0.1"
-				disabled={!data.isHeated}
-				onChange={value => put({ heatDemand: value })}
-			/>
+				<NumberField
+					label="Heat demand (kWh)"
+					value={data.heatDemand}
+					step="0.1"
+					disabled={!data.isHeated}
+					onChange={value => put({ heatDemand: value })}
+				/>
 
-			<SelectField
-				label="Inclusion"
-				value={!data.isHeated ? "Excluded" : data.inclusion}
-				disabled={!data.isHeated}
-				options={[
-					{ value: Inclusion.EXCLUDED, label: "Excluded" },
-					{ value: Inclusion.REQUIRED, label: "Included" },
-				]}
-				onChange={value => put({ inclusion: value })}
-			/>				<NumberField
+				{!data.isSupplyCenter && (
+					<SelectField
+						label="Inclusion"
+						value={!data.isHeated ? "Excluded" : data.inclusion}
+						disabled={!data.isHeated}
+						options={[
+							{ value: Inclusion.EXCLUDED, label: "Excluded" },
+							{ value: Inclusion.REQUIRED, label: "Included" },
+						]}
+						onChange={value => put({ inclusion: value })}
+					/>
+				)}
+
+				<NumberField
 					label="Height (m)"
 					value={data.height}
 					step="0.1"
