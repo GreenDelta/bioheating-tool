@@ -41,6 +41,7 @@ class NeighborAnalysis {
 		for (var d : shapes) {
 			index.insert(d.envelope(), d);
 		}
+		index.build();
 		return index;
 	}
 

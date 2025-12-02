@@ -95,7 +95,6 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
 		Graph build() {
 			var tree = indexStreets();
-			tree.build();
 			linkBuildings(tree);
 			return graph;
 		}
@@ -129,6 +128,7 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 					tree.insert(line.getEnvelopeInternal(), edge);
 				}
 			}
+			tree.build();
 			return tree;
 		}
 
