@@ -1,7 +1,9 @@
 package com.greendelta.bioheating.calc.graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jgrapht.GraphPath;
@@ -17,6 +19,7 @@ import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
 import com.greendelta.bioheating.calc.graph.Node.StreetNode;
+import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
 
@@ -35,7 +38,7 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			return Res.error("project does not contain any streets");
 		int bCount = 0;
 		for (var b : project.map().buildings()) {
-			if (b.isHeated() && b.inclusion() == Inclusion.REQUIRED) {
+			if (isIncluded(b)) {
 				bCount++;
 			}
 		}
@@ -50,6 +53,11 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			return Res.error("Failed to create graph", e);
 		}
 
+	}
+
+	private static boolean isIncluded(Building b) {
+		return b != null &&
+			(b.isSupplyCenter() || (b.isHeated() && b.isIncluded()));
 	}
 
 	public void add(GraphPath<Node, Edge> path) {
@@ -74,18 +82,16 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 	private static class Builder {
 
 		private final Project project;
-		private final GeometryFactory factory;
-		private final AtomicLong ids;
-		private final Graph graph;
-		private final List<StreetNode> streetNodes;
+		private final AtomicLong ids = new AtomicLong(0);
+
+		private final GeometryFactory factory = new GeometryFactory();
+		private final Graph graph = new Graph();
+		private final Map<Long, StreetNode> streetNodes = new HashMap<>();
+		private final List<Edge> streets = new ArrayList<>();
+		private final Map<Long, List<Edge>> streetParts = new HashMap<>();
 
 		Builder(Project project) {
 			this.project = project;
-			this.factory = new GeometryFactory();
-			this.graph = new Graph();
-			this.streetNodes = new ArrayList<>();
-
-			this.ids = new AtomicLong(0);
 			long maxId = 0;
 			for (var b : project.map().buildings()) {
 				maxId = Math.max(maxId, b.id());
@@ -96,6 +102,18 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 		Graph build() {
 			var tree = indexStreets();
 			linkBuildings(tree);
+
+			for (var s : streets) {
+				var parts = streetParts.get(s.id());
+				if (parts == null || parts.isEmpty()) {
+					graph.add(s);
+					continue;
+				}
+				for (var p : parts) {
+					graph.add(p);
+				}
+			}
+
 			return graph;
 		}
 
@@ -116,15 +134,13 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 
 					var source = getOrCreateNode(start);
 					var target = getOrCreateNode(end);
-
-					// Skip if source and target are the same (would create a self-loop)
 					if (source.equals(target))
 						continue;
 
 					var line = factory.createLineString(new Coordinate[]{start, end});
 					var edge = new Edge(
 						ids.incrementAndGet(), source, target, line, line.getLength());
-					graph.add(edge);
+					streets.add(edge);
 					tree.insert(line.getEnvelopeInternal(), edge);
 				}
 			}
@@ -133,71 +149,147 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 		}
 
 		private StreetNode getOrCreateNode(Coordinate coo) {
-			// find existing node within 1 meter
-			for (var n : streetNodes) {
-				if (coo.distance(n.center().getCoordinate()) < 1.0) {
-					return n;
+			long x = Math.round(coo.x);
+			long y = Math.round(coo.y);
+
+			// check if there is an existing street node within a 1-meter distance
+			for (int dx = -1; dx <= 1; dx++) {
+				for (int dy = -1; dy <= 1; dy++) {
+					var existing = streetNodes.get(gridKey(x + dx, y + dy));
+					if (existing != null && isClose(coo, existing))
+						return existing;
 				}
 			}
+
 			var point = factory.createPoint(coo);
 			var newNode = new StreetNode(ids.incrementAndGet(), point);
-			streetNodes.add(newNode);
+			streetNodes.put(gridKey(x, y), newNode);
+			graph.addVertex(newNode);
 			return newNode;
 		}
 
-		/// Create the building nodes and link them with the street
-		/// segments. This will create new street segments for the
-		/// connection points that are not equal (or close) to an
-		/// endpoint of an existing street segment.
+		/// An UTM coordinate rounded to full metres can be stored without data loss
+		/// in two 32-bit segments in a 64-bit number.
+		private long gridKey(long x, long y) {
+			return (x << 32) | (y & 0xFFFFFFFFL);
+		}
+
+		/// Create the building nodes and link them with the street net. This will
+		/// create connections from the buildings to the closest streets that are
+		/// directly added to the graph. When adding the buildings, street segments
+		/// may are split into several parts. The final street segments are added
+		/// to the graph when this is finished.
 		private void linkBuildings(STRtree tree) {
 
 			var distanceFunc = new DistanceFunction();
 
 			for (var b : project.map().buildings()) {
-				if (!b.isHeated() || b.inclusion() != Inclusion.REQUIRED)
+				if (!isIncluded(b))
 					continue;
 
-				var node = BuildingNode.of(b, factory);
+				var buildingNode = BuildingNode.of(b, factory);
 				var n = tree.nearestNeighbour(
-					node.envelope(), node.polygon(), distanceFunc);
-				if (!(n instanceof Edge streetSegment))
+					buildingNode.envelope(), buildingNode.polygon(), distanceFunc);
+				if (!(n instanceof Edge street))
 					continue;
 
-				graph.addVertex(node);
-				var cs = DistanceOp.nearestPoints(node.polygon(), streetSegment.line());
-				var split = splitPointOf(cs[1], streetSegment);
+				graph.addVertex(buildingNode);
+				var cs = DistanceOp.nearestPoints(buildingNode.polygon(), street.line());
+				var streetNode = connectionPointOf(cs[1], street);
 				var line = factory.createLineString(cs);
-				var edge = new Edge(
-					ids.incrementAndGet(), node, split, line, line.getLength());
-				graph.add(edge);
+				var connection = new Edge(
+					ids.incrementAndGet(),
+					buildingNode,
+					streetNode,
+					line,
+					line.getLength());
+				graph.add(connection);
 			}
 		}
 
-		private Node splitPointOf(Coordinate cs, Edge edge) {
-			if (isClose(cs, edge.source()))
-				return edge.source();
-			if (isClose(cs, edge.target()))
-				return edge.target();
+		private Node connectionPointOf(Coordinate coo, Edge street) {
+			if (isClose(coo, street.source()))
+				return street.source();
+			if (isClose(coo, street.target()))
+				return street.target();
 
-			var node = new StreetNode(ids.incrementAndGet(), factory.createPoint(cs));
+			var parts = streetParts.get(street.id());
+			var node = splitParts(coo, parts);
+			if (node != null)
+				return node;
+
+			var p = edgePointOf(coo, street);
+			if (p.hasEdges()) {
+				parts = new ArrayList<>();
+				parts.add(p.edge1);
+				parts.add(p.edge2);
+				streetParts.put(street.id(), parts);
+			}
+			return p.node;
+		}
+
+		private Node splitParts(Coordinate coo, List<Edge> parts) {
+			if (parts == null || parts.isEmpty())
+				return null;
+
+			var point = factory.createPoint(coo);
+			Edge part = null;
+			double distance = Double.MAX_VALUE;
+			for (var p : parts) {
+				double d = point.distance(p.line());
+				if (d < distance) {
+					part = p;
+					distance = d;
+				}
+			}
+
+			if (part == null)
+				return null;
+			var p = edgePointOf(coo, part);
+			if (!p.hasEdges())
+				return p.node;
+
+			parts.remove(part);
+			parts.add(p.edge1);
+			parts.add(p.edge2);
+			return p.node;
+		}
+
+		private EdgePoint edgePointOf(Coordinate coo,  Edge edge) {
+			if (isClose(coo, edge.source()))
+				return EdgePoint.of(edge.source());
+			if (isClose(coo, edge.target()))
+				return EdgePoint.of(edge.target());
+
+			var point = factory.createPoint(coo);
+			var node = new StreetNode(ids.incrementAndGet(), point);
 			var line1 = factory.createLineString(
-				new Coordinate[]{edge.source().center().getCoordinate(), cs}
+				new Coordinate[]{edge.source().center().getCoordinate(), coo}
 			);
 			var edge1 = new Edge(
 				ids.incrementAndGet(), edge.source(), node, line1, line1.getLength());
-			graph.add(edge1);
 
 			var line2 = factory.createLineString(
-				new Coordinate[]{cs, edge.target().center().getCoordinate()}
+				new Coordinate[]{coo, edge.target().center().getCoordinate()}
 			);
 			var edge2 = new Edge(
 				ids.incrementAndGet(), node, edge.target(), line2, line2.getLength());
-			graph.add(edge2);
-			return node;
+			return new EdgePoint(node, edge1, edge2);
 		}
 
-		private static boolean isClose(Coordinate cs, Node node) {
-			return cs.distance(node.center().getCoordinate()) < 1;
+		private boolean isClose(Coordinate coo, Node node) {
+			return coo.distance(node.center().getCoordinate()) < 1;
+		}
+	}
+
+	private record EdgePoint(Node node, Edge edge1, Edge edge2) {
+
+		static EdgePoint of(Node node) {
+			return new EdgePoint(node, null, null);
+		}
+
+		boolean hasEdges() {
+			return edge1 != null && edge2 != null;
 		}
 	}
 

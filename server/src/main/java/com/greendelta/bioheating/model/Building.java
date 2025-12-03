@@ -7,8 +7,6 @@ import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -257,6 +255,10 @@ public class Building extends BaseEntity {
 	public Building inclusion(Inclusion inclusion) {
 		this.inclusion = inclusion;
 		return this;
+	}
+
+	public boolean isIncluded() {
+		return inclusion == Inclusion.REQUIRED;
 	}
 
 	@Override
