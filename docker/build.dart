@@ -27,8 +27,6 @@ void main(List<String> args) async {
         }
     }
   }
-
-  print("Build done!");
 }
 
 bool isRoot(Dir dir) {
@@ -180,7 +178,17 @@ class DockerImage {
       this.file = "app.Dockerfile";
 
   build() async {
-    // TODO: check that the DB is not running
+    // check that the container is not running
+    final running = (await run("docker", [
+      "ps",
+      "-a",
+      "--format",
+      "{{.Names}}",
+    ], dir)).split("\n").map((line) => line.trim()).contains(name);
+    if (running) {
+      print("Error: Container '$name' is running.");
+      exit(1);
+    }
 
     // delete the existing image if it already exist
     final existing = (await run("docker", ["images"], dir))
