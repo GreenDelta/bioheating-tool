@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.greendelta.bioheating.calc.graph.Graph;
-import com.greendelta.bioheating.calc.graph.MinTreeSolution;
-import com.greendelta.bioheating.calc.graph.SteinerTree;
+import com.greendelta.bioheating.graph.Graph;
+import com.greendelta.bioheating.graph.MinTreeSolution;
+import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;

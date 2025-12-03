@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.calc.graph;
+package com.greendelta.bioheating.graph;
 
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -13,7 +13,7 @@ import org.jgrapht.alg.shortestpath.CHManyToManyShortestPaths;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
 import org.openlca.commons.Res;
 
-import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
+import com.greendelta.bioheating.graph.Node.BuildingNode;
 
 public class SteinerTree {
 

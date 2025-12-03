@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.calc.graph;
+package com.greendelta.bioheating.graph;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -6,7 +6,7 @@ import java.util.function.Function;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
 import org.openlca.commons.Res;
 
-import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
+import com.greendelta.bioheating.graph.Node.BuildingNode;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.SolutionEdge;

@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.calc.graph;
+package com.greendelta.bioheating.graph;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -9,7 +9,7 @@ import org.openlca.commons.Res;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
+import com.greendelta.bioheating.graph.Node.BuildingNode;
 import com.greendelta.bioheating.model.Project;
 
 public class MinTree {

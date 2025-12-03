@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.calc.graph;
+package com.greendelta.bioheating.graph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,8 +17,8 @@ import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.operation.distance.DistanceOp;
 import org.openlca.commons.Res;
 
-import com.greendelta.bioheating.calc.graph.Node.BuildingNode;
-import com.greendelta.bioheating.calc.graph.Node.StreetNode;
+import com.greendelta.bioheating.graph.Node.BuildingNode;
+import com.greendelta.bioheating.graph.Node.StreetNode;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
