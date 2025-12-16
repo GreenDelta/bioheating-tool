@@ -42,10 +42,11 @@ public abstract class BaseEntity {
 		if (!(this.getClass().isInstance(obj)))
 			return false;
 		var other = (BaseEntity) obj;
-		if (this.id == 0L && other.id == 0L) {
-			return false;
-		}
-		return this.id == other.id;
+		// when the IDs are 0, so not saved in the database yet, the
+		// entities are only equal when they are identical (obj == this)
+		return this.id != 0L
+			? this.id == other.id
+			: false;
 	}
 
 	@Override

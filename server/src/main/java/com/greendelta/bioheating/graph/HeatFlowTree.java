@@ -17,13 +17,11 @@ import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.SolutionEdge;
 import com.greendelta.bioheating.model.SolutionNode;
 
-/**
- * A rooted calculation tree derived from a solution tree.
- *
- * Root is the supply-center building node. Heated buildings are leaves; street
- * nodes are inner nodes.
- */
-public final class HeatFlowTree {
+
+/// The heat flow tree derived from a solution tree. The root of the tree
+/// is the supply-center, heated buildings are leaves and street nodes
+// are the inner nodes of the tree.
+public class HeatFlowTree {
 
 	private final HeatFlowNode root;
 
