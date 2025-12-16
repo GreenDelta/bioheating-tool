@@ -2,77 +2,19 @@
 
 For the Docker setup, we have two images that we need to build:
 
-+ `bioheating-db` for the BioHeating Tool database
-+ `bioheating-app` for the BioHeating Tool application
++ `bioheating-db` - the database image
++ `bioheating-app` - the image with the application server
 
 
 ## Building the database image
 
-Use the `db.Dockerfile` to build the database image like this:
+Build the `bioheating-db` image via the `docker/build.dart` script (see the `docker-db` command in the script):
 
 ```bash
-# copy the schema file to the docker directory
-cd docker
-cp ../server/schema.sql ./app/schema.sql
-
-# build the image
-docker build -t bioheating-db . -f db.Dockerfile
-
-# run it with required environment variables
-docker run --rm -d -p 5432:5432 \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=bioheating \
-  -e POSTGRES_DB=bioheating \
-  --name bioheating-db bioheating-db
-
-# or interactively
-docker run --rm -it -p 5432:5432 \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=bioheating \
-  -e POSTGRES_DB=bioheating \
-  --name bioheating-db bioheating-db
-
-# and of course, map the data outside of the container ...
-docker run --rm -it \
-  -v ./data/bioheating-db:/var/lib/postgresql/data \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=bioheating \
-  -e POSTGRES_DB=bioheating \
-  -e PGDATA=/var/lib/postgresql/data \
-  -p 5432:5432 \
-  --name bioheating-db \
-  bioheating-db
+dart run docker/build.dart docker-db
 ```
 
-**Note:** The database requires environment variables to be set when running the container. These are automatically configured when using docker-compose (see below).
-
-A running database container is also useful when developing the application.
-
-
-### Running the database for development
-
-For development, you can use the `docker-compose.db-dev.yaml` file to run just the database container:
-
-```bash
-cd docker
-
-# start the database (Ctrl+C to stop)
-docker compose -f docker-compose.dev.yaml up
-
-# or in detached mode
-docker compose -f docker-compose.dev.yaml up -d
-
-# stop the database (e.g. when running in detached mode)
-docker compose -f docker-compose.dev.yaml down
-```
-
-This will store the database data in the `docker/data/bioheating-db` folder, making it persistent across container restarts.
-
-**Note:** The `data/bioheating-db` folder will be owned by the Docker container's postgres user (typically root), so you may need `sudo` to delete it:
-
-```bash
-sudo rm -rf docker/data/bioheating-db
-```
+For development, use `docker-compose.db-dev.yaml` to run just the database container (it contains additional details in its comments).
 
 
 ## Building the application image
