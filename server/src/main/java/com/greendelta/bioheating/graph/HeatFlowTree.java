@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,217 +20,161 @@ import com.greendelta.bioheating.model.SolutionNode;
 /// The heat flow tree derived from a solution tree. The root of the tree
 /// is the supply-center, heated buildings are leaves and street nodes
 // are the inner nodes of the tree.
-public record HeatFlowTree(HeatFlowNode root) {
+public record HeatFlowTree(Junction root) {
 
 	public static Res<HeatFlowTree> of(Solution solution) {
-		try {
-			var tree = new Builder(solution).build();
-			return Res.ok(tree);
-		} catch (Exception e) {
-			return Res.error("Failed to build heat flow tree", e);
+		if (solution == null)
+			return Res.error("No solution provided");
+
+		// find the supply center
+		Junction root = null;
+		for (var n : solution.nodes()) {
+			var b = n.building();
+			if (b != null && b.isSupplyCenter()) {
+				root = Junction.of(n);
+				break;
+			}
 		}
+		if (root == null)
+			return Res.error("No supply center found in solution");
+
+		// build the edge index
+		var edges = new HashMap<Long, List<SolutionEdge>>();
+		for (var e : solution.edges()) {
+			edges
+				.computeIfAbsent(e.source().id(), $ -> new ArrayList<>())
+				.add(e);
+			edges
+				.computeIfAbsent(e.target().id(), $ -> new ArrayList<>())
+				.add(e);
+		}
+
+		// build the tree
+		var visited = new HashSet<Long>();
+		visited.add(root.id());
+		var queue = new ArrayDeque<Junction>();
+		queue.add(root);
+		while (!queue.isEmpty()) {
+			var next = queue.poll();
+			var exs = edges.get(next.id());
+			if (exs == null)
+				continue;
+			for (var e : exs) {
+				var t = Objects.equals(e.source(), next.node())
+					? e.target()
+					: e.source();
+				if (visited.contains(t.id()))
+					continue;
+				var target = Junction.of(t);
+				var seg = new Segment(e.length(), target);
+				next.segments.add(seg);
+				queue.add(target);
+				visited.add(target.id());
+			}
+		}
+
+		var tree = new HeatFlowTree(root);
+		return Res.ok(tree);
 	}
+
 
 	public String toDot() {
 		var sb = new StringBuilder();
 		sb.append("digraph CalcTree {\n");
 
-		var ids = new IdentityHashMap<HeatFlowNode, String>();
+		var ids = new IdentityHashMap<Junction, String>();
 		var seq = new AtomicInteger(0);
-		Builder.writeDot(root, sb, ids, seq);
+		writeDot(root, sb, ids, seq);
 
 		sb.append("}\n");
 		return sb.toString();
 	}
 
-	private static class Builder {
 
-		private final Solution solution;
+	private static void writeDot(
+		Junction node,
+		StringBuilder sb,
+		IdentityHashMap<Junction, String> ids,
+		AtomicInteger seq
+	) {
+		if (node == null)
+			return;
 
-		private Builder(Solution solution) {
-			this.solution = Objects.requireNonNull(solution);
-		}
+		var id = ids.computeIfAbsent(node, k -> "n" + seq.incrementAndGet());
+		var label = labelOf(node.node);
+		var shape = node.node != null && node.node.isBuildingNode()
+			? "box"
+			: "ellipse";
 
-		private HeatFlowTree build() {
-			if (solution.nodes() == null || solution.nodes().isEmpty())
-				throw new RuntimeException("solution has no nodes");
-			if (solution.edges() == null || solution.edges().isEmpty())
-				throw new RuntimeException("solution has no edges");
+		sb.append("  ").append(id)
+			.append(" [shape=").append(shape)
+			.append(", label=\"")
+			.append(escape(label))
+			.append("\"];\n");
 
-			var rootData = supplyCenterOf(solution.nodes());
-			if (rootData == null)
-				throw new RuntimeException("solution has no supply-center building node");
-
-			var adjacency = adjacencyOf(solution.edges());
-			var rootNode = buildTree(rootData, adjacency);
-			if (rootNode == null)
-				throw new RuntimeException("failed to build calc tree");
-
-			prune(rootNode, true);
-			return new HeatFlowTree(rootNode);
-		}
-
-		private SolutionNode supplyCenterOf(List<SolutionNode> nodes) {
-			for (var n : nodes) {
-				if (n == null || !n.isBuildingNode())
-					continue;
-				var b = n.building();
-				if (b != null && b.isSupplyCenter())
-					return n;
-			}
-			return null;
-		}
-
-		private Map<SolutionNode, List<SolutionNode>> adjacencyOf(
-			List<SolutionEdge> edges
-		) {
-			var adjacency = new HashMap<SolutionNode, List<SolutionNode>>();
-			for (var e : edges) {
-				if (e == null || e.source() == null || e.target() == null)
-					continue;
-				adjacency.computeIfAbsent(e.source(), k -> new ArrayList<>())
-					.add(e.target());
-				adjacency.computeIfAbsent(e.target(), k -> new ArrayList<>())
-					.add(e.source());
-			}
-			return adjacency;
-		}
-
-		private HeatFlowNode buildTree(
-			SolutionNode root,
-			Map<SolutionNode, List<SolutionNode>> adjacency
-		) {
-			var visited = new HashSet<SolutionNode>();
-			var rootNode = new HeatFlowNode(root, new ArrayList<>());
-			visited.add(root);
-
-			var queue = new ArrayDeque<HeatFlowNode>();
-			queue.add(rootNode);
-
-			while (!queue.isEmpty()) {
-				var parent = queue.poll();
-				var neighbors = adjacency.get(parent.data());
-				if (neighbors == null || neighbors.isEmpty())
-					continue;
-				for (var n : neighbors) {
-					if (n == null || visited.contains(n))
-						continue;
-					visited.add(n);
-					var child = new HeatFlowNode(n, new ArrayList<>());
-					parent.children().add(child);
-					queue.add(child);
-				}
-			}
-
-			return rootNode;
-		}
-
-		private boolean prune(HeatFlowNode node, boolean isRoot) {
-			if (node == null)
-				return false;
-
-			for (int i = node.children().size() - 1; i >= 0; i--) {
-				var child = node.children().get(i);
-				if (!prune(child, false)) {
-					node.children().remove(i);
-				}
-			}
-
-			if (isRoot)
-				return true;
-
-			if (isHeatedBuilding(node.data()))
-				return true;
-
-			return !node.children().isEmpty();
-		}
-
-		private boolean isHeatedBuilding(SolutionNode node) {
-			if (node == null || !node.isBuildingNode())
-				return false;
-			var b = node.building();
-			return b != null && b.isHeated();
-		}
-
-		private static void writeDot(
-			HeatFlowNode node,
-			StringBuilder sb,
-			IdentityHashMap<HeatFlowNode, String> ids,
-			AtomicInteger seq
-		) {
-			if (node == null)
-				return;
-
-			var id = ids.computeIfAbsent(node, k -> "n" + seq.incrementAndGet());
-			var label = labelOf(node.data());
-			var shape = node.data() != null && node.data().isBuildingNode()
-				? "box"
-				: "ellipse";
-
+		for (var child : node.segments) {
+			writeDot(child.target, sb, ids, seq);
+			var childId = ids.get(child);
 			sb.append("  ").append(id)
-				.append(" [shape=").append(shape)
-				.append(", label=\"")
-				.append(escape(label))
-				.append("\"];\n");
-
-			for (var child : node.children()) {
-				writeDot(child, sb, ids, seq);
-				var childId = ids.get(child);
-				sb.append("  ").append(id)
-					.append(" -> ")
-					.append(childId)
-					.append(";\n");
-			}
-		}
-
-		private static String labelOf(SolutionNode node) {
-			if (node == null)
-				return "null";
-			if (node.isBuildingNode()) {
-				var b = node.building();
-				var name = b != null && b.name() != null && !b.name().isBlank()
-					? b.name()
-					: "building";
-				var flags = new ArrayList<String>();
-				if (b != null && b.isSupplyCenter())
-					flags.add("supply");
-				if (b != null && b.isHeated())
-					flags.add("heated");
-				var suffix = flags.isEmpty()
-					? ""
-					: " (" + String.join(",", flags) + ")";
-				var bid = b != null ? b.id() : 0;
-				return name + " [bId=" + bid + "]" + suffix;
-			}
-			return "street [x=" + round(node.x()) + ", y=" + round(node.y()) + "]";
-		}
-
-		private static String escape(String s) {
-			if (s == null)
-				return "";
-			return s.replace("\\", "\\\\")
-				.replace("\"", "\\\"")
-				.replace("\n", "\\n");
-		}
-
-		private static String round(double v) {
-			return String.format(java.util.Locale.ROOT, "%.2f", v);
+				.append(" -> ")
+				.append(childId)
+				.append(";\n");
 		}
 	}
 
-	public record HeatFlowNode(SolutionNode data, List<HeatFlowNode> children) {
+	private static String labelOf(SolutionNode node) {
+		if (node == null)
+			return "null";
+		if (node.isBuildingNode()) {
+			var b = node.building();
+			var name = b != null && b.name() != null && !b.name().isBlank()
+				? b.name()
+				: "building";
+			var flags = new ArrayList<String>();
+			if (b != null && b.isSupplyCenter())
+				flags.add("supply");
+			if (b != null && b.isHeated())
+				flags.add("heated");
+			var suffix = flags.isEmpty()
+				? ""
+				: " (" + String.join(",", flags) + ")";
+			var bid = b != null ? b.id() : 0;
+			return name + " [bId=" + bid + "]" + suffix;
+		}
+		return "street [x=" + node.x() + ", y=" + node.y() + "]";
+	}
 
-		public HeatFlowNode {
-			Objects.requireNonNull(data);
-			Objects.requireNonNull(children);
+	private static String escape(String s) {
+		if (s == null)
+			return "";
+		return s.replace("\\", "\\\\")
+			.replace("\"", "\\\"")
+			.replace("\n", "\\n");
+	}
+
+	/// A connection point of a street or building node of the
+	/// network graph with (pipe) segments to other nodes.
+	public record Junction(
+		SolutionNode node, List<Segment> segments) {
+
+		static Junction of(SolutionNode n) {
+			return new Junction(n, new ArrayList<>());
+		}
+
+		public long id() {
+			return node.id();
 		}
 
 		public Building building() {
-			return data.building();
+			return node.building();
 		}
 
-		public boolean isBuildingNode() {
-			return data.isBuildingNode();
+		public boolean isBuilding() {
+			return node.isBuildingNode();
 		}
+	}
+
+	/// A pipe segment to a connection point in the network graph.
+	public record Segment(double length, Junction target) {
 	}
 }
