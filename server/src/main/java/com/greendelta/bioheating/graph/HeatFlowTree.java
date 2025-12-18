@@ -103,4 +103,30 @@ public record HeatFlowTree(Junction root) {
 	/// A pipe segment to a connection point in the network graph.
 	public record Segment(double length, Junction target) {
 	}
+
+	/// Returns a compact version of this tree where linear paths of street nodes
+	/// are aggregated into single segments.
+	public HeatFlowTree compact() {
+		return new HeatFlowTree(compact(root));
+	}
+
+	private Junction compact(Junction node) {
+		var segments = new ArrayList<Segment>();
+		for (var s : node.segments) {
+			double len = s.length;
+			var next = segment.target;
+
+			// traverse down as long as we have a linear path of street nodes
+			while (!next.isBuilding() && next.segments.size() == 1) {
+				var nextSeg = next.segments.getFirst();
+				length += nextSeg.length;
+				next = nextSeg.target;
+			}
+
+			// recursively compact the target node
+			var compactTarget = compact(next);
+			segments.add(new Segment(length, compactTarget));
+		}
+		return new Junction(node.node, segments);
+	}
 }
