@@ -149,7 +149,7 @@ public record HeatFlowTree(Junction root) {
 			return heatDemand;
 		}
 
-		private void heatDemand(double heatDemand) {
+		void heatDemand(double heatDemand) {
 			this.heatDemand = heatDemand;
 		}
 
@@ -190,7 +190,7 @@ public record HeatFlowTree(Junction root) {
 			return heatDemand;
 		}
 
-		private void heatDemand(double heatDemand) {
+		void heatDemand(double heatDemand) {
 			this.heatDemand = heatDemand;
 		}
 	}
