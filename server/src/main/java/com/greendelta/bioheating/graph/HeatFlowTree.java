@@ -17,7 +17,7 @@ import com.greendelta.bioheating.model.SolutionNode;
 
 /// The heat flow tree derived from a solution tree. The root of the tree
 /// is the supply-center, heated buildings are leaves and street nodes
-// are the inner nodes of the tree.
+/// are the inner nodes of the tree.
 public record HeatFlowTree(Junction root) {
 
 	/// Creates a heat flow tree from the given solution. The solution must be
@@ -32,7 +32,7 @@ public record HeatFlowTree(Junction root) {
 		for (var n : solution.nodes()) {
 			var b = n.building();
 			if (b != null && b.isSupplyCenter()) {
-				root = Junction.of(n);
+				root = new Junction(n);
 				break;
 			}
 		}
@@ -66,25 +66,91 @@ public record HeatFlowTree(Junction root) {
 					: e.source();
 				if (visited.contains(t.id()))
 					continue;
-				var target = Junction.of(t);
+				var target = new Junction(t);
 				var seg = new Segment(e.length(), target);
-				next.segments.add(seg);
+				next.segments().add(seg);
 				queue.add(target);
 				visited.add(target.id());
 			}
 		}
 
+		// aggregate heat demands bottom-up
+		aggregateDemands(root);
+
 		var tree = new HeatFlowTree(root);
 		return Res.ok(tree);
 	}
 
+	private static double aggregateDemands(Junction junction) {
+		double demand = 0.0;
+		var building = junction.building();
+		if (building != null) {
+			demand = building.heatDemand();
+		}
+		for (var seg : junction.segments()) {
+			double segDemand = aggregateDemands(seg.target());
+			seg.heatDemand(segDemand);
+			demand += segDemand;
+		}
+		junction.heatDemand(demand);
+		return demand;
+	}
+
+	/// Returns a compact version of this tree where linear paths of street nodes
+	/// are aggregated into single segments.
+	public HeatFlowTree compact() {
+		var compactRoot = compact(root);
+		aggregateDemands(compactRoot);
+		return new HeatFlowTree(compactRoot);
+	}
+
+	private Junction compact(Junction node) {
+		var compactNode = new Junction(node.node());
+		for (var s : node.segments()) {
+			double len = s.length();
+			var next = s.target();
+
+			// traverse down as long as we have a linear path of street nodes
+			while (!next.isBuilding() && next.segments().size() == 1) {
+				var nextSeg = next.segments().getFirst();
+				len += nextSeg.length();
+				next = nextSeg.target();
+			}
+
+			// recursively compact the target node
+			var compactTarget = compact(next);
+			compactNode.segments().add(new Segment(len, compactTarget));
+		}
+		return compactNode;
+	}
+
 	/// A connection point of a street or building node of the
 	/// network graph with (pipe) segments to other nodes.
-	public record Junction(
-		SolutionNode node, List<Segment> segments) {
+	public static class Junction {
 
-		static Junction of(SolutionNode n) {
-			return new Junction(n, new ArrayList<>());
+		private final SolutionNode node;
+		private final List<Segment> segments;
+		private double heatDemand;
+
+		Junction(SolutionNode node) {
+			this.node = node;
+			this.segments = new ArrayList<>();
+		}
+
+		public SolutionNode node() {
+			return node;
+		}
+
+		public List<Segment> segments() {
+			return segments;
+		}
+
+		public double heatDemand() {
+			return heatDemand;
+		}
+
+		private void heatDemand(double heatDemand) {
+			this.heatDemand = heatDemand;
 		}
 
 		public long id() {
@@ -101,32 +167,31 @@ public record HeatFlowTree(Junction root) {
 	}
 
 	/// A pipe segment to a connection point in the network graph.
-	public record Segment(double length, Junction target) {
-	}
+	public static class Segment {
 
-	/// Returns a compact version of this tree where linear paths of street nodes
-	/// are aggregated into single segments.
-	public HeatFlowTree compact() {
-		return new HeatFlowTree(compact(root));
-	}
+		private final double length;
+		private final Junction target;
+		private double heatDemand;
 
-	private Junction compact(Junction node) {
-		var segments = new ArrayList<Segment>();
-		for (var s : node.segments) {
-			double len = s.length;
-			var next = s.target;
-
-			// traverse down as long as we have a linear path of street nodes
-			while (!next.isBuilding() && next.segments.size() == 1) {
-				var nextSeg = next.segments.getFirst();
-				len += nextSeg.length;
-				next = nextSeg.target;
-			}
-
-			// recursively compact the target node
-			var compactTarget = compact(next);
-			segments.add(new Segment(len, compactTarget));
+		Segment(double length, Junction target) {
+			this.length = length;
+			this.target = target;
 		}
-		return new Junction(node.node, segments);
+
+		public double length() {
+			return length;
+		}
+
+		public Junction target() {
+			return target;
+		}
+
+		public double heatDemand() {
+			return heatDemand;
+		}
+
+		private void heatDemand(double heatDemand) {
+			this.heatDemand = heatDemand;
+		}
 	}
 }
