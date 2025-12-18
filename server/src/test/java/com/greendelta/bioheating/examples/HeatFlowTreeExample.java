@@ -2,6 +2,7 @@ package com.greendelta.bioheating.examples;
 
 import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.HeatFlowTree;
+import com.greendelta.bioheating.graph.HeatFlowViz;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
@@ -23,7 +24,7 @@ public class HeatFlowTreeExample {
 				.then(steiner -> new MinTreeSolution(project, steiner).create())
 				.then(HeatFlowTree::of)
 				.orElseThrow();
-			System.out.println(tree.toDot());
+			System.out.println(HeatFlowViz.toDot(tree));
 		}
 	}
 
