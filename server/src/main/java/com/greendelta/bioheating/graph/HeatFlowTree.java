@@ -20,6 +20,9 @@ import com.greendelta.bioheating.model.SolutionNode;
 // are the inner nodes of the tree.
 public record HeatFlowTree(Junction root) {
 
+	/// Creates a heat flow tree from the given solution. The solution must be
+	/// persisted (so that nodes have IDs) before calling this method (or
+	/// `Solution.withTransientIds` must be called before).
 	public static Res<HeatFlowTree> of(Solution solution) {
 		if (solution == null)
 			return Res.error("No solution provided");

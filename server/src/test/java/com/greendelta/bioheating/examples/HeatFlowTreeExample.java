@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.examples;
 
+import org.openlca.commons.Res;
+
 import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.HeatFlowViz;
@@ -22,6 +24,7 @@ public class HeatFlowTreeExample {
 			var tree = Graph.buildFrom(project)
 				.then(SteinerTree::compute)
 				.then(steiner -> new MinTreeSolution(project, steiner).create())
+				.then(solution -> Res.ok(solution.withTransientIds()))
 				.then(HeatFlowTree::of)
 				.orElseThrow();
 			System.out.println(HeatFlowViz.toDot(tree));

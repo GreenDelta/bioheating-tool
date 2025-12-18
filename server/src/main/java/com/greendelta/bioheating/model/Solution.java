@@ -67,4 +67,23 @@ public class Solution extends BaseEntity {
 	public List<SolutionEdge> edges() {
 		return edges;
 	}
+
+	/// Assigns transient IDs to the nodes and edges of this solution if they are
+	/// 0. This is useful for testing or in-memory processing where the solution
+	// is not  persisted to the database.
+	public Solution withTransientIds() {
+		long nextId = 1;
+		for (var node : nodes) {
+			if (node.id() == 0) {
+				node.id(nextId++);
+			}
+		}
+		nextId = 1;
+		for (var edge : edges) {
+			if (edge.id() == 0) {
+				edge.id(nextId++);
+			}
+		}
+		return this;
+	}
 }
