@@ -1,87 +1,83 @@
 package com.greendelta.bioheating.graph;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.greendelta.bioheating.model.SolutionNode;
-
 /// Visualization utilities for the heat flow tree.
 public class HeatFlowViz {
+
+	private final HeatFlowTree tree;
+	private final StringBuilder sb;
+	private final double total;
+
+	private HeatFlowViz(HeatFlowTree tree) {
+		this.tree = tree;
+		this.sb = new StringBuilder();
+		this.total = tree.root().heatDemand();
+	}
 
 	public static String toDot(HeatFlowTree tree) {
 		if (tree == null || tree.root() == null)
 			return "";
-		var sb = new StringBuilder();
-		sb.append("digraph CalcTree {\n");
+		return new HeatFlowViz(tree).build();
+	}
 
-		var ids = new IdentityHashMap<HeatFlowTree.Junction, String>();
-		var seq = new AtomicInteger(0);
-		writeDot(tree.root(), sb, ids, seq);
-
+	private String build() {
+		sb.append("digraph {\n");
+		sb.append("  node [style=filled, fillcolor=black];\n");
+		sb.append("  edge [dir=none];\n");
+		writeDot(tree.root());
 		sb.append("}\n");
 		return sb.toString();
 	}
 
-	private static void writeDot(
-		HeatFlowTree.Junction node,
-		StringBuilder sb,
-		IdentityHashMap<HeatFlowTree.Junction, String> ids,
-		AtomicInteger seq
-	) {
+	private void writeDot(HeatFlowTree.Junction node) {
 		if (node == null)
 			return;
 
-		var id = ids.computeIfAbsent(node, k -> "n" + seq.incrementAndGet());
-		var label = labelOf(node.node());
-		var shape = node.node() != null && node.node().isBuildingNode()
-			? "box"
-			: "ellipse";
+		var id = Long.toString(node.id());
+		boolean isBuilding = node.isBuilding();
+		double size = nodeSizeOf(node.heatDemand());
 
-		sb.append("  ").append(id)
-			.append(" [shape=").append(shape)
-			.append(", label=\"")
-			.append(escape(label))
-			.append("\"];\n");
+		if (isBuilding) {
+			// buildings (leaves and root) are squares
+			sb.append("  ").append(id)
+				.append(" [shape=square, label=\"\", width=")
+				.append(String.format("%.2f", size))
+				.append(", height=")
+				.append(String.format("%.2f", size))
+				.append("];\n");
+		} else {
+			// street nodes (inner nodes) are filled circles
+			sb.append("  ").append(id)
+				.append(" [shape=circle, label=\"\", width=")
+				.append(String.format("%.2f", size))
+				.append(", height=")
+				.append(String.format("%.2f", size))
+				.append("];\n");
+		}
 
-		for (var child : node.segments()) {
-			writeDot(child.target(), sb, ids, seq);
-			// FIX: get the id of the target junction, not the segment
-			var childId = ids.get(child.target());
+		for (var seg : node.segments()) {
+			writeDot(seg.target());
+			var childId = Long.toString(seg.target().id());
+			double edgeWidth = edgeWidthOf(seg.heatDemand());
 			sb.append("  ").append(id)
 				.append(" -> ")
 				.append(childId)
-				.append(";\n");
+				.append(" [penwidth=")
+				.append(String.format("%.2f", edgeWidth))
+				.append("];\n");
 		}
 	}
 
-	private static String labelOf(SolutionNode node) {
-		if (node == null)
-			return "null";
-		if (node.isBuildingNode()) {
-			var b = node.building();
-			var name = b != null && b.name() != null && !b.name().isBlank()
-				? b.name()
-				: "building";
-			var flags = new ArrayList<String>();
-			if (b != null && b.isSupplyCenter())
-				flags.add("supply");
-			if (b != null && b.isHeated())
-				flags.add("heated");
-			var suffix = flags.isEmpty()
-				? ""
-				: " (" + String.join(",", flags) + ")";
-			var bid = b != null ? b.id() : 0;
-			return name + " [bId=" + bid + "]" + suffix;
-		}
-		return "street [x=" + node.x() + ", y=" + node.y() + "]";
+	private double nodeSizeOf(double demand) {
+		if (total <= 0)
+			return 0.1;
+		double ratio = demand / total;
+		return 0.1 + ratio * 0.4;
 	}
 
-	private static String escape(String s) {
-		if (s == null)
-			return "";
-		return s.replace("\\", "\\\\")
-			.replace("\"", "\\\"")
-			.replace("\n", "\\n");
+	private double edgeWidthOf(double demand) {
+		if (total <= 0)
+			return 0.5;
+		double ratio = demand / total;
+		return 0.5 + ratio * 8;
 	}
 }
