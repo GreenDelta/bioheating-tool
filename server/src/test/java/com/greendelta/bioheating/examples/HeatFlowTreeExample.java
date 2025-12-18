@@ -27,7 +27,23 @@ public class HeatFlowTreeExample {
 				.then(solution -> Res.ok(solution.withTransientIds()))
 				.then(HeatFlowTree::of)
 				.orElseThrow();
-			System.out.println(HeatFlowViz.toDot(tree));
+
+			render(HeatFlowViz.toDot(tree), "target/tree.png");
+			render(HeatFlowViz.toDot(tree.compact()), "target/tree_compact.png");
+
+		}
+	}
+
+	private static void render(String dot, String file) {
+		try {
+			var p = new ProcessBuilder("dot", "-Tpng", "-o", file)
+				.start();
+			try (var os = p.getOutputStream()) {
+				os.write(dot.getBytes());
+			}
+			p.waitFor();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

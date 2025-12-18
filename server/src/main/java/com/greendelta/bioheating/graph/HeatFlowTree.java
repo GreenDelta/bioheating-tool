@@ -114,18 +114,18 @@ public record HeatFlowTree(Junction root) {
 		var segments = new ArrayList<Segment>();
 		for (var s : node.segments) {
 			double len = s.length;
-			var next = segment.target;
+			var next = s.target;
 
 			// traverse down as long as we have a linear path of street nodes
 			while (!next.isBuilding() && next.segments.size() == 1) {
 				var nextSeg = next.segments.getFirst();
-				length += nextSeg.length;
+				len += nextSeg.length;
 				next = nextSeg.target;
 			}
 
 			// recursively compact the target node
 			var compactTarget = compact(next);
-			segments.add(new Segment(length, compactTarget));
+			segments.add(new Segment(len, compactTarget));
 		}
 		return new Junction(node.node, segments);
 	}
