@@ -15,7 +15,6 @@ import com.greendelta.bioheating.model.User;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.services.UserService.UserData;
 import com.greendelta.bioheating.services.UserService.UserInfo;
-import com.greendelta.bioheating.util.Http;
 
 @RestController
 @RequestMapping("/api/users")

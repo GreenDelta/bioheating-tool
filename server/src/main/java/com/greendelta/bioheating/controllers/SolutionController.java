@@ -23,7 +23,6 @@ import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
 import com.greendelta.bioheating.services.UserService;
-import com.greendelta.bioheating.util.Http;
 
 @RestController
 @RequestMapping("/api/solutions")

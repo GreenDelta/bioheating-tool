@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.UserService;
-import com.greendelta.bioheating.util.Http;
 
 @RestController
 @RequestMapping("/api/tasks")
