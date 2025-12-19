@@ -37,4 +37,22 @@ public class Thermo {
 		return massFlow / (pow(radius, 2) * PI * density);
 	}
 
+	/// Calculates the pressure loss per meter of pipe.
+	///
+	/// @param velocity  the flow velocity in m/s
+	/// @param diameter  the pipe diameter in m
+	/// @param roughness the pipe roughness in m
+	/// @param temp      the water temperature in °C
+	/// @return the pressure loss in Pa/m
+	public static double pressureLossOf(
+		double velocity, double diameter, double roughness, double temp) {
+		if (velocity <= 0 || diameter <= 0)
+			return 0;
+		double nu = WaterProps.kinematicViscosityOf(temp);
+		double re = velocity * diameter / nu;
+		double lambda = 0.25 / pow(log10(15 / re + roughness / (3.715 * diameter)), 2);
+		double density = WaterProps.densityOf(temp);
+		return lambda * density * pow(velocity, 2) / (diameter * 2);
+	}
+
 }

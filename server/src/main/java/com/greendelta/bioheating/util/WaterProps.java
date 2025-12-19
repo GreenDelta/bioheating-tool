@@ -8,16 +8,16 @@ public class WaterProps {
 	private WaterProps() {
 	}
 
-	/// Returns the kinematic viscosity of water in 1e-6 m²/s for the given
+	/// Returns the kinematic viscosity of water in m²/s for the given
 	/// temperature in °C.
 	public static double kinematicViscosityOf(double temp) {
-		return 3.08149743497233e-12 * pow(temp, 6)
+		return 1e-6 * (3.08149743497233e-12 * pow(temp, 6)
 				- 1.26484138735424e-09 * pow(temp, 5)
 				+ 2.1973452386272e-07 * pow(temp, 4)
 				- 2.14810204481063e-05 * pow(temp, 3)
 				+ 0.00134385455616826 * pow(temp, 2)
 				- 0.0584558062539435 * temp
-				+ 1.77559040247674;
+				+ 1.77559040247674);
 	}
 
 	/// Returns the density of water in kg/m³ for the given temperature in °C.

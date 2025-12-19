@@ -8,11 +8,11 @@ class WaterPropsTest {
 
 	@Test
 	void testKinematicViscosity() {
-		assertEquals(1.306, WaterProps.kinematicViscosityOf(10), 1e-3);
-		assertEquals(0.893, WaterProps.kinematicViscosityOf(25), 1e-3);
-		assertEquals(0.554, WaterProps.kinematicViscosityOf(50), 1e-3);
-		assertEquals(0.388, WaterProps.kinematicViscosityOf(75), 1e-3);
-		assertEquals(0.294, WaterProps.kinematicViscosityOf(100), 1e-3);
+		assertEquals(1.306e-6, WaterProps.kinematicViscosityOf(10), 1e-3);
+		assertEquals(0.893e-6, WaterProps.kinematicViscosityOf(25), 1e-3);
+		assertEquals(0.554e-6, WaterProps.kinematicViscosityOf(50), 1e-3);
+		assertEquals(0.388e-6, WaterProps.kinematicViscosityOf(75), 1e-3);
+		assertEquals(0.294e-6, WaterProps.kinematicViscosityOf(100), 1e-3);
 	}
 
 	@Test
