@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.util;
+package com.greendelta.bioheating.math;
 
 import static java.lang.Math.pow;
 
