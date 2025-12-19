@@ -67,7 +67,7 @@ public record HeatFlowTree(Junction root) {
 				if (visited.contains(t.id()))
 					continue;
 				var target = new Junction(t);
-				var seg = new Segment(e.length(), target);
+				var seg = new Segment(e.id(), e.length(), target);
 				next.segments().add(seg);
 				queue.add(target);
 				visited.add(target.id());
@@ -107,6 +107,7 @@ public record HeatFlowTree(Junction root) {
 	private Junction compact(Junction node) {
 		var compactNode = new Junction(node.node());
 		for (var s : node.segments()) {
+			long id = s.id();
 			double len = s.length();
 			var next = s.target();
 
@@ -119,7 +120,7 @@ public record HeatFlowTree(Junction root) {
 
 			// recursively compact the target node
 			var compactTarget = compact(next);
-			compactNode.segments().add(new Segment(len, compactTarget));
+			compactNode.segments().add(new Segment(id, len, compactTarget));
 		}
 		return compactNode;
 	}
@@ -169,13 +170,19 @@ public record HeatFlowTree(Junction root) {
 	/// A pipe segment to a connection point in the network graph.
 	public static class Segment {
 
+		private final long id;
 		private final double length;
 		private final Junction target;
 		private double heatDemand;
 
-		Segment(double length, Junction target) {
+		Segment(long id, double length, Junction target) {
+			this.id = id;
 			this.length = length;
 			this.target = target;
+		}
+
+		public long id() {
+			return id;
 		}
 
 		public double length() {
