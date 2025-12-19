@@ -12,4 +12,10 @@ class ThermoTest {
 		assertEquals(12, massFlow, 1e-1);
 	}
 
+	@Test
+	void testFlowVelocityOf() {
+		double velocity = Thermo.flowVelocityOf(12, 0.1, 65);
+		assertEquals(1.55, velocity, 1e-2);
+	}
+
 }

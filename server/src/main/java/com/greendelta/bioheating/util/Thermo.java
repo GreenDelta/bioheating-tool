@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.util;
 
+import static java.lang.Math.*;
+
 public class Thermo {
 
 	private Thermo() {
@@ -18,6 +20,21 @@ public class Thermo {
 			return 0;
 		double cp = WaterProps.heatCapacityOf((flowTemp + returnTemp) / 2);
 		return 1000 * heatingLoad / (deltaTemp * cp * 3600);
+	}
+
+	/// Calculates the flow velocity of water in a pipe.
+	///
+	/// @param massFlow the mass flow rate in kg/s
+	/// @param diameter the pipe diameter in m
+	/// @param temp     the water temperature in °C
+	/// @return the flow velocity in m/s
+	public static double flowVelocityOf(
+		double massFlow, double diameter, double temp) {
+		if (massFlow <= 0 || diameter <= 0)
+			return 0;
+		double radius = diameter / 2;
+		double density = WaterProps.densityOf(temp);
+		return massFlow / (pow(radius, 2) * PI * density);
 	}
 
 }
