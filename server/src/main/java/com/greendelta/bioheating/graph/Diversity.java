@@ -1,7 +1,5 @@
 package com.greendelta.bioheating.graph;
 
-import java.util.ArrayList;
-
 import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
 import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
 
@@ -27,7 +25,7 @@ public class Diversity {
 		var copy = new Junction(node.node());
 		for (var seg : node.segments()) {
 			var targetCopy = copyTree(seg.target());
-			copy.segments().add(new Segment(seg.length(), targetCopy));
+			copy.segments().add(new Segment(seg.id(), seg.length(), targetCopy));
 		}
 		return copy;
 	}
