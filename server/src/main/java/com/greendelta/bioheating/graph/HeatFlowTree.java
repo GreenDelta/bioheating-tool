@@ -67,7 +67,7 @@ public record HeatFlowTree(Junction root) {
 				if (visited.contains(t.id()))
 					continue;
 				var target = new Junction(t);
-				var seg = new Segment(e.id(), e.length(), target);
+				var seg = new Segment(e, target);
 				next.segments().add(seg);
 				queue.add(target);
 				visited.add(target.id());
@@ -76,34 +76,6 @@ public record HeatFlowTree(Junction root) {
 
 		var tree = new HeatFlowTree(root);
 		return Res.ok(tree);
-	}
-
-	/// Returns a compact version of this tree where linear paths of street nodes
-	/// are aggregated into single segments.
-	public HeatFlowTree compact() {
-		var compactRoot = compact(root);
-		return new HeatFlowTree(compactRoot);
-	}
-
-	private Junction compact(Junction node) {
-		var compactNode = new Junction(node.node());
-		for (var s : node.segments()) {
-			long id = s.id();
-			double len = s.length();
-			var next = s.target();
-
-			// traverse down as long as we have a linear path of street nodes
-			while (!next.isBuilding() && next.segments().size() == 1) {
-				var nextSeg = next.segments().getFirst();
-				len += nextSeg.length();
-				next = nextSeg.target();
-			}
-
-			// recursively compact the target node
-			var compactTarget = compact(next);
-			compactNode.segments().add(new Segment(id, len, compactTarget));
-		}
-		return compactNode;
 	}
 
 	/// A connection point of a street or building node of the
@@ -128,6 +100,14 @@ public record HeatFlowTree(Junction root) {
 	}
 
 	/// A pipe segment to a connection point in the network graph.
-	public record Segment(long id, double length, Junction target) {
+	public record Segment(SolutionEdge edge, Junction target) {
+
+		public long id() {
+			return edge.id();
+		}
+
+		public double length() {
+			return edge.length();
+		}
 	}
 }

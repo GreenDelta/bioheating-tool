@@ -13,9 +13,13 @@ import com.greendelta.bioheating.model.Building;
 
 public class PipeTreeModel {
 
-	private HashMap<Long, PipeSegment> segments = new HashMap<>();
+	private final HashMap<Long, PipeSegment> segments = new HashMap<>();
+	private final HashMap<Long, PipeJunction> junctions = new HashMap<>();
 
-	public Res<PipeTreeModel> of(HeatFlowTree tree) {
+	private PipeTreeModel() {
+	}
+
+	public static Res<PipeTreeModel> of(HeatFlowTree tree) {
 		if (tree == null)
 			return Res.error("No valid heat flow tree provided");
 		try {
@@ -25,6 +29,20 @@ public class PipeTreeModel {
 		} catch (Exception e) {
 			return Res.error("Failed to calculate pipe tree model", e);
 		}
+	}
+
+	public double peakDemandOf(Segment segment) {
+		if (segment == null)
+			return 0;
+		var s = segments.get(segment.id());
+		return s != null ? s.peakLoad : 0;
+	}
+
+	public double peakDemandOf(Junction junction) {
+		if (junction == null)
+			return 0;
+		var j = junctions.get(junction.id());
+		return j != null ? j.peakLoad : 0;
 	}
 
 	private PipeJunction traverse(Junction junction) {
@@ -41,7 +59,22 @@ public class PipeTreeModel {
 			}
 			segments.add(segmentOf(s, buildings));
 		}
-		return new PipeJunction(segments);
+		return junctionOf(junction, segments);
+	}
+
+	private PipeJunction junctionOf(Junction j, List<PipeSegment> segments) {
+		int n = 0;
+		double peakLoad = 0;
+		for (var s : segments) {
+			for (var b : s.buildings) {
+				n += 1;
+				peakLoad += b.peakLoad();
+			}
+		}
+		peakLoad *= Thermo.diversityFactorOf(n);
+		var junction = new PipeJunction(j.id(), peakLoad, segments);
+		junctions.put(junction.id, junction);
+		return junction;
 	}
 
 	private PipeSegment segmentOf(Segment s, List<Building> buildings) {
@@ -55,7 +88,8 @@ public class PipeTreeModel {
 		return segment;
 	}
 
-	public record PipeJunction(List<PipeSegment> segments) {
+	public record PipeJunction(
+		long id, double peakLoad, List<PipeSegment> segments) {
 	}
 
 	public record PipeSegment(
