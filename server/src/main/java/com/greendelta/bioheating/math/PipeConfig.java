@@ -1,50 +1,81 @@
 package com.greendelta.bioheating.math;
 
-public class PipeConfig {
+/// Configuration parameters for pipe dimensioning calculations.
+///
+/// @param maxPressureLoss maximum allowed pressure loss in Pa/m
+/// @param maxFlowVelocity maximum allowed flow velocity in m/s
+/// @param fittingSurcharge surcharge factor for fittings/installations (e.g., 0.2 for 20%)
+/// @param flowTemperature flow (supply) temperature in °C
+/// @param returnTemperature return temperature in °C
+/// @param averageTemperature average of flow and return temperature in °C
+/// @param roughness pipe wall roughness in m, e.g. 0.002E-3 for plastic pipes
+public record PipeConfig(
+	double maxPressureLoss,
+	double maxFlowVelocity,
+	double fittingSurcharge,
+	double flowTemperature,
+	double returnTemperature,
+	double averageTemperature,
+	double roughness
+) {
 
-	/// Maximum pressure loss in Pa/m.
-	public static final double MAX_PRESSURE_LOSS = 100;
-
-	/// Maximum flow velocity in m/s.
-	public static final double MAX_FLOW_VELOCITY = 3;
-
-	/// Surcharge factor for fittings/installations (20%).
-	public static final double FITTING_SURCHARGE = 0.20;
-
-	/// Roughness of plastic pipes in m.
-	public static final double ROUGHNESS_PLASTIC = 0.002e-3;
-
-	/// Roughness of smooth steel pipes in m.
-	public static final double ROUGHNESS_STEEL_SMOOTH = 0.01e-3;
-
-	private double flowTemperature;
-	private double returnTemperature;
-	private double roughness;
-
-	public PipeConfig withFlowTemperature(double flowTemp) {
-		this.flowTemperature = flowTemp;
-		return this;
+	public static Builder forPlastic() {
+		return new Builder().withRoughness(0.002e-3);
 	}
 
-	public double flowTemperature() {
-		return flowTemperature;
+	public static Builder forSteel() {
+		return new Builder().withRoughness(0.01e-3);
 	}
 
-	public PipeConfig withReturnTemperature(double returnTemp) {
-		this.returnTemperature = returnTemp;
-		return this;
-	}
+	public static class Builder {
 
-	public double returnTemperature() {
-		return returnTemperature;
-	}
+		private double maxPressureLoss = 100;
+		private double maxFlowVelocity = 3.0;
+		private double fittingSurcharge = 0.2;
+		private double flowTemperature = 80;
+		private double returnTemperature = 50;
+		private double roughness = 0.002e-3;
 
-	public PipeConfig withRoughness(double roughness) {
-		this.roughness = roughness;
-		return this;
-	}
+		public Builder withMaxPressureLoss(double maxPressureLoss) {
+			this.maxPressureLoss = maxPressureLoss;
+			return this;
+		}
 
-	public double roughness() {
-		return roughness;
+		public Builder withMaxFlowVelocity(double maxFlowVelocity) {
+			this.maxFlowVelocity = maxFlowVelocity;
+			return this;
+		}
+
+		public Builder withFittingSurcharge(double fittingSurcharge) {
+			this.fittingSurcharge = fittingSurcharge;
+			return this;
+		}
+
+		public Builder withFlowTemperature(double flowTemperature) {
+			this.flowTemperature = flowTemperature;
+			return this;
+		}
+
+		public Builder withReturnTemperature(double returnTemperature) {
+			this.returnTemperature = returnTemperature;
+			return this;
+		}
+
+		public Builder withRoughness(double roughness) {
+			this.roughness = roughness;
+			return this;
+		}
+
+		public PipeConfig get() {
+			return new PipeConfig(
+				maxPressureLoss,
+				maxFlowVelocity,
+				fittingSurcharge,
+				flowTemperature,
+				returnTemperature,
+				(flowTemperature + returnTemperature) / 2,
+				roughness
+			);
+		}
 	}
 }
