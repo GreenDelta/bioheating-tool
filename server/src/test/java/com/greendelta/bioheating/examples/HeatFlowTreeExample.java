@@ -28,15 +28,13 @@ public class HeatFlowTreeExample {
 				.then(HeatFlowTree::of)
 				.orElseThrow();
 
-			render(HeatFlowViz.toDot(tree), "target/tree.png");
-			render(HeatFlowViz.toDot(tree.compact()), "target/tree_compact.png");
-
+			render(HeatFlowViz.toDot(tree));
 		}
 	}
 
-	private static void render(String dot, String file) {
+	private static void render(String dot) {
 		try {
-			var p = new ProcessBuilder("dot", "-Tpng", "-o", file)
+			var p = new ProcessBuilder("dot", "-Tpng", "-o", "target/tree.png")
 				.start();
 			try (var os = p.getOutputStream()) {
 				os.write(dot.getBytes());

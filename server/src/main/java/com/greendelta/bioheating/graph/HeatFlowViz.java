@@ -1,22 +1,30 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
+import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
+
 /// Visualization utilities for the heat flow tree.
 public class HeatFlowViz {
 
 	private final HeatFlowTree tree;
+	private final PipeTreeModel model;
 	private final StringBuilder sb;
 	private final double total;
 
-	private HeatFlowViz(HeatFlowTree tree) {
+	private HeatFlowViz(HeatFlowTree tree, PipeTreeModel model) {
 		this.tree = tree;
+		this.model = model;
 		this.sb = new StringBuilder();
-		this.total = tree.root().heatDemand();
+		this.total = model.peakDemandOf(tree.root());
 	}
 
 	public static String toDot(HeatFlowTree tree) {
 		if (tree == null || tree.root() == null)
 			return "";
-		return new HeatFlowViz(tree).build();
+		var model = PipeTreeModel.of(tree);
+		if (model.isError())
+			return "Error: " + model.error();
+		return new HeatFlowViz(tree, model.value()).build();
 	}
 
 	private String build() {
@@ -34,7 +42,7 @@ public class HeatFlowViz {
 
 		var id = Long.toString(node.id());
 		boolean isBuilding = node.isBuilding();
-		double size = nodeSizeOf(node.heatDemand());
+		double size = nodeSizeOf(node);
 
 		if (isBuilding) {
 			// buildings (leaves and root) are squares
@@ -57,7 +65,7 @@ public class HeatFlowViz {
 		for (var seg : node.segments()) {
 			writeDot(seg.target());
 			var childId = Long.toString(seg.target().id());
-			double edgeWidth = edgeWidthOf(seg.heatDemand());
+			double edgeWidth = edgeWidthOf(seg);
 			sb.append("  ").append(id)
 				.append(" -> ")
 				.append(childId)
@@ -67,17 +75,17 @@ public class HeatFlowViz {
 		}
 	}
 
-	private double nodeSizeOf(double demand) {
+	private double nodeSizeOf(Junction j) {
 		if (total <= 0)
 			return 0.1;
-		double ratio = demand / total;
+		double ratio = model.peakDemandOf(j) / total;
 		return 0.1 + ratio * 0.4;
 	}
 
-	private double edgeWidthOf(double demand) {
+	private double edgeWidthOf(Segment s) {
 		if (total <= 0)
 			return 0.5;
-		double ratio = demand / total;
+		double ratio = model.peakDemandOf(s) / total;
 		return 0.5 + ratio * 8;
 	}
 }
