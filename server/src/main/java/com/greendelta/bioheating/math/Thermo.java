@@ -7,6 +7,19 @@ public class Thermo {
 	private Thermo() {
 	}
 
+	/// Calculates the diversity factor for n consumers:
+	///
+	/// ```
+  /// f(n) = 0.449677646267461 + (0.551234688 / (1 + (n / 53.84382392) ^ 1.762743268))
+  /// ```
+	public static double diversityFactorOf(int n) {
+		if (n <= 1)
+			return 1.0;
+		double ratio = n / 53.84382392;
+		double power = Math.pow(ratio, 1.762743268);
+		return 0.449677646267461 + (0.551234688 / (1 + power));
+	}
+
 	/// Calculates the mass flow rate required for a given heating load.
 	///
 	/// @param flowTemp    the flow temperature in °C

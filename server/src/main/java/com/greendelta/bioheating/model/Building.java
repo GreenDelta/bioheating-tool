@@ -261,6 +261,10 @@ public class Building extends BaseEntity {
 		return inclusion == Inclusion.REQUIRED;
 	}
 
+	public double peakLoad() {
+		return 0.0004963 * heatDemand + 21.84;
+	}
+
 	@Override
 	public String toString() {
 		return "Building [id=" + id() + ", name=" + name + "]";
