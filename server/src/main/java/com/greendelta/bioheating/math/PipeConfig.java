@@ -19,9 +19,7 @@ public class PipeConfig {
 
 	private double flowTemperature;
 	private double returnTemperature;
-	private double diameter;
 	private double roughness;
-	private double heatingLoad;
 
 	public PipeConfig withFlowTemperature(double flowTemp) {
 		this.flowTemperature = flowTemp;

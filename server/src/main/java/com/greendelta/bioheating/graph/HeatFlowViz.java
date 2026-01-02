@@ -7,21 +7,21 @@ import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
 public class HeatFlowViz {
 
 	private final HeatFlowTree tree;
-	private final PipeTreeModel model;
+	private final PipePlan model;
 	private final StringBuilder sb;
 	private final double total;
 
-	private HeatFlowViz(HeatFlowTree tree, PipeTreeModel model) {
+	private HeatFlowViz(HeatFlowTree tree, PipePlan model) {
 		this.tree = tree;
 		this.model = model;
 		this.sb = new StringBuilder();
-		this.total = model.peakDemandOf(tree.root());
+		this.total = model.peakLoadOf(tree.root());
 	}
 
 	public static String toDot(HeatFlowTree tree) {
 		if (tree == null || tree.root() == null)
 			return "";
-		var model = PipeTreeModel.of(tree);
+		var model = PipePlan.of(tree);
 		if (model.isError())
 			return "Error: " + model.error();
 		return new HeatFlowViz(tree, model.value()).build();
@@ -78,14 +78,14 @@ public class HeatFlowViz {
 	private double nodeSizeOf(Junction j) {
 		if (total <= 0)
 			return 0.1;
-		double ratio = model.peakDemandOf(j) / total;
+		double ratio = model.peakLoadOf(j) / total;
 		return 0.1 + ratio * 0.4;
 	}
 
 	private double edgeWidthOf(Segment s) {
 		if (total <= 0)
 			return 0.5;
-		double ratio = model.peakDemandOf(s) / total;
+		double ratio = model.peakLoadOf(s) / total;
 		return 0.5 + ratio * 8;
 	}
 }

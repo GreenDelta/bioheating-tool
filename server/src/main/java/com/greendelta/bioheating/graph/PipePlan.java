@@ -1,165 +1,114 @@
 package com.greendelta.bioheating.graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import org.openlca.commons.Res;
+
+import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
+import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
+import com.greendelta.bioheating.math.PipeConfig;
+import com.greendelta.bioheating.math.Thermo;
 import com.greendelta.bioheating.model.Building;
 
-/// A pipe plan derived from a heat flow tree. This class traverses the tree
-/// bottom-up, collecting information about buildings and heat demands in
-/// the subtree below each node.
 public class PipePlan {
 
-	private final HeatFlowTree tree;
-	private final SegmentPlan rootPlan;
+	private final HashMap<Long, PipeSegment> segments = new HashMap<>();
+	private final HashMap<Long, PipeJunction> junctions = new HashMap<>();
 
-	private PipePlan(HeatFlowTree tree, SegmentPlan rootPlan) {
-		this.tree = tree;
-		this.rootPlan = rootPlan;
+	private PipePlan() {
 	}
 
-	public static PipePlan of(HeatFlowTree tree) {
-		if (tree == null || tree.root() == null)
-			return null;
-		var rootPlan = traverse(tree.root());
-		return new PipePlan(tree, rootPlan);
+	public static Res<PipePlan> of(HeatFlowTree tree) {
+		if (tree == null)
+			return Res.error("No valid heat flow tree provided");
+		try {
+			var model = new PipePlan();
+			model.traverse(tree.root());
+			return Res.ok(model);
+		} catch (Exception e) {
+			return Res.error("Failed to calculate pipe tree model", e);
+		}
 	}
 
-	public HeatFlowTree tree() {
-		return tree;
+	public double peakLoadOf(Segment segment) {
+		if (segment == null)
+			return 0;
+		var s = segments.get(segment.id());
+		return s != null ? s.peakLoad : 0;
 	}
 
-	public SegmentPlan rootPlan() {
-		return rootPlan;
+	public double pressureLossOf(
+		Segment segment, PipeConfig config, double diameter) {
+		double load = peakLoadOf(segment);
+		if (load <= 0)
+			return 0;
+		double temp = (config.flowTemperature() + config.returnTemperature()) / 2;
+		double massFlow = Thermo.massFlowOf(
+			config.flowTemperature(), config.returnTemperature(), load);
+		double velocity = Thermo.flowVelocityOf(massFlow, diameter, temp);
+		return Thermo.pressureLossOf(velocity, diameter, config.roughness(), temp);
 	}
 
-	/// Traverses the tree bottom-up starting from the given junction.
-	/// Returns a SegmentPlan that contains the aggregated information
-	/// of the subtree rooted at this junction.
-	private static SegmentPlan traverse(HeatFlowTree.Junction junction) {
-		var plan = new SegmentPlan(junction);
-
-		// first, recursively process all child segments (bottom-up)
-		for (var segment : junction.segments()) {
-			var childPlan = traverse(segment, segment.target());
-			plan.childPlans.add(childPlan);
-
-			// aggregate information from child plans
-			plan.totalHeatDemand += childPlan.totalHeatDemand;
-			plan.totalPipeLength += childPlan.totalPipeLength;
-			plan.buildings.addAll(childPlan.buildings);
-		}
-
-		// add this junction's building if present
-		var building = junction.building();
-		if (building != null) {
-			plan.buildings.add(building);
-			plan.totalHeatDemand += building.heatDemand();
-		}
-
-		return plan;
+	public double peakLoadOf(Junction junction) {
+		if (junction == null)
+			return 0;
+		var j = junctions.get(junction.id());
+		return j != null ? j.peakLoad : 0;
 	}
 
-	/// Traverses a segment and its target junction bottom-up.
-	private static SegmentPlan traverse(
-			HeatFlowTree.Segment segment,
-			HeatFlowTree.Junction junction) {
-
-		var plan = new SegmentPlan(segment, junction);
-
-		// first, recursively process all child segments (bottom-up)
-		for (var childSegment : junction.segments()) {
-			var childPlan = traverse(childSegment, childSegment.target());
-			plan.childPlans.add(childPlan);
-
-			// aggregate information from child plans
-			plan.totalHeatDemand += childPlan.totalHeatDemand;
-			plan.totalPipeLength += childPlan.totalPipeLength;
-			plan.buildings.addAll(childPlan.buildings);
+	private PipeJunction traverse(Junction junction) {
+		var segments = new ArrayList<PipeSegment>();
+		for (var s : junction.segments()) {
+			var target = s.target();
+			if (target.isBuilding()) {
+				segments.add(segmentOf(s, List.of(target.building())));
+				continue;
+			}
+			var buildings = new ArrayList<Building>();
+			for (var sub : traverse(s.target()).segments) {
+				buildings.addAll(sub.buildings);
+			}
+			segments.add(segmentOf(s, buildings));
 		}
-
-		// add this segment's length
-		plan.totalPipeLength += segment.length();
-
-		// add this junction's building if present
-		var building = junction.building();
-		if (building != null) {
-			plan.buildings.add(building);
-			plan.totalHeatDemand += building.heatDemand();
-		}
-
-		return plan;
+		return junctionOf(junction, segments);
 	}
 
-	/// Contains the planning information for a segment and the subtree below it.
-	public static class SegmentPlan {
-
-		private final HeatFlowTree.Segment segment;
-		private final HeatFlowTree.Junction junction;
-		private final List<SegmentPlan> childPlans;
-		private final List<Building> buildings;
-		private double totalHeatDemand;
-		private double totalPipeLength;
-
-		/// Constructor for the root junction (no segment leading to it).
-		SegmentPlan(HeatFlowTree.Junction junction) {
-			this.segment = null;
-			this.junction = junction;
-			this.childPlans = new ArrayList<>();
-			this.buildings = new ArrayList<>();
+	private PipeJunction junctionOf(Junction j, List<PipeSegment> segments) {
+		int n = 0;
+		double peakLoad = 0;
+		for (var s : segments) {
+			for (var b : s.buildings) {
+				n += 1;
+				peakLoad += b.peakLoad();
+			}
 		}
+		peakLoad *= Thermo.diversityFactorOf(n);
+		var junction = new PipeJunction(j.id(), peakLoad, segments);
+		junctions.put(junction.id, junction);
+		return junction;
+	}
 
-		/// Constructor for a segment with its target junction.
-		SegmentPlan(HeatFlowTree.Segment segment, HeatFlowTree.Junction junction) {
-			this.segment = segment;
-			this.junction = junction;
-			this.childPlans = new ArrayList<>();
-			this.buildings = new ArrayList<>();
+	private PipeSegment segmentOf(Segment s, List<Building> buildings) {
+		double peakLoad = 0;
+		for (var b : buildings) {
+			peakLoad += b.peakLoad();
 		}
+		peakLoad *= Thermo.diversityFactorOf(buildings.size());
+		var segment = new PipeSegment(s.id(), s.length(), peakLoad, buildings);
+		segments.put(segment.id, segment);
+		return segment;
+	}
 
-		/// The segment leading to this junction, or null for the root.
-		public HeatFlowTree.Segment segment() {
-			return segment;
-		}
+	public record PipeJunction(
+		long id, double peakLoad, List<PipeSegment> segments) {
+	}
 
-		/// The junction at the end of this segment.
-		public HeatFlowTree.Junction junction() {
-			return junction;
-		}
-
-		/// The plans for the child segments below this one.
-		public List<SegmentPlan> childPlans() {
-			return childPlans;
-		}
-
-		/// All buildings in the subtree below (and including) this junction.
-		public List<Building> buildings() {
-			return buildings;
-		}
-
-		/// The total heat demand of all buildings in the subtree.
-		public double totalHeatDemand() {
-			return totalHeatDemand;
-		}
-
-		/// The total pipe length in the subtree below this segment.
-		public double totalPipeLength() {
-			return totalPipeLength;
-		}
-
-		/// Returns true if this is the root plan (no segment leading to it).
-		public boolean isRoot() {
-			return segment == null;
-		}
-
-		/// Returns true if this is a leaf (no child segments).
-		public boolean isLeaf() {
-			return childPlans.isEmpty();
-		}
-
-		/// The number of buildings in the subtree.
-		public int buildingCount() {
-			return buildings.size();
-		}
+	public record PipeSegment(
+		long id,
+		double length,
+		double peakLoad,
+		List<Building> buildings) {
 	}
 }
