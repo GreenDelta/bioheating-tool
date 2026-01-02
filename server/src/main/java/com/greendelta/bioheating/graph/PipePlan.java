@@ -14,17 +14,23 @@ import com.greendelta.bioheating.model.Building;
 
 public class PipePlan {
 
+	private final PipeConfig config;
+	private final List<Pipe> pipes;
 	private final HashMap<Long, PipeSegment> segments = new HashMap<>();
 	private final HashMap<Long, PipeJunction> junctions = new HashMap<>();
 
-	private PipePlan() {
+	private PipePlan(PipeConfig config) {
+		this.config = config;
+		this.pipes = Pipe.getAll();
 	}
 
-	public static Res<PipePlan> of(HeatFlowTree tree) {
+	public static Res<PipePlan> of(PipeConfig config, HeatFlowTree tree) {
+		if (config == null)
+			return Res.error("No configuration provided");
 		if (tree == null)
 			return Res.error("No valid heat flow tree provided");
 		try {
-			var model = new PipePlan();
+			var model = new PipePlan(config);
 			model.traverse(tree.root());
 			return Res.ok(model);
 		} catch (Exception e) {
@@ -37,18 +43,6 @@ public class PipePlan {
 			return 0;
 		var s = segments.get(segment.id());
 		return s != null ? s.peakLoad : 0;
-	}
-
-	public double pressureLossOf(
-		Segment segment, PipeConfig config, double diameter) {
-		double load = peakLoadOf(segment);
-		if (load <= 0)
-			return 0;
-		double temp = (config.flowTemperature() + config.returnTemperature()) / 2;
-		double massFlow = Thermo.massFlowOf(
-			config.flowTemperature(), config.returnTemperature(), load);
-		double velocity = Thermo.flowVelocityOf(massFlow, diameter, temp);
-		return Thermo.pressureLossOf(velocity, diameter, config.roughness(), temp);
 	}
 
 	public double peakLoadOf(Junction junction) {
@@ -96,7 +90,26 @@ public class PipePlan {
 			peakLoad += b.peakLoad();
 		}
 		peakLoad *= Thermo.diversityFactorOf(buildings.size());
-		var segment = new PipeSegment(s.id(), s.length(), peakLoad, buildings);
+
+		Pipe pipe = null;
+		for (var p : pipes) {
+			double massFlow = Thermo.massFlowOf(
+				config.flowTemperature(), config.returnTemperature(), peakLoad);
+			double velocity = Thermo.flowVelocityOf(
+				massFlow, p.diameter(), config.averageTemperature());
+			if (velocity > config.maxFlowVelocity())
+				continue;
+			var pressureLoss = Thermo.pressureLossOf(
+				velocity, p.diameter(), config.roughness(), config.averageTemperature())
+				* (1+ config.fittingSurcharge());
+			if (pressureLoss < config.maxPressureLoss()) {
+				pipe = p;
+				break;
+			}
+		}
+
+		var segment = new PipeSegment(
+			s.id(), s.length(), peakLoad, pipe, buildings);
 		segments.put(segment.id, segment);
 		return segment;
 	}
@@ -109,6 +122,7 @@ public class PipePlan {
 		long id,
 		double length,
 		double peakLoad,
+		Pipe pipe,
 		List<Building> buildings) {
 	}
 }
