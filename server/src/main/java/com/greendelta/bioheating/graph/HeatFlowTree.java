@@ -21,7 +21,7 @@ import com.greendelta.bioheating.model.SolutionNode;
 public record HeatFlowTree(Junction root) {
 
 	/// Creates a heat flow tree from the given solution. The solution must be
-	/// persisted (so that nodes have IDs) before calling this method (or
+	/// persisted (so that nodes have unique IDs) before calling this method (or
 	/// `Solution.withTransientIds` must be called before).
 	public static Res<HeatFlowTree> of(Solution solution) {
 		if (solution == null)
@@ -74,33 +74,14 @@ public record HeatFlowTree(Junction root) {
 			}
 		}
 
-		// aggregate heat demands bottom-up
-		aggregateDemands(root);
-
 		var tree = new HeatFlowTree(root);
 		return Res.ok(tree);
-	}
-
-	private static double aggregateDemands(Junction junction) {
-		double demand = 0.0;
-		var building = junction.building();
-		if (building != null) {
-			demand = building.heatDemand();
-		}
-		for (var seg : junction.segments()) {
-			double segDemand = aggregateDemands(seg.target());
-			seg.heatDemand(segDemand);
-			demand += segDemand;
-		}
-		junction.heatDemand(demand);
-		return demand;
 	}
 
 	/// Returns a compact version of this tree where linear paths of street nodes
 	/// are aggregated into single segments.
 	public HeatFlowTree compact() {
 		var compactRoot = compact(root);
-		aggregateDemands(compactRoot);
 		return new HeatFlowTree(compactRoot);
 	}
 
@@ -127,31 +108,10 @@ public record HeatFlowTree(Junction root) {
 
 	/// A connection point of a street or building node of the
 	/// network graph with (pipe) segments to other nodes.
-	public static class Junction {
-
-		private final SolutionNode node;
-		private final List<Segment> segments;
-		private double heatDemand;
+	public record Junction(SolutionNode node, List<Segment> segments) {
 
 		Junction(SolutionNode node) {
-			this.node = node;
-			this.segments = new ArrayList<>();
-		}
-
-		public SolutionNode node() {
-			return node;
-		}
-
-		public List<Segment> segments() {
-			return segments;
-		}
-
-		public double heatDemand() {
-			return heatDemand;
-		}
-
-		void heatDemand(double heatDemand) {
-			this.heatDemand = heatDemand;
+			this(node, new ArrayList<>());
 		}
 
 		public long id() {
@@ -168,37 +128,6 @@ public record HeatFlowTree(Junction root) {
 	}
 
 	/// A pipe segment to a connection point in the network graph.
-	public static class Segment {
-
-		private final long id;
-		private final double length;
-		private final Junction target;
-		private double heatDemand;
-
-		Segment(long id, double length, Junction target) {
-			this.id = id;
-			this.length = length;
-			this.target = target;
-		}
-
-		public long id() {
-			return id;
-		}
-
-		public double length() {
-			return length;
-		}
-
-		public Junction target() {
-			return target;
-		}
-
-		public double heatDemand() {
-			return heatDemand;
-		}
-
-		void heatDemand(double heatDemand) {
-			this.heatDemand = heatDemand;
-		}
+	public record Segment(long id, double length, Junction target) {
 	}
 }
