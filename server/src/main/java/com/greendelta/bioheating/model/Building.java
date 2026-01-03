@@ -221,6 +221,9 @@ public class Building extends BaseEntity {
 		return this;
 	}
 
+	/// Returns the annual heat demand of the building.
+	///
+	/// @return the heat demand in kWh/year
 	public double heatDemand() {
 		return heatDemand;
 	}
@@ -261,6 +264,13 @@ public class Building extends BaseEntity {
 		return inclusion == Inclusion.REQUIRED;
 	}
 
+	/// Estimates the peak heating load of the building based on its annual
+	/// heat demand using a linear regression model (as in Thermos).
+	///
+	/// The formula is: `peakLoad = 0.0004963 * heatDemand + 21.84`
+	/// where `heatDemand` is in kWh/year.
+	///
+	/// @return the peak heating load in kW
 	public double peakLoad() {
 		return 0.0004963 * heatDemand + 21.84;
 	}

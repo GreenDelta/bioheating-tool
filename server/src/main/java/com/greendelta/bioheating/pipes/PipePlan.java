@@ -95,21 +95,27 @@ public class PipePlan {
 	}
 
 	private Res<PipeSegment> segmentOf(Segment s, List<Building> buildings) {
+		// peakLoad in kW
 		double peakLoad = 0;
 		for (var b : buildings) {
 			peakLoad += b.peakLoad();
 		}
 		peakLoad *= Thermo.diversityFactorOf(buildings.size());
 
-		// temperature difference for pipe heat loss calculation
+		// temperature difference in K (°C difference equals K difference)
 		double deltaT = config.averageTemperature() - config.groundTemperature();
 
 		Pipe pipe = null;
 		for (var p : pipes) {
-			// calculate pipe heat loss: Q_loss = U * L * ΔT
-			double pipeLoss = p.uValue() * s.length() * deltaT;
+			// pipe heat loss: Q_loss = U * L * ΔT
+			// U in W/(m·K), length in m, ΔT in K => pipeLoss in W
+			// convert to kW by dividing by 1000
+			double pipeLoss = p.uValue() * s.length() * deltaT / 1000;
+
+			// totalLoad in kW (peakLoad in kW + pipeLoss in kW)
 			double totalLoad = peakLoad + pipeLoss;
 
+			// inner diameter in m (converted from mm)
 			double di = p.innerDiameter() / 1000;
 			double massFlow = Thermo.massFlowOf(
 				config.flowTemperature(), config.returnTemperature(), totalLoad);
