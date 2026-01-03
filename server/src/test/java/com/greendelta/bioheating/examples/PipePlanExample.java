@@ -4,13 +4,14 @@ import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.HeatFlowTree;
-import com.greendelta.bioheating.graph.HeatFlowViz;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.pipes.PipeConfig;
+import com.greendelta.bioheating.pipes.PipePlanViz;
 
-public class HeatFlowTreeExample {
+public class PipePlanExample {
 
 	public static void main(String[] args) {
 		var db = Database.of("bioheating")
@@ -28,7 +29,8 @@ public class HeatFlowTreeExample {
 				.then(HeatFlowTree::of)
 				.orElseThrow();
 
-			render(HeatFlowViz.toDot(tree));
+			var config = PipeConfig.forPlastic().get();
+			render(PipePlanViz.toDot(config, tree));
 		}
 	}
 

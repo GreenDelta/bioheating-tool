@@ -20,7 +20,7 @@ public class PipePlan {
 
 	private PipePlan(PipeConfig config) {
 		this.config = config;
-		this.pipes = Pipe.getAll();
+		this.pipes = config.pipes();
 	}
 
 	public static Res<PipePlan> of(PipeConfig config, HeatFlowTree tree) {

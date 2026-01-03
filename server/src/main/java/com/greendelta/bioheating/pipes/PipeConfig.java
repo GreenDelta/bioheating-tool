@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.pipes;
 
+import java.util.List;
+
 /// Configuration parameters for pipe dimensioning calculations.
 ///
 /// @param maxPressureLoss maximum allowed pressure loss in Pa/m
@@ -10,6 +12,7 @@ package com.greendelta.bioheating.pipes;
 /// @param averageTemperature average of flow and return temperature in °C
 /// @param roughness pipe wall roughness in m, e.g. 0.002E-3 for plastic pipes
 /// @param groundTemperature ground/ambient temperature in °C for heat loss calculation
+/// @param pipes the list of available pipes for selection
 public record PipeConfig(
 	double maxPressureLoss,
 	double maxFlowVelocity,
@@ -18,7 +21,8 @@ public record PipeConfig(
 	double returnTemperature,
 	double averageTemperature,
 	double roughness,
-	double groundTemperature
+	double groundTemperature,
+	List<Pipe> pipes
 ) {
 
 	public static Builder forPlastic() {
@@ -38,6 +42,7 @@ public record PipeConfig(
 		private double returnTemperature = 50;
 		private double roughness = 0.002e-3;
 		private double groundTemperature = 10;
+		private List<Pipe> pipes;
 
 		public Builder withMaxPressureLoss(double maxPressureLoss) {
 			this.maxPressureLoss = maxPressureLoss;
@@ -74,6 +79,11 @@ public record PipeConfig(
 			return this;
 		}
 
+		public Builder withPipes(List<Pipe> pipes) {
+			this.pipes = pipes;
+			return this;
+		}
+
 		public PipeConfig get() {
 			return new PipeConfig(
 				maxPressureLoss,
@@ -83,7 +93,8 @@ public record PipeConfig(
 				returnTemperature,
 				(flowTemperature + returnTemperature) / 2,
 				roughness,
-				groundTemperature
+				groundTemperature,
+				pipes != null ? pipes : Pipe.getAll()
 			);
 		}
 	}

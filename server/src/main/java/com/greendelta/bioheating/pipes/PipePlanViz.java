@@ -1,31 +1,31 @@
-package com.greendelta.bioheating.graph;
+package com.greendelta.bioheating.pipes;
 
+import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
 import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
-import com.greendelta.bioheating.pipes.PipePlan;
 
 /// Visualization utilities for the heat flow tree.
-public class HeatFlowViz {
+public class PipePlanViz {
 
 	private final HeatFlowTree tree;
-	private final PipePlan model;
+	private final PipePlan plan;
 	private final StringBuilder sb;
 	private final double total;
 
-	private HeatFlowViz(HeatFlowTree tree, PipePlan model) {
+	private PipePlanViz(HeatFlowTree tree, PipePlan plan) {
 		this.tree = tree;
-		this.model = model;
+		this.plan = plan;
 		this.sb = new StringBuilder();
-		this.total = model.peakLoadOf(tree.root());
+		this.total = plan.peakLoadOf(tree.root());
 	}
 
-	public static String toDot(HeatFlowTree tree) {
+	public static String toDot(PipeConfig config, HeatFlowTree tree) {
 		if (tree == null || tree.root() == null)
 			return "";
-		var model = PipePlan.of(tree);
-		if (model.isError())
-			return "Error: " + model.error();
-		return new HeatFlowViz(tree, model.value()).build();
+		var plan = PipePlan.of(config, tree);
+		if (plan.isError())
+			return "Error: " + plan.error();
+		return new PipePlanViz(tree, plan.value()).build();
 	}
 
 	private String build() {
@@ -79,14 +79,14 @@ public class HeatFlowViz {
 	private double nodeSizeOf(Junction j) {
 		if (total <= 0)
 			return 0.1;
-		double ratio = model.peakLoadOf(j) / total;
+		double ratio = plan.peakLoadOf(j) / total;
 		return 0.1 + ratio * 0.4;
 	}
 
 	private double edgeWidthOf(Segment s) {
 		if (total <= 0)
 			return 0.5;
-		double ratio = model.peakLoadOf(s) / total;
+		double ratio = plan.peakLoadOf(s) / total;
 		return 0.5 + ratio * 8;
 	}
 }
