@@ -31,8 +31,10 @@ public class PipePlan {
 			return Res.error("No valid heat flow tree provided");
 		try {
 			var model = new PipePlan(config);
-			model.traverse(tree.root());
-			return Res.ok(model);
+			var result = model.traverse(tree.root());
+			return result.isError()
+				? result.wrapError("Failed to calculate pipe-plan")
+				: Res.ok(model);
 		} catch (Exception e) {
 			return Res.error("Failed to calculate pipe tree model", e);
 		}
@@ -52,24 +54,33 @@ public class PipePlan {
 		return j != null ? j.peakLoad : 0;
 	}
 
-	private PipeJunction traverse(Junction junction) {
+	private Res<PipeJunction> traverse(Junction junction) {
 		var segments = new ArrayList<PipeSegment>();
 		for (var s : junction.segments()) {
 			var target = s.target();
 			if (target.isBuilding()) {
-				segments.add(segmentOf(s, List.of(target.building())));
+				var segment = segmentOf(s, List.of(target.building()));
+				if (segment.isError())
+					return segment.castError();
+				segments.add(segment.value());
 				continue;
 			}
+			var subJunction = traverse(s.target());
+			if (subJunction.isError())
+				return subJunction.castError();
 			var buildings = new ArrayList<Building>();
-			for (var sub : traverse(s.target()).segments) {
+			for (var sub : subJunction.value().segments) {
 				buildings.addAll(sub.buildings);
 			}
-			segments.add(segmentOf(s, buildings));
+			var segment = segmentOf(s, buildings);
+			if (segment.isError())
+				return segment.castError();
+			segments.add(segment.value());
 		}
 		return junctionOf(junction, segments);
 	}
 
-	private PipeJunction junctionOf(Junction j, List<PipeSegment> segments) {
+	private Res<PipeJunction> junctionOf(Junction j, List<PipeSegment> segments) {
 		int n = 0;
 		double peakLoad = 0;
 		for (var s : segments) {
@@ -81,10 +92,10 @@ public class PipePlan {
 		peakLoad *= Thermo.diversityFactorOf(n);
 		var junction = new PipeJunction(j.id(), peakLoad, segments);
 		junctions.put(junction.id, junction);
-		return junction;
+		return Res.ok(junction);
 	}
 
-	private PipeSegment segmentOf(Segment s, List<Building> buildings) {
+	private Res<PipeSegment> segmentOf(Segment s, List<Building> buildings) {
 		double peakLoad = 0;
 		for (var b : buildings) {
 			peakLoad += b.peakLoad();
@@ -101,17 +112,22 @@ public class PipePlan {
 				continue;
 			var pressureLoss = Thermo.pressureLossOf(
 				velocity, p.diameter(), config.roughness(), config.averageTemperature())
-				* (1+ config.fittingSurcharge());
+				* (1 + config.fittingSurcharge());
 			if (pressureLoss < config.maxPressureLoss()) {
 				pipe = p;
 				break;
 			}
 		}
 
+		if (pipe == null) {
+			return Res.error("No suitable pipe found for segment " + s.id()
+				+ " with peak load " + peakLoad + " W");
+		}
+
 		var segment = new PipeSegment(
 			s.id(), s.length(), peakLoad, pipe, buildings);
 		segments.put(segment.id, segment);
-		return segment;
+		return Res.ok(segment);
 	}
 
 	public record PipeJunction(
