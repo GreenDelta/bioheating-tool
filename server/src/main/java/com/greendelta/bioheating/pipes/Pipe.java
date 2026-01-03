@@ -6,7 +6,7 @@ import java.util.List;
 /// Represents a pipe with its physical properties.
 ///
 /// @param innerDiameter the inner diameter of the pipe in millimeters (mm)
-/// @param rgb the RGB hex color code for visualization (e.g., "#ff0000")
+/// @param rgb           the RGB hex color code for visualization (e.g., "#ff0000")
 public record Pipe(double innerDiameter, String rgb) {
 
 	/// Calculates the U-Value (heat transfer coefficient) of the pipe.
@@ -23,7 +23,6 @@ public record Pipe(double innerDiameter, String rgb) {
 	static List<Pipe> getAll() {
 		var pipes = new ArrayList<Pipe>();
 		double di = 8;
-		var diameters = new ArrayList<Double>();
 		while (di < 300) {
 			double inc;
 			if (di >= 100) {
@@ -34,68 +33,31 @@ public record Pipe(double innerDiameter, String rgb) {
 				inc = 2;
 			}
 			di += inc;
-			diameters.add(di);
-		}
-
-		double minD = diameters.getFirst();
-		double maxD = diameters.getLast();
-		for (var d : diameters) {
-			String color = colorFor(d, minD, maxD);
-			pipes.add(new Pipe(d, color));
+			pipes.add(new Pipe(di, colorFor(di)));
 		}
 		return pipes;
 	}
 
-	/// Maps diameter to an RGB hex color using HSL interpolation.
-	/// Small diameters → blue (hue 240°), large → red (hue 0°)
-	private static String colorFor(double diameter, double minD, double maxD) {
-		// normalize to [0, 1] where 0 = smallest, 1 = largest
-		double t = (diameter - minD) / (maxD - minD);
-
-		// hue: 240° (blue) → 0° (red), going through cyan, green, yellow
-		double hue = (1 - t) * 240;
-		double saturation = 0.75;
-		double lightness = 0.5;
-
-		return hslToRgb(hue, saturation, lightness);
-	}
-
-	private static String hslToRgb(double h, double s, double l) {
-		double c = (1 - Math.abs(2 * l - 1)) * s;
-		double x = c * (1 - Math.abs((h / 60) % 2 - 1));
-		double m = l - c / 2;
-
-		double r, g, b;
-		if (h < 60) {
-			r = c;
-			g = x;
-			b = 0;
-		} else if (h < 120) {
-			r = x;
-			g = c;
-			b = 0;
-		} else if (h < 180) {
-			r = 0;
-			g = c;
-			b = x;
-		} else if (h < 240) {
-			r = 0;
-			g = x;
-			b = c;
-		} else if (h < 300) {
-			r = x;
-			g = 0;
-			b = c;
-		} else {
-			r = c;
-			g = 0;
-			b = x;
-		}
-
-		int ri = (int) Math.round((r + m) * 255);
-		int gi = (int) Math.round((g + m) * 255);
-		int bi = (int) Math.round((b + m) * 255);
-		return String.format("#%02x%02x%02x", ri, gi, bi);
+	private static String colorFor(double diameter) {
+		if (diameter < 20)
+			return "#E1BEE7";
+		if (diameter < 30)
+			return "#CE93D8";
+		if (diameter < 40)
+			return "#BA68C8";
+		if (diameter < 50)
+			return "#AB47BC";
+		if (diameter < 75)
+			return "#8E24AA";
+		if (diameter < 100)
+			return "#7B1FA2";
+		if (diameter < 125)
+			return "#6A1B9A";
+		if (diameter < 150)
+			return "#4A148C";
+		if (diameter < 175)
+			return "#311B92";
+		return "#1A237E";
 	}
 
 }
