@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.graph;
+package com.greendelta.bioheating.pipes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,10 +6,9 @@ import java.util.List;
 
 import org.openlca.commons.Res;
 
+import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
 import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
-import com.greendelta.bioheating.pipes.PipeConfig;
-import com.greendelta.bioheating.pipes.Thermo;
 import com.greendelta.bioheating.model.Building;
 
 public class PipePlan {
@@ -102,16 +101,24 @@ public class PipePlan {
 		}
 		peakLoad *= Thermo.diversityFactorOf(buildings.size());
 
+		// temperature difference for pipe heat loss calculation
+		double deltaT = config.averageTemperature() - config.groundTemperature();
+
 		Pipe pipe = null;
 		for (var p : pipes) {
+			// calculate pipe heat loss: Q_loss = U * L * ΔT
+			double pipeLoss = p.uValue() * s.length() * deltaT;
+			double totalLoad = peakLoad + pipeLoss;
+
+			double di = p.innerDiameter() / 1000;
 			double massFlow = Thermo.massFlowOf(
-				config.flowTemperature(), config.returnTemperature(), peakLoad);
+				config.flowTemperature(), config.returnTemperature(), totalLoad);
 			double velocity = Thermo.flowVelocityOf(
-				massFlow, p.diameter(), config.averageTemperature());
+				massFlow, di, config.averageTemperature());
 			if (velocity > config.maxFlowVelocity())
 				continue;
 			var pressureLoss = Thermo.pressureLossOf(
-				velocity, p.diameter(), config.roughness(), config.averageTemperature())
+				velocity, di, config.roughness(), config.averageTemperature())
 				* (1 + config.fittingSurcharge());
 			if (pressureLoss < config.maxPressureLoss()) {
 				pipe = p;

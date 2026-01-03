@@ -2,6 +2,7 @@ package com.greendelta.bioheating.graph;
 
 import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
 import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
+import com.greendelta.bioheating.pipes.PipePlan;
 
 /// Visualization utilities for the heat flow tree.
 public class HeatFlowViz {

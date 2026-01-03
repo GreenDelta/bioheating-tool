@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.math;
+package com.greendelta.bioheating.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
