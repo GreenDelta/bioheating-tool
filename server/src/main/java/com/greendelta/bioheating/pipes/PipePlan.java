@@ -53,6 +53,13 @@ public class PipePlan {
 		return j != null ? j.peakLoad : 0;
 	}
 
+	public Pipe pipeOf(Segment segment) {
+		if (segment == null)
+			return null;
+		var s = segments.get(segment.id());
+		return s != null ? s.pipe : null;
+	}
+
 	private Res<PipeJunction> traverse(Junction junction) {
 		var segments = new ArrayList<PipeSegment>();
 		for (var s : junction.segments()) {
@@ -106,6 +113,7 @@ public class PipePlan {
 		double deltaT = config.averageTemperature() - config.groundTemperature();
 
 		Pipe pipe = null;
+		double segmentLoad = 0;
 		for (var p : pipes) {
 			// pipe heat loss: Q_loss = U * L * ΔT
 			// U in W/(m·K), length in m, ΔT in K => pipeLoss in W
@@ -128,6 +136,7 @@ public class PipePlan {
 				* (1 + config.fittingSurcharge());
 			if (pressureLoss < config.maxPressureLoss()) {
 				pipe = p;
+				segmentLoad = totalLoad;
 				break;
 			}
 		}
@@ -138,7 +147,7 @@ public class PipePlan {
 		}
 
 		var segment = new PipeSegment(
-			s.id(), s.length(), peakLoad, pipe, buildings);
+			s.id(), s.length(), segmentLoad, pipe, buildings);
 		segments.put(segment.id, segment);
 		return Res.ok(segment);
 	}

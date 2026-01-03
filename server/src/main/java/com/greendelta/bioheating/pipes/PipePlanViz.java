@@ -67,12 +67,21 @@ public class PipePlanViz {
 			writeDot(seg.target());
 			var childId = Long.toString(seg.target().id());
 			double edgeWidth = edgeWidthOf(seg);
+			var pipe = plan.pipeOf(seg);
+			var color = pipe != null ? pipe.rgb() : "#000000";
+			var diameter = pipe != null
+				? String.format("%.0f", pipe.innerDiameter())
+				: "";
 			sb.append("  ").append(id)
 				.append(" -> ")
 				.append(childId)
 				.append(" [penwidth=")
 				.append(String.format("%.2f", edgeWidth))
-				.append("];\n");
+				.append(", color=\"")
+				.append(color)
+				.append("\", label=\"")
+				.append(diameter)
+				.append("\"];\n");
 		}
 	}
 
