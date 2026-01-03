@@ -8,8 +8,8 @@ import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
 import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
-import com.greendelta.bioheating.math.PipeConfig;
-import com.greendelta.bioheating.math.Thermo;
+import com.greendelta.bioheating.pipes.PipeConfig;
+import com.greendelta.bioheating.pipes.Thermo;
 import com.greendelta.bioheating.model.Building;
 
 public class PipePlan {
