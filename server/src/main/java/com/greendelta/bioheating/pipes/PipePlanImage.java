@@ -164,7 +164,7 @@ public class PipePlanImage {
 				: DISABLED_COLOR;
 
 			LineString line = factory.createLineString(coords);
-			img.draw(line, color);
+			img.draw(line, color, 3.0f);
 		}
 	}
 

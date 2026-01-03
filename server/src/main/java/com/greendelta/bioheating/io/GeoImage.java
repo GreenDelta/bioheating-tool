@@ -1,5 +1,6 @@
 package com.greendelta.bioheating.io;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -62,6 +63,12 @@ public class GeoImage implements AutoCloseable {
 		}
 	}
 
+	public void draw(LineString line, Color color, float strokeWidth) {
+		if (line != null) {
+			drawLine(line.getCoordinates(), color, strokeWidth);
+		}
+	}
+
 	public void drawPolygon(Coordinate[] cs, Color color) {
 		if (cs == null || color == null)
 			return;
@@ -85,6 +92,13 @@ public class GeoImage implements AutoCloseable {
 			return;
 		var shape = shapeOf(cs);
 		shape.drawLine(g, color);
+	}
+
+	public void drawLine(Coordinate[] cs, Color color, float strokeWidth) {
+		if (cs == null || color == null)
+			return;
+		var shape = shapeOf(cs);
+		shape.drawLine(g, color, strokeWidth);
 	}
 
 	@Override
@@ -122,6 +136,18 @@ public class GeoImage implements AutoCloseable {
 				int i = j - 1;
 				g2d.drawLine(xs[i], ys[i], xs[j], ys[j]);
 			}
+		}
+
+		void drawLine(Graphics2D g2d, Color color, float strokeWidth) {
+			var oldStroke = g2d.getStroke();
+			g2d.setStroke(new BasicStroke(
+				strokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g2d.setColor(color);
+			for (int j = 1; j < n; j++) {
+				int i = j - 1;
+				g2d.drawLine(xs[i], ys[i], xs[j], ys[j]);
+			}
+			g2d.setStroke(oldStroke);
 		}
 	}
 }
