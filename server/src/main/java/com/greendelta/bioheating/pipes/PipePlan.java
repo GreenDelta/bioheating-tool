@@ -95,7 +95,7 @@ public class PipePlan {
 				peakLoad += b.peakLoad();
 			}
 		}
-		peakLoad *= Thermo.diversityFactorOf(n);
+		peakLoad *= Pipes.diversityFactorOf(n);
 		var junction = new PipeJunction(j.id(), peakLoad, segments);
 		junctions.put(junction.id, junction);
 		return Res.ok(junction);
@@ -107,7 +107,7 @@ public class PipePlan {
 		for (var b : buildings) {
 			peakLoad += b.peakLoad();
 		}
-		peakLoad *= Thermo.diversityFactorOf(buildings.size());
+		peakLoad *= Pipes.diversityFactorOf(buildings.size());
 
 		// temperature difference in K (°C difference equals K difference)
 		double deltaT = config.averageTemperature() - config.groundTemperature();
@@ -125,13 +125,13 @@ public class PipePlan {
 
 			// inner diameter in m (converted from mm)
 			double di = p.innerDiameter() / 1000;
-			double massFlow = Thermo.massFlowOf(
+			double massFlow = Pipes.massFlowOf(
 				config.flowTemperature(), config.returnTemperature(), totalLoad);
-			double velocity = Thermo.flowVelocityOf(
+			double velocity = Pipes.flowVelocityOf(
 				massFlow, di, config.averageTemperature());
 			if (velocity > config.maxFlowVelocity())
 				continue;
-			var pressureLoss = Thermo.pressureLossOf(
+			var pressureLoss = Pipes.pressureLossOf(
 				velocity, di, config.roughness(), config.averageTemperature())
 				* (1 + config.fittingSurcharge());
 			if (pressureLoss < config.maxPressureLoss()) {

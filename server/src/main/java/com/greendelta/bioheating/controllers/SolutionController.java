@@ -87,31 +87,14 @@ public class SolutionController {
 				if (tree.isError())
 					return tree.wrapError("failed to create Steiner-Tree");
 
-				var res = new MinTreeSolution(project, tree.value()).create();
-				if (res.isError())
-					return res;
-
-				var solution = res.value();
-				solution.calculatedAt(System.currentTimeMillis());
-				db.insert(solution);
-				deleteOutdatedOf(solution);
-				return res;
+				return new MinTreeSolution(project, tree.value()).create(db);
 			});
 			tasks.schedule(task);
 			return Http.ok(task.toState());
 		});
 	}
 
-	private void deleteOutdatedOf(Solution solution) {
-		if (solution == null || solution.project() == null)
-			return;
-		for (var s : db.getAll(Solution.class)) {
-			if (solution.equals(s)
-				|| !solution.project().equals(s.project()))
-				continue;
-			db.delete(s);
-		}
-	}
+
 
 	private ResponseEntity<?> withProject(
 		Authentication auth, long id, Function<Project, ResponseEntity<?>> fn

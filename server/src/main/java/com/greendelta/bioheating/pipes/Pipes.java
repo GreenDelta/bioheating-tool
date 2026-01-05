@@ -2,9 +2,9 @@ package com.greendelta.bioheating.pipes;
 
 import static java.lang.Math.*;
 
-public class Thermo {
+public class Pipes {
 
-	private Thermo() {
+	private Pipes() {
 	}
 
 	/// Calculates the diversity factor for n consumers:

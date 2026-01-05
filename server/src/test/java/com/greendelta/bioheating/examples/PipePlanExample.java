@@ -24,7 +24,7 @@ public class PipePlanExample {
 			System.out.println("Loaded project: " + project);
 			var tree = Graph.buildFrom(project)
 				.then(SteinerTree::compute)
-				.then(steiner -> new MinTreeSolution(project, steiner).create())
+				.then(steiner -> new MinTreeSolution(project, steiner).create(db))
 				.then(solution -> Res.ok(solution.withTransientIds()))
 				.then(HeatFlowTree::of)
 				.orElseThrow();

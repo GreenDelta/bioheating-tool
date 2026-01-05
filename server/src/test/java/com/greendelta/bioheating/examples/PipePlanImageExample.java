@@ -8,7 +8,6 @@ import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.pipes.PipePlanImage;
 
 public class PipePlanImageExample {
 
@@ -24,17 +23,10 @@ public class PipePlanImageExample {
 
 			var solution = Graph.buildFrom(project)
 				.then(SteinerTree::compute)
-				.then(steiner -> new MinTreeSolution(project, steiner).create())
+				.then(steiner -> new MinTreeSolution(project, steiner).create(db))
 				.orElseThrow();
 
-			var imageRes = PipePlanImage.create(solution);
-			if (imageRes.isError()) {
-				System.err.println("Error: " + imageRes.error());
-				return;
-			}
-
-			Files.write(Path.of("target/pipe-plan.png"), imageRes.value());
-			System.out.println("Pipe plan image written to target/pipe-plan.png");
+			Files.write(Path.of("target/pipe-plan.png"), solution.image());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

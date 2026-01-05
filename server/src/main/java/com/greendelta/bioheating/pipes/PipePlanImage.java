@@ -33,6 +33,8 @@ public class PipePlanImage {
 	private final Color DISABLED_COLOR = new Color(144, 164, 174);
 	private final Color BORDER_COLOR = new Color(55, 71, 79);
 
+	private final Color SUPPLY_CENTER_COLOR = new Color(255, 87, 34);
+
 	private final Color PINK_1 = new Color(248, 187, 208);
 	private final Color PINK_2 = new Color(244, 143, 177);
 	private final Color PINK_3 = new Color(240, 98, 146);
@@ -193,6 +195,10 @@ public class PipePlanImage {
 		var factory = new GeometryFactory();
 		var polygon = factory.createPolygon(b.coordinates());
 
+		if (b.isSupplyCenter()) {
+			img.draw(polygon, BORDER_COLOR, SUPPLY_CENTER_COLOR);
+			return;
+		}
 		if (!b.isHeated() || b.inclusion() != Inclusion.REQUIRED || maxDemand == 0) {
 			img.draw(polygon, BORDER_COLOR, DISABLED_COLOR);
 			return;
