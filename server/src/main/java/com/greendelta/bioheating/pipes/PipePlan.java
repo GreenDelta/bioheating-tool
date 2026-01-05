@@ -50,7 +50,11 @@ public class PipePlan {
 		if (junction == null)
 			return 0;
 		var j = junctions.get(junction.id());
-		return j != null ? j.peakLoad : 0;
+		if (j != null)
+			return j.peakLoad;
+		return junction.isBuilding()
+			? junction.building().peakLoad()
+			: 0;
 	}
 
 	public Pipe pipeOf(Segment segment) {

@@ -94,8 +94,6 @@ public class SolutionController {
 		});
 	}
 
-
-
 	private ResponseEntity<?> withProject(
 		Authentication auth, long id, Function<Project, ResponseEntity<?>> fn
 	) {
