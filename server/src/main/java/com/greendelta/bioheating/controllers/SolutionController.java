@@ -13,12 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.greendelta.bioheating.graph.Graph;
+import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.client.ClientSolution;
+import com.greendelta.bioheating.pipes.PipeConfig;
+import com.greendelta.bioheating.pipes.PipePlanXls;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
@@ -65,6 +68,30 @@ public class SolutionController {
 				.contentType(MediaType.IMAGE_PNG)
 				.header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
 				.body(image);
+		});
+	}
+
+	@GetMapping("/{id}/xls")
+	public ResponseEntity<?> getSolutionXls(
+		Authentication auth, @PathVariable long id
+	) {
+		return withSolution(auth, id, solution -> {
+			var treeRes = HeatFlowTree.of(solution.withTransientIds());
+			if (treeRes.isError())
+				return Http.badRequest(treeRes.error());
+
+			var config = PipeConfig.forPlastic().get();
+			var xlsRes = PipePlanXls.create(config, treeRes.value());
+			if (xlsRes.isError())
+				return Http.badRequest(xlsRes.error());
+
+			var fileName = "pipe-plan-" + solution.id() + ".xlsx";
+			return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType(
+					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+					"attachment; filename=\"" + fileName + "\"")
+				.body(xlsRes.value());
 		});
 	}
 

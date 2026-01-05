@@ -10,6 +10,7 @@ export function SolutionView() {
 	const solution: Solution = useLoaderData();
 	const [error, setError] = useState<string | null>(null);
 	const [isDownloading, setDownloading] = useState(false);
+	const [isDownloadingXls, setDownloadingXls] = useState(false);
 
 	const handleDownload = async () => {
 		if (isDownloading) return;
@@ -20,6 +21,17 @@ export function SolutionView() {
 			setError(res.error);
 		}
 		setDownloading(false);
+	};
+
+	const handleDownloadXls = async () => {
+		if (isDownloadingXls) return;
+		setDownloadingXls(true);
+		setError(null);
+		const res = await api.getSolutionXls(solution.id);
+		if (!res.isOk) {
+			setError(res.error);
+		}
+		setDownloadingXls(false);
 	};
 
 	return (
@@ -33,6 +45,15 @@ export function SolutionView() {
 					]}
 				/>
 				<div className="d-flex gap-2">
+					<button
+						className="btn btn-outline-secondary"
+						onClick={handleDownloadXls}
+						disabled={isDownloadingXls}
+						title="Download pipe plan as Excel file"
+						style={{ width: "140px" }}>
+						<DownloadIcon />
+						{isDownloadingXls ? " Downloading..." : " Excel"}
+					</button>
 					<button
 						className="btn btn-outline-secondary"
 						onClick={handleDownload}

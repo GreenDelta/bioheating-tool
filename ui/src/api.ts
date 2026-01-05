@@ -339,7 +339,32 @@ export async function getSophenaPackage(
 	}
 }
 
-function fileNameOf(resp: Response): string {
+export async function getSolutionXls(
+	solutionId: number,
+): Promise<Res<boolean>> {
+	try {
+		const r = await fetch(`/api/solutions/${solutionId}/xls`);
+		if (r.status !== 200) {
+			const msg = await r.text();
+			return Res.err(
+				`failed to download Excel file: ${r.status} | ${msg}`,
+			);
+		}
+
+		const blob = await r.blob();
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = fileNameOf(r, `pipe-plan-${solutionId}.xlsx`);
+		a.click();
+		window.URL.revokeObjectURL(url);
+		return Res.ok(true);
+	} catch (error) {
+		return Res.err(`failed to download Excel file: ${error}`);
+	}
+}
+
+function fileNameOf(resp: Response, defaultName?: string): string {
 	const header = resp.headers.get("content-disposition");
 	if (header) {
 		const match = header.match(/filename="(.+)"/);
@@ -347,7 +372,7 @@ function fileNameOf(resp: Response): string {
 			return match[1];
 		}
 	}
-	return "project.sophena";
+	return defaultName || "project.sophena";
 }
 
 export async function getTaskState(id: string): Promise<Res<TaskState>> {
