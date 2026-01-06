@@ -1,11 +1,8 @@
 package com.greendelta.bioheating.controllers;
 
-import java.nio.file.Files;
 import java.util.function.Function;
 
-import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.greendelta.bioheating.io.sophena.SophenaExport;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
@@ -73,35 +69,6 @@ public class ProjectController {
 			return res.isError()
 				? Http.serverError("failed to convert project: " + res.error())
 				: Http.ok(res.value());
-		});
-	}
-
-	@GetMapping("/{id}/sophena-package")
-	public ResponseEntity<?> getSophenaPackage(
-		Authentication auth, @PathVariable long id
-	) {
-		return withProject(auth, id, project -> {
-			Res<byte[]> bytes = files.withTempFile(".gz", file -> {
-				var res = SophenaExport.write(project, file);
-				if (res.isError())
-					return res.wrapError(
-						"Failed to write Sophena package: " + res.error());
-				try {
-					var bs = Files.readAllBytes(file.toPath());
-					return Res.ok(bs);
-				} catch (Exception e) {
-					return Res.error("Failed to read exported Sophena package", e);
-				}
-			});
-
-			var name = Strings.isNotBlank(project.name())
-				? project.name().replaceAll("\\W+", "_")
-				: "project";
-			return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION,
-					"attachment; filename=\"" + name + ".json.gz\"")
-				.header(HttpHeaders.CONTENT_TYPE, "application/gzip")
-				.body(bytes.value());
 		});
 	}
 

@@ -1,7 +1,10 @@
 package com.greendelta.bioheating.controllers;
 
+import java.nio.file.Files;
 import java.util.function.Function;
 
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +19,14 @@ import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.SteinerTree;
+import com.greendelta.bioheating.io.sophena.SophenaExport;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.client.ClientSolution;
 import com.greendelta.bioheating.pipes.PipeConfig;
 import com.greendelta.bioheating.pipes.PipePlanXls;
+import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
@@ -35,17 +40,20 @@ public class SolutionController {
 	private final ProjectService projects;
 	private final UserService users;
 	private final TaskService tasks;
+	private final FileService files;
 
 	public SolutionController(
 		Database db,
 		ProjectService projects,
 		UserService users,
-		TaskService tasks
+		TaskService tasks,
+		FileService files
 	) {
 		this.db = db;
 		this.projects = projects;
 		this.users = users;
 		this.tasks = tasks;
+		this.files = files;
 	}
 
 	@GetMapping("/{id}")
@@ -76,14 +84,14 @@ public class SolutionController {
 		Authentication auth, @PathVariable long id
 	) {
 		return withSolution(auth, id, solution -> {
-			var treeRes = HeatFlowTree.of(solution.withTransientIds());
+			var treeRes = HeatFlowTree.of(solution);
 			if (treeRes.isError())
-				return Http.badRequest(treeRes.error());
+				return Http.serverError(treeRes.error());
 
 			var config = PipeConfig.forPlastic().get();
-			var xlsRes = PipePlanXls.create(config, treeRes.value());
-			if (xlsRes.isError())
-				return Http.badRequest(xlsRes.error());
+			var xls = PipePlanXls.create(config, treeRes.value());
+			if (xls.isError())
+				return Http.serverError(xls.error());
 
 			var fileName = "pipe-plan-" + solution.id() + ".xlsx";
 			return ResponseEntity.ok()
@@ -91,7 +99,39 @@ public class SolutionController {
 					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
 				.header(HttpHeaders.CONTENT_DISPOSITION,
 					"attachment; filename=\"" + fileName + "\"")
-				.body(xlsRes.value());
+				.body(xls.value());
+		});
+	}
+
+	@GetMapping("/{id}/sophena-package")
+	public ResponseEntity<?> getSophenaPackage(
+		Authentication auth, @PathVariable long id
+	) {
+		return withSolution(auth, id, solution -> {
+			Res<byte[]> bytes = files.withTempFile(".gz", file -> {
+				var res = SophenaExport.write(solution, file);
+				if (res.isError())
+					return res.wrapError(
+						"Failed to write Sophena package: " + res.error());
+				try {
+					var bs = Files.readAllBytes(file.toPath());
+					return Res.ok(bs);
+				} catch (Exception e) {
+					return Res.error("Failed to read exported Sophena package", e);
+				}
+			});
+			if (bytes.isError())
+				return Http.serverError(bytes.error());
+
+			var project = solution.project();
+			var name = project != null && Strings.isNotBlank(project.name())
+				? project.name().replaceAll("\\W+", "_")
+				: "solution";
+			return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+					"attachment; filename=\"" + name + ".json.gz\"")
+				.header(HttpHeaders.CONTENT_TYPE, "application/gzip")
+				.body(bytes.value());
 		});
 	}
 

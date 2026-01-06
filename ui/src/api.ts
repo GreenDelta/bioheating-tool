@@ -315,10 +315,10 @@ export async function getFuels(): Promise<Res<Fuel[]>> {
 }
 
 export async function getSophenaPackage(
-	projectId: number,
+	solutionId: number,
 ): Promise<Res<boolean>> {
 	try {
-		const r = await fetch(`/api/projects/${projectId}/sophena-package`);
+		const r = await fetch(`/api/solutions/${solutionId}/sophena-package`);
 		if (r.status !== 200) {
 			const msg = await r.text();
 			return Res.err(
