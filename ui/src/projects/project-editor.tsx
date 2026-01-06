@@ -153,6 +153,14 @@ const CalculateButton = ({ ctx }: Props) => {
 	const [isCalculating, setCalculating] = useState(false);
 	const handleCalculate = async () => {
 		if (isCalculating) return;
+
+		// Validate project before calculation
+		const validationError = validateProject(ctx.project);
+		if (validationError) {
+			ctx.setError(validationError);
+			return;
+		}
+
 		setCalculating(true);
 		ctx.setError(null);
 		const res = await api.calculateSolution(ctx.project.id);
@@ -175,6 +183,47 @@ const CalculateButton = ({ ctx }: Props) => {
 		</button>
 	);
 };
+
+function validateProject(project: Project): string | null {
+	const features = project.map?.features || [];
+
+	// Check for supply center
+	let hasSupplyCenter = false;
+	let hasIncludedHeatedBuildings = false;
+	let hasIncludedStreets = false;
+
+	for (const f of features) {
+		if (isBuilding(f)) {
+			const props = f.properties || {};
+			if (props.isSupplyCenter) {
+				hasSupplyCenter = true;
+			}
+			if (props.isIncluded && props.isHeated) {
+				hasIncludedHeatedBuildings = true;
+			}
+		} else {
+			// street
+			const props = f.properties || {};
+			if (!props.isExcluded) {
+				hasIncludedStreets = true;
+			}
+		}
+	}
+
+	if (!hasSupplyCenter) {
+		return "No supply center defined. Please set at least one building as supply hub in the network status.";
+	}
+
+	if (!hasIncludedHeatedBuildings) {
+		return "No heated buildings included in the network. Please mark at least one heated building as connected.";
+	}
+
+	if (!hasIncludedStreets) {
+		return "All streets are excluded. Please include at least one street in the network.";
+	}
+
+	return null;
+}
 
 const ErrorPanel = ({ ctx }: Props) => {
 	if (!ctx.error) {
