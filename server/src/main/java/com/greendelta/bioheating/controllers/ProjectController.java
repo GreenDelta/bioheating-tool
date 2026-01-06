@@ -123,7 +123,7 @@ public class ProjectController {
 		Authentication auth, @PathVariable long id, @RequestBody ClientProject data
 	) {
 		return withProject(auth, id, project -> {
-			data.writeUpdatesTo(db, project);
+			data.writeUpdatesTo(project);
 			var res = projects.updateProject(project);
 			return res.isError()
 				? Http.serverError("failed to save project: " + res.error())

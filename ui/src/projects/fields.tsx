@@ -10,8 +10,8 @@ export const StringField = ({
 	onChange: (value: string) => void;
 }) => (
 	<div className="row mb-1">
-		<label className="col-sm-4 col-form-label">{label}</label>
-		<div className="col-sm-8">
+		<label className="col-sm-5 col-form-label">{label}</label>
+		<div className="col-sm-7">
 			<input
 				className="form-control"
 				value={value}
@@ -37,8 +37,8 @@ export const NumberField = ({
 	onChange?: (value: string) => void;
 }) => (
 	<div className="row mb-1">
-		<label className="col-sm-4 col-form-label">{label}</label>
-		<div className="col-sm-8">
+		<label className="col-sm-5 col-form-label">{label}</label>
+		<div className="col-sm-7">
 			<input
 				type="number"
 				step={step || "1"}
@@ -67,8 +67,8 @@ export const CheckboxField = ({
 	onChange: (checked: boolean) => void;
 }) => (
 	<div className="row mb-1">
-		<label className="col-sm-4 col-form-label">{label}</label>
-		<div className="col-sm-8">
+		<label className="col-sm-5 col-form-label">{label}</label>
+		<div className="col-sm-7">
 			<div className="form-check mt-2">
 				<input
 					type="checkbox"
@@ -95,8 +95,8 @@ export const SelectField = ({
 	onChange: (value: string) => void;
 }) => (
 	<div className="row mb-1">
-		<label className="col-sm-4 col-form-label">{label}</label>
-		<div className="col-sm-8">
+		<label className="col-sm-5 col-form-label">{label}</label>
+		<div className="col-sm-7">
 			<select
 				disabled={disabled}
 				className="form-control"

@@ -42,13 +42,13 @@ public record ClientProject(
 		return solution != null ? solution.id() : null;
 	}
 
-	public void writeUpdatesTo(Database db, Project project) {
+	public void writeUpdatesTo(Project project) {
 		if (project == null)
 			return;
 		project.name(name);
 		project.description(description);
 		if (project.map() != null && map != null) {
-			MapSync.updateFromClient(db, project.map(), map);
+			MapSync.updateFromClient(project.map(), map);
 		}
 	}
 

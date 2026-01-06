@@ -8,6 +8,29 @@ interface Props {
 	onChange: () => void;
 }
 
+type NetworkStatus = "supply" | "connected" | "excluded";
+
+function round2(value: number): number {
+	return Math.round(value * 100) / 100;
+}
+
+function networkStatusOf(data: BuildingData): NetworkStatus {
+	if (data.isSupplyCenter) return "supply";
+	if (data.isIncluded) return "connected";
+	return "excluded";
+}
+
+function networkStatusToProps(status: NetworkStatus): BuildingProps {
+	switch (status) {
+		case "supply":
+			return { isIncluded: true, isSupplyCenter: true };
+		case "connected":
+			return { isIncluded: true, isSupplyCenter: false };
+		case "excluded":
+			return { isIncluded: false, isSupplyCenter: false };
+	}
+}
+
 export const BuildingPanel = ({ feature, onChange }: Props) => {
 	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
 	useEffect(() => {
@@ -30,47 +53,53 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					onChange={value => put({ name: value })}
 				/>
 
+				<SelectField
+					label="Network status"
+					value={networkStatusOf(data)}
+					options={[
+						{ value: "supply", label: "Supply hub" },
+						{ value: "connected", label: "Connected" },
+						{ value: "excluded", label: "Excluded" },
+					]}
+					onChange={value => put(networkStatusToProps(value as NetworkStatus))}
+				/>
+
 				<CheckboxField
 					label="Is heated"
 					checked={data.isHeated}
 					onChange={checked => put({ isHeated: checked })}
 				/>
 
-				<CheckboxField
-					label="Is supply center"
-					checked={data.isSupplyCenter}
-					onChange={checked => put({ isSupplyCenter: checked })}
-				/>
+				{data.isHeated && (
+					<>
+						<NumberField
+							label="Heat demand (kWh)"
+							value={round2(data.heatDemand)}
+							step="0.1"
+							onChange={value => put({ heatDemand: value })}
+						/>
 
-				<NumberField
-					label="Heat demand (kWh)"
-					value={data.heatDemand}
-					step="0.1"
-					disabled={!data.isHeated}
-					onChange={value => put({ heatDemand: value })}
-				/>
-
-				<NumberField
-					label="Peak load (kW)"
-					value={data.peakLoad}
-					step="0.1"
-					disabled={!data.isHeated}
-					onChange={value => put({ peakLoad: value })}
-				/>
-
-				{!data.isSupplyCenter && data.isHeated && (
-					<CheckboxField
-						label="Include in solution"
-						checked={data.isIncluded}
-						onChange={checked => put({ isIncluded: checked })}
-					/>
+						<NumberField
+							label="Peak load (kW)"
+							value={round2(data.peakLoad)}
+							step="0.1"
+							onChange={value => put({ peakLoad: value })}
+						/>
+					</>
 				)}
 
 				<NumberField
 					label="Height (m)"
-					value={data.height}
+					value={round2(data.height)}
 					step="0.1"
 					onChange={value => put({ height: value })}
+				/>
+
+				<NumberField
+					label="Ground Area (m²)"
+					value={round2(data.groundArea)}
+					step="0.1"
+					onChange={value => put({ groundArea: value })}
 				/>
 
 				<NumberField
@@ -123,20 +152,6 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 						{ value: ConstructionAge.AGE_2010_2030, label: constructionAgeToString(ConstructionAge.AGE_2010_2030) },
 					]}
 					onChange={value => put({ constructionAge: value })}
-				/>
-
-				<NumberField
-					label="Height (m)"
-					value={data.height}
-					step="0.1"
-					onChange={value => put({ height: value })}
-				/>
-
-				<NumberField
-					label="Ground Area (m²)"
-					value={data.groundArea}
-					step="0.1"
-					onChange={value => put({ groundArea: value })}
 				/>
 
 				<hr />

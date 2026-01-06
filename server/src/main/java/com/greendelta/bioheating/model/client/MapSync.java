@@ -8,18 +8,17 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
 
+import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
 
 public class MapSync {
 
-	private final Database db;
 	private final Map<Long, Building> buildings;
 	private final Map<Long, Street> streets;
 	private final ClientMap clientMap;
 
-	private MapSync(Database db, GeoMap map, ClientMap clientMap) {
-		this.db = db;
+	private MapSync(GeoMap map, ClientMap clientMap) {
 		this.clientMap = clientMap;
 		buildings = new HashMap<>(map.buildings().size());
 		for (var b : map.buildings()) {
@@ -31,11 +30,9 @@ public class MapSync {
 		}
 	}
 
-	public static void updateFromClient(
-		Database db, GeoMap map, ClientMap clientMap
-	) {
-		if (db != null && map != null && clientMap != null) {
-			new MapSync(db, map, clientMap).sync();
+	public static void updateFromClient(GeoMap map, ClientMap clientMap) {
+		if ( map != null && clientMap != null) {
+			new MapSync(map, clientMap).sync();
 		}
 	}
 
