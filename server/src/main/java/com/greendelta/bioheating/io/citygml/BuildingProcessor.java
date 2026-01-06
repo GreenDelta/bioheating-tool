@@ -64,6 +64,7 @@ class BuildingProcessor {
 
 		var building = new Building()
 			.name(nameOf(gml))
+			.cityId(gml.id())
 			.coordinates(coordinatesOf(gml))
 			.isHeated(isHeated)
 			.type(type)

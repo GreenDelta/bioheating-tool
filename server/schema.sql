@@ -21,6 +21,7 @@ drop table if exists tbl_buildings cascade;
 create table tbl_buildings (
     id int not null primary key,
     name varchar,
+    city_id varchar,
     coordinates bytea,
     f_map int,
     roof_type_code varchar,

@@ -16,6 +16,9 @@ public class Building extends BaseEntity {
 	@Column(name = "name")
 	private String name;
 
+	@Column(name = "city_id")
+	private String cityId;
+
 	@Column(name = "coordinates")
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
@@ -83,6 +86,15 @@ public class Building extends BaseEntity {
 
 	public Building name(String name) {
 		this.name = name;
+		return this;
+	}
+
+	public String cityId() {
+		return cityId;
+	}
+
+	public Building cityId(String cityId) {
+		this.cityId = cityId;
 		return this;
 	}
 

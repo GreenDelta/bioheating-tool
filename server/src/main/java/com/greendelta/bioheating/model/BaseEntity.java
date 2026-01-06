@@ -44,9 +44,7 @@ public abstract class BaseEntity {
 		var other = (BaseEntity) obj;
 		// when the IDs are 0, so not saved in the database yet, the
 		// entities are only equal when they are identical (obj == this)
-		return this.id != 0L
-			? this.id == other.id
-			: false;
+		return this.id != 0L && this.id == other.id;
 	}
 
 	@Override
