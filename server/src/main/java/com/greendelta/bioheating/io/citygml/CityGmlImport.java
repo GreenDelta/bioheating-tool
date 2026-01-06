@@ -72,7 +72,17 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return predictions.wrapError("Failed to predict heat demands");
 		var demands = predictions.value();
 		for (int i = 0; i < buildings.size(); i++) {
-			buildings.get(i).heatDemand(demands[i]);
+			var building = buildings.get(i);
+			var heatDemand = demands[i];
+			building.heatDemand(heatDemand);
+
+			/// Estimates the peak heating load of the building based on its annual
+			/// heat demand using a linear regression model (as in Thermos).
+			/// The formula is: `peakLoad = 0.0004963 * heatDemand + 21.84`
+			/// where `heatDemand` is in kWh/year and peakLoad is in kW.
+			/// Note: In a future version of the model, this field will also be
+			/// predicted by the machine learning model.
+			building.peakLoad(0.0004963 * heatDemand + 21.84);
 		}
 
 		if (withOsmImport) {

@@ -50,6 +50,14 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					onChange={value => put({ heatDemand: value })}
 				/>
 
+				<NumberField
+					label="Peak load (kW)"
+					value={data.peakLoad}
+					step="0.1"
+					disabled={!data.isHeated}
+					onChange={value => put({ peakLoad: value })}
+				/>
+
 				{!data.isSupplyCenter && (
 					<SelectField
 						label="Inclusion"

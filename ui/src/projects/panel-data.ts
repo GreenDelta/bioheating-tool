@@ -6,6 +6,7 @@ export interface BuildingProps {
 	height?: any;
 	storeys?: any;
 	heatDemand?: any;
+	peakLoad?: any;
 	roofTypeCode?: any;
 	roofTypeLabel?: any;
 	roofType?: any; // backward compatibility
@@ -69,6 +70,7 @@ export class BuildingData {
 	height: number;
 	storeys: number;
 	heatDemand: number;
+	peakLoad: number;
 	roofTypeCode: string;
 	roofTypeLabel: string;
 	functionCode: string;
@@ -96,6 +98,7 @@ export class BuildingData {
 			this.height = d.height;
 			this.storeys = d.storeys;
 			this.heatDemand = d.heatDemand;
+			this.peakLoad = d.peakLoad;
 			this.roofTypeCode = d.roofTypeCode;
 			this.roofTypeLabel = d.roofTypeLabel;
 			this.functionCode = d.functionCode;
@@ -116,6 +119,7 @@ export class BuildingData {
 			this.height = floatOf(d.height);
 			this.storeys = intOf(d.storeys);
 			this.heatDemand = floatOf(d.heatDemand);
+			this.peakLoad = floatOf(d.peakLoad);
 			// Handle backward compatibility - if old properties exist, use them as codes
 			this.roofTypeCode = stringOf(d.roofTypeCode || d.roofType);
 			this.roofTypeLabel = stringOf(d.roofTypeLabel || d.roofType);
@@ -148,6 +152,9 @@ export class BuildingData {
 		}
 		if (props.heatDemand) {
 			copy.heatDemand = props.heatDemand;
+		}
+		if (props.peakLoad) {
+			copy.peakLoad = props.peakLoad;
 		}
 		if (props.roofTypeCode) {
 			copy.roofTypeCode = props.roofTypeCode;
@@ -205,6 +212,7 @@ export class BuildingData {
 		f.properties.height = this.height;
 		f.properties.storeys = this.storeys;
 		f.properties.heatDemand = this.heatDemand;
+		f.properties.peakLoad = this.peakLoad;
 		f.properties.roofTypeCode = this.roofTypeCode;
 		f.properties.roofTypeLabel = this.roofTypeLabel;
 		f.properties.functionCode = this.functionCode;

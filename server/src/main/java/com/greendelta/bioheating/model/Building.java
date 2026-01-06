@@ -70,6 +70,9 @@ public class Building extends BaseEntity {
 	@Column(name = "heat_demand")
 	private double heatDemand;
 
+	@Column(name = "peak_load")
+	private double peakLoad;
+
 	@Column(name = "is_heated")
 	private boolean isHeated;
 
@@ -276,15 +279,14 @@ public class Building extends BaseEntity {
 		return inclusion == Inclusion.REQUIRED;
 	}
 
-	/// Estimates the peak heating load of the building based on its annual
-	/// heat demand using a linear regression model (as in Thermos).
-	///
-	/// The formula is: `peakLoad = 0.0004963 * heatDemand + 21.84`
-	/// where `heatDemand` is in kWh/year.
-	///
-	/// @return the peak heating load in kW
+	/// Returns the peak heating load of the building in kW.
 	public double peakLoad() {
-		return 0.0004963 * heatDemand + 21.84;
+		return peakLoad;
+	}
+
+	public Building peakLoad(double peakLoad) {
+		this.peakLoad = peakLoad;
+		return this;
 	}
 
 	@Override

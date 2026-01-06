@@ -40,6 +40,7 @@ create table tbl_buildings (
     street_number varchar,
     climate_zone int,
     heat_demand double precision,
+    peak_load double precision,
     is_heated boolean,
     is_supply_center boolean,
     inclusion varchar
