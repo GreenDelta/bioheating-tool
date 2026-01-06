@@ -79,9 +79,8 @@ public class Building extends BaseEntity {
 	@Column(name = "is_supply_center")
 	private boolean isSupplyCenter;
 
-	@Column(name = "inclusion")
-	@Enumerated(EnumType.STRING)
-	private Inclusion inclusion;
+	@Column(name = "is_included")
+	private boolean isIncluded;
 
 	public String name() {
 		return name;
@@ -266,17 +265,13 @@ public class Building extends BaseEntity {
 		return this;
 	}
 
-	public Inclusion inclusion() {
-		return inclusion;
-	}
-
-	public Building inclusion(Inclusion inclusion) {
-		this.inclusion = inclusion;
-		return this;
-	}
-
 	public boolean isIncluded() {
-		return inclusion == Inclusion.REQUIRED;
+		return isIncluded;
+	}
+
+	public Building isIncluded(boolean isIncluded) {
+		this.isIncluded = isIncluded;
+		return this;
 	}
 
 	/// Returns the peak heating load of the building in kW.

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { GeoFeature, Inclusion, isBuilding, isStreet } from "../model";
-import { NumberField, SelectField } from "./fields";
+import { GeoFeature, isBuilding } from "../model";
+import { NumberField, CheckboxField } from "./fields";
 import { BuildingData } from "./panel-data";
 
 interface Props {
@@ -13,7 +13,6 @@ export const MultiPanel: React.FC<Props> = ({ features, onChange }) => {
 		<div className="card">
 			<div className="card-body">
 				<BuildingSection features={features} onChange={onChange} />
-				<StreetSection features={features} onChange={onChange} />
 			</div>
 		</div>
 	);
@@ -23,12 +22,11 @@ const BuildingSection = ({ features, onChange }: Props) => {
 	const buildings = features.filter(isBuilding);
 	if (!buildings || buildings.length === 0) return <></>;
 
-	const [inclusion, setInclusion] = useState(commonInclusionOf(buildings));
+	const [isIncluded, setIsIncluded] = useState(commonIsIncluded(buildings));
 	const stats = buildingStatsOf(buildings);
-	const onUpdate = (v: string) => {
-		const next = v === "" ? Inclusion.EXCLUDED : v;
-		putInclusion(buildings, next);
-		setInclusion(next);
+	const onUpdate = (checked: boolean) => {
+		putIsIncluded(buildings, checked);
+		setIsIncluded(checked);
 		onChange();
 	};
 
@@ -42,71 +40,36 @@ const BuildingSection = ({ features, onChange }: Props) => {
 				readOnly
 				value={stats.totalDemand}
 			/>
-			<SelectField
-				label="Set inclusion"
-				value={inclusion}
-				options={[
-					{ value: "", label: "Select..." },
-					{ value: Inclusion.REQUIRED, label: "Included" },
-					{ value: Inclusion.EXCLUDED, label: "Excluded" },
-				]}
+			<CheckboxField
+				label="Include all in solution"
+				checked={isIncluded}
 				onChange={onUpdate}
 			/>
 		</div>
 	);
 };
 
-const StreetSection = ({ features, onChange }: Props) => {
-	const streets = features.filter(isStreet);
-	if (!streets || streets.length === 0) return <></>;
-
-	const [inclusion, setInclusion] = useState(commonInclusionOf(streets));
-	const onUpdate = (v: string) => {
-		const next = v === "" ? Inclusion.OPTIONAL : v;
-		putInclusion(streets, next);
-		setInclusion(next);
-		onChange();
-	};
-
-	return (
-		<div className="mb-3">
-			<h6 className="text-muted">{streets.length} Streets</h6>
-			<SelectField
-				label="Set inclusion"
-				value={inclusion}
-				options={[
-					{ value: "", label: "Select..." },
-					{ value: Inclusion.OPTIONAL, label: "Optional" },
-					{ value: Inclusion.REQUIRED, label: "Required" },
-					{ value: Inclusion.EXCLUDED, label: "Excluded" },
-				]}
-				onChange={onUpdate}
-			/>
-		</div>
-	);
-};
-
-function putInclusion(features: GeoFeature[], value: string) {
+function putIsIncluded(features: GeoFeature[], value: boolean) {
 	for (const f of features) {
 		if (!f.properties) {
 			f.properties = {};
 		}
-		f.properties.inclusion = value;
+		f.properties.isIncluded = value;
 	}
 }
 
-function commonInclusionOf(features: GeoFeature[]): string {
+function commonIsIncluded(features: GeoFeature[]): boolean {
 	if (!features || features.length === 0) {
-		return "";
+		return false;
 	}
-	let v = features[0].properties?.inclusion || "";
+	const first = features[0].properties?.isIncluded || false;
 	for (let i = 1; i < features.length; i++) {
-		const vi = features[i].properties?.inclusion;
-		if (vi !== v) {
-			return "";
+		const vi = features[i].properties?.isIncluded || false;
+		if (vi !== first) {
+			return false;
 		}
 	}
-	return v;
+	return first;
 }
 
 interface BuildingStats {

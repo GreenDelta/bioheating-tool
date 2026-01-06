@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { GeoFeature, Inclusion } from "../model";
+import { GeoFeature } from "../model";
 import { StreetData, StreetProps } from "./panel-data";
-import { StringField, SelectField } from "./fields";
+import { StringField, CheckboxField } from "./fields";
 
 interface Props {
 	feature: GeoFeature;
@@ -32,15 +32,10 @@ export const StreetPanel = ({ feature, onChange }: Props) => {
 					onChange={value => put({ name: value })}
 				/>
 
-				<SelectField
-					label="Inclusion"
-					value={data.inclusion}
-					options={[
-						{ value: Inclusion.OPTIONAL, label: "Optional" },
-						{ value: Inclusion.REQUIRED, label: "Required" },
-						{ value: Inclusion.EXCLUDED, label: "Excluded" },
-					]}
-					onChange={value => put({ inclusion: value })}
+				<CheckboxField
+					label="Exclude from solution"
+					checked={data.isExcluded}
+					onChange={checked => put({ isExcluded: checked })}
 				/>
 			</div>
 		</div>

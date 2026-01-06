@@ -1,5 +1,5 @@
 import { GeoFeature } from "../model";
-import { Inclusion, inclusionFromString, BuildingType, buildingTypeFromString, ConstructionAge, constructionAgeFromString } from "../model";
+import { BuildingType, buildingTypeFromString, ConstructionAge, constructionAgeFromString } from "../model";
 
 export interface BuildingProps {
 	name?: any;
@@ -23,7 +23,7 @@ export interface BuildingProps {
 	streetNumber?: any;
 	isHeated?: any;
 	isSupplyCenter?: any;
-	inclusion?: any;
+	isIncluded?: any;
 }
 
 function stringOf(field: any): string {
@@ -85,7 +85,7 @@ export class BuildingData {
 	streetNumber: string;
 	isHeated: boolean;
 	isSupplyCenter: boolean;
-	inclusion: Inclusion;
+	isIncluded: boolean;
 
 	static of(f: GeoFeature): BuildingData {
 		const props = f.properties || {};
@@ -113,7 +113,7 @@ export class BuildingData {
 			this.streetNumber = d.streetNumber;
 			this.isHeated = d.isHeated;
 			this.isSupplyCenter = d.isSupplyCenter;
-			this.inclusion = d.inclusion;
+			this.isIncluded = d.isIncluded;
 		} else {
 			this.name = stringOf(d.name);
 			this.height = floatOf(d.height);
@@ -135,7 +135,7 @@ export class BuildingData {
 			this.streetNumber = stringOf(d.streetNumber);
 			this.isHeated = boolOf(d.isHeated);
 			this.isSupplyCenter = boolOf(d.isSupplyCenter);
-			this.inclusion = inclusionFromString(d.inclusion || "REQUIRED");
+			this.isIncluded = boolOf(d.isIncluded);
 		}
 	}
 
@@ -198,8 +198,8 @@ export class BuildingData {
 		if (props.isSupplyCenter !== undefined) {
 			copy.isSupplyCenter = props.isSupplyCenter;
 		}
-		if (props.inclusion !== undefined) {
-			copy.inclusion = inclusionFromString(props.inclusion);
+		if (props.isIncluded !== undefined) {
+			copy.isIncluded = boolOf(props.isIncluded);
 		}
 		return copy;
 	}
@@ -227,7 +227,7 @@ export class BuildingData {
 		f.properties.streetNumber = this.streetNumber;
 		f.properties.isHeated = this.isHeated;
 		f.properties.isSupplyCenter = this.isSupplyCenter;
-		f.properties.inclusion = this.inclusion;
+		f.properties.isIncluded = this.isIncluded;
 	}
 
 	isValid(): boolean {
@@ -237,12 +237,12 @@ export class BuildingData {
 
 export interface StreetProps {
 	name?: any;
-	inclusion?: any;
+	isExcluded?: any;
 }
 
 export class StreetData {
 	name: string;
-	inclusion: Inclusion;
+	isExcluded: boolean;
 
 	static of(f: GeoFeature): StreetData {
 		const props = f.properties || {};
@@ -252,10 +252,10 @@ export class StreetData {
 	constructor(d: StreetData | StreetProps) {
 		if (d instanceof StreetData) {
 			this.name = d.name;
-			this.inclusion = d.inclusion;
+			this.isExcluded = d.isExcluded;
 		} else {
 			this.name = stringOf(d.name);
-			this.inclusion = inclusionFromString(d.inclusion);
+			this.isExcluded = boolOf(d.isExcluded);
 		}
 	}
 
@@ -264,8 +264,8 @@ export class StreetData {
 		if (props.name) {
 			copy.name = props.name;
 		}
-		if (props.inclusion !== undefined) {
-			copy.inclusion = inclusionFromString(props.inclusion);
+		if (props.isExcluded !== undefined) {
+			copy.isExcluded = boolOf(props.isExcluded);
 		}
 		return copy;
 	}
@@ -275,7 +275,7 @@ export class StreetData {
 			f.properties = {};
 		}
 		f.properties.name = this.name;
-		f.properties.inclusion = this.inclusion;
+		f.properties.isExcluded = this.isExcluded;
 	}
 
 	isValid(): boolean {

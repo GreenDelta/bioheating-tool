@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Street;
 
 class OsmStreetFetch {
@@ -119,7 +118,7 @@ class OsmStreetFetch {
 
 		var street = new Street()
 			.name(name)
-			.inclusion(Inclusion.OPTIONAL)
+			.isExcluded(false)
 			.coordinates(transformed.value());
 		return Res.ok(street);
 	}

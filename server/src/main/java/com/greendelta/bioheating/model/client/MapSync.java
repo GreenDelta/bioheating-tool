@@ -7,9 +7,8 @@ import java.util.function.Function;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
-import com.greendelta.bioheating.model.Database;
+
 import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Street;
 
 public class MapSync {
@@ -80,7 +79,7 @@ public class MapSync {
 		syncDouble(props, "heatDemand", b::heatDemand);
 		syncBool(props, "isHeated", b::isHeated);
 		syncBool(props, "isSupplyCenter", b::isSupplyCenter);
-		syncInclusion(props, b::inclusion);
+		syncBool(props, "isIncluded", b::isIncluded);
 
 	}
 
@@ -89,7 +88,7 @@ public class MapSync {
 		if (s == null)
 			return;
 		syncString(props, "name", s::name);
-		syncInclusion(props, s::inclusion);
+		syncBool(props, "isExcluded", s::isExcluded);
 	}
 
 	private void syncString(
@@ -121,19 +120,6 @@ public class MapSync {
 		var value = props.get(key);
 		if (value instanceof Boolean b) {
 			setter.apply(b);
-		}
-	}
-
-	private void syncInclusion(
-		Map<String, Object> props, Function<Inclusion, ?> setter) {
-		var value = props.get("inclusion");
-		if (value instanceof String) {
-			try {
-				var inclusion = Inclusion.valueOf((String) value);
-				setter.apply(inclusion);
-			} catch (IllegalArgumentException e) {
-				// ignore
-			}
 		}
 	}
 

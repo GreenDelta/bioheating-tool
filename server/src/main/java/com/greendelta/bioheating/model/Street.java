@@ -5,8 +5,6 @@ import org.locationtech.jts.geom.Coordinate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
 @Entity
@@ -20,9 +18,8 @@ public class Street extends BaseEntity {
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
 
-	@Column(name = "inclusion")
-	@Enumerated(EnumType.STRING)
-	private Inclusion inclusion;
+	@Column(name = "is_excluded")
+	private boolean isExcluded;
 
 	public String name() {
 		return name;
@@ -42,12 +39,12 @@ public class Street extends BaseEntity {
 		return this;
 	}
 
-	public Inclusion inclusion() {
-		return inclusion;
+	public boolean isExcluded() {
+		return isExcluded;
 	}
 
-	public Street inclusion(Inclusion inclusion) {
-		this.inclusion = inclusion;
+	public Street isExcluded(boolean isExcluded) {
+		this.isExcluded = isExcluded;
 		return this;
 	}
 }

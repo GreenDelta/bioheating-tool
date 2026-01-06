@@ -16,7 +16,6 @@ import org.openlca.commons.Res;
 import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.SolutionNode;
 
@@ -199,7 +198,7 @@ public class PipePlanImage {
 			img.draw(polygon, BORDER_COLOR, SUPPLY_CENTER_COLOR);
 			return;
 		}
-		if (!b.isHeated() || b.inclusion() != Inclusion.REQUIRED || maxDemand == 0) {
+		if (!b.isHeated() || !b.isIncluded() || maxDemand == 0) {
 			img.draw(polygon, BORDER_COLOR, DISABLED_COLOR);
 			return;
 		}

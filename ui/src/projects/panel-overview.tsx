@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Project, isBuilding, Inclusion } from "../model";
+import { Project, isBuilding } from "../model";
 import { BuildingData } from "./panel-data";
 
 interface Props {
@@ -16,7 +16,7 @@ function keyFiguresOf(project: Project) {
 			continue;
 		}
 		const data = BuildingData.of(f);
-		if (data.inclusion === Inclusion.REQUIRED && data.isHeated) {
+		if (data.isIncluded && data.isHeated) {
 			buildingCount++;
 			totalDemand += data.heatDemand;
 		}

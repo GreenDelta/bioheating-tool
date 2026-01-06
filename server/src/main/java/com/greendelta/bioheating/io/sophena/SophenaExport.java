@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.model.Building;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Solution;
 
 public class SophenaExport {
@@ -66,7 +65,7 @@ public class SophenaExport {
 	}
 
 	private ObjectNode consumerOf(Building b) {
-		if (b == null || !b.isHeated() || b.inclusion() != Inclusion.REQUIRED)
+		if (b == null || !b.isHeated() || !b.isIncluded())
 			return null;
 
 		var obj = json.objectNode()

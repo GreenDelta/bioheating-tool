@@ -10,7 +10,6 @@ import org.locationtech.jts.index.strtree.STRtree;
 import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.graph.Node.StreetNode;
-import com.greendelta.bioheating.model.Inclusion;
 
 record StreetNet(List<Edge> edges, STRtree index) {
 
@@ -44,7 +43,7 @@ record StreetNet(List<Edge> edges, STRtree index) {
 
 		private void createEdges() {
 			for (var s : config.streets()) {
-				if (s.inclusion() == Inclusion.EXCLUDED)
+				if (s.isExcluded())
 					continue;
 
 				var cs = s.coordinates();

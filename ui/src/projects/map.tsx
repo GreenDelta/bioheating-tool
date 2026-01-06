@@ -136,7 +136,6 @@ function styleOf(feature: any, ids: Set<any>) {
 
 function colorOf(f: GeoFeature): string {
 	const props = f.properties || {};
-	const inclusion = props.inclusion;
 
 	// building
 	if (isBuilding(f)) {
@@ -146,15 +145,12 @@ function colorOf(f: GeoFeature): string {
 		if (!props.isHeated) {
 			return "#607d8b";
 		}
-		return inclusion === "REQUIRED" ? "#ec407a" : "#f8bbd0";
+		return props.isIncluded ? "#ec407a" : "#f8bbd0";
 	}
 
 	// street
-	if (inclusion === "EXCLUDED") {
+	if (props.isExcluded) {
 		return "#607d8b";
-	}
-	if (inclusion === "REQUIRED") {
-		return "#ec407a";
 	}
 	return "#1976d2";
 }

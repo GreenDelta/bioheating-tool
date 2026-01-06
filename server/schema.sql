@@ -43,7 +43,7 @@ create table tbl_buildings (
     peak_load double precision,
     is_heated boolean,
     is_supply_center boolean,
-    inclusion varchar
+    is_included boolean
 );
 
 drop table if exists tbl_streets cascade;
@@ -52,7 +52,7 @@ create table tbl_streets (
     name varchar,
     coordinates bytea,
     f_map int,
-    inclusion varchar
+    is_excluded boolean
 );
 
 drop table if exists tbl_maps cascade;

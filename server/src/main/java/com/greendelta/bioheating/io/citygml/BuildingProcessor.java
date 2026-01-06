@@ -14,7 +14,6 @@ import com.greendelta.bioheating.citygml.GmlFunctionType;
 import com.greendelta.bioheating.citygml.GmlRoofType;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.predict.FeatureValue;
 
 /// Maps the building attributes of the CityGML model to the domain model.
@@ -71,7 +70,7 @@ class BuildingProcessor {
 			.height(gml.height())
 			.storeys(storeys)
 			.groundArea(shape.groundArea())
-			.inclusion(Inclusion.EXCLUDED);
+			.isIncluded(false);
 
 		if (func != null) {
 			building.functionCode(func.code())

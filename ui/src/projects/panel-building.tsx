@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { GeoFeature, Inclusion, BuildingType, ConstructionAge, constructionAgeToString } from "../model";
+import { GeoFeature, BuildingType, ConstructionAge, constructionAgeToString } from "../model";
 import { BuildingData, BuildingProps } from "./panel-data";
 import { StringField, NumberField, CheckboxField, SelectField } from "./fields";
 
@@ -58,16 +58,11 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					onChange={value => put({ peakLoad: value })}
 				/>
 
-				{!data.isSupplyCenter && (
-					<SelectField
-						label="Inclusion"
-						value={!data.isHeated ? "Excluded" : data.inclusion}
-						disabled={!data.isHeated}
-						options={[
-							{ value: Inclusion.EXCLUDED, label: "Excluded" },
-							{ value: Inclusion.REQUIRED, label: "Included" },
-						]}
-						onChange={value => put({ inclusion: value })}
+				{!data.isSupplyCenter && data.isHeated && (
+					<CheckboxField
+						label="Include in solution"
+						checked={data.isIncluded}
+						onChange={checked => put({ isIncluded: checked })}
 					/>
 				)}
 

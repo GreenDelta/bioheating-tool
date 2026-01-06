@@ -13,7 +13,6 @@ import org.openlca.commons.Res;
 import com.greendelta.bioheating.graph.Node.BuildingNode;
 import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Inclusion;
 import com.greendelta.bioheating.model.Project;
 
 class SolutionImage {
@@ -135,7 +134,7 @@ class SolutionImage {
 		var b = n.building();
 		if (b == null)
 			return;
-		if (!b.isHeated() || b.inclusion() != Inclusion.REQUIRED || maxDemand == 0) {
+		if (!b.isHeated() || !b.isIncluded() || maxDemand == 0) {
 			img.draw(n.polygon(), BORDER_COLOR, DISABLED_COLOR);
 			return;
 		}

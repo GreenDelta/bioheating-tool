@@ -42,7 +42,7 @@ public record GeoFeature(
 		props.put("peakLoad", b.peakLoad());
 		props.put("isHeated", b.isHeated());
 		props.put("isSupplyCenter", b.isSupplyCenter());
-		props.put("inclusion", b.inclusion());
+		props.put("isIncluded", b.isIncluded());
 		return Res.ok(new GeoFeature("Feature", polygon, props));
 	}
 
@@ -57,7 +57,7 @@ public record GeoFeature(
 		props.put("@type", "street");
 		props.put("id", s.id());
 		props.put("name", s.name());
-		props.put("inclusion", s.inclusion());
+		props.put("isExcluded", s.isExcluded());
 		return Res.ok(new GeoFeature("Feature", line, props));
 	}
 }
