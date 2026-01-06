@@ -1,11 +1,16 @@
 package com.greendelta.bioheating.io.sophena;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.zip.GZIPOutputStream;
 
 import org.openlca.commons.Res;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.model.Building;
@@ -15,60 +20,45 @@ import com.greendelta.bioheating.model.Project;
 public class SophenaExport {
 
 	private final JsonNodeFactory json = JsonNodeFactory.instance;
-	private final DataPack pack;
 	private final Project project;
 
-	private SophenaExport(Project project, DataPack pack) {
-		this.pack = pack;
+	private SophenaExport(Project project) {
 		this.project = project;
 	}
 
 	public static Res<Void> write(Project project, File file) {
-		try (var pack = DataPack.create(file)) {
-			new SophenaExport(project, pack).run();
+		try {
+			var export = new SophenaExport(project);
+			var root = export.createJson();
+			var mapper = new ObjectMapper();
+			try (var fos = new FileOutputStream(file);
+					 var gzos = new GZIPOutputStream(fos);
+					 var writer = new OutputStreamWriter(gzos, StandardCharsets.UTF_8)) {
+				mapper
+					.enable(SerializationFeature.INDENT_OUTPUT)
+					.writeValue(writer, root);
+			}
 			return Res.ok();
 		} catch (Exception e) {
 			return Res.error("failed to export project", e);
 		}
 	}
 
-	private void run() throws IOException {
-		var id = UUID.randomUUID().toString();
-		var obj = json.objectNode()
-			.put("id", id)
-			.put("name", project.name())
-			.put("description", project.description());
-		mapRegion(obj);
-		mapHeatNet(obj);
-
-		if (project.map() == null)
-			return;
+	private ObjectNode createJson() {
+		var obj = json.objectNode();
 		var consumers = json.arrayNode();
-		for (var b : project.map().buildings()) {
-			var node = mapBuilding(b);
-			if (node != null) {
-				consumers.add(node);
+
+		if (project.map() != null) {
+			for (var b : project.map().buildings()) {
+				var node = mapBuilding(b);
+				if (node != null) {
+					consumers.add(node);
+				}
 			}
 		}
+
 		obj.set("consumers", consumers);
-		pack.put("projects/" + id + ".json", obj);
-	}
-
-	private void mapRegion(ObjectNode root) {
-		if (project.climateRegion() == null)
-			return;
-		var obj = json.objectNode()
-			.put("id", project.climateRegion().stationId())
-			.put("name", project.climateRegion().name());
-		root.set("weatherStation", obj);
-	}
-
-	private void mapHeatNet(ObjectNode root) {
-		var obj = json.objectNode()
-			.put("id", UUID.randomUUID().toString())
-			.put("supplyTemperature", 80)
-			.put("returnTemperature", 50);
-		root.set("heatNet", obj);
+		return obj;
 	}
 
 	private ObjectNode mapBuilding(Building b) {

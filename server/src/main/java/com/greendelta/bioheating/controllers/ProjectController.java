@@ -81,7 +81,7 @@ public class ProjectController {
 		Authentication auth, @PathVariable long id
 	) {
 		return withProject(auth, id, project -> {
-			Res<byte[]> bytes = files.withTempFile(".zip", file -> {
+			Res<byte[]> bytes = files.withTempFile(".gz", file -> {
 				var res = SophenaExport.write(project, file);
 				if (res.isError())
 					return res.wrapError(
@@ -90,7 +90,7 @@ public class ProjectController {
 					var bs = Files.readAllBytes(file.toPath());
 					return Res.ok(bs);
 				} catch (Exception e) {
-					return Res.error("failed to read exported Sophena package", e);
+					return Res.error("Failed to read exported Sophena package", e);
 				}
 			});
 
@@ -99,8 +99,8 @@ public class ProjectController {
 				: "project";
 			return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION,
-					"attachment; filename=\"" + name + ".sophena\"")
-				.header(HttpHeaders.CONTENT_TYPE, "application/zip")
+					"attachment; filename=\"" + name + ".json.gz\"")
+				.header(HttpHeaders.CONTENT_TYPE, "application/gzip")
 				.body(bytes.value());
 		});
 	}
