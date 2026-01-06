@@ -85,7 +85,7 @@ public class ProjectController {
 				var res = SophenaExport.write(project, file);
 				if (res.isError())
 					return res.wrapError(
-						"failed to write Sophena package: " + res.error());
+						"Failed to write Sophena package: " + res.error());
 				try {
 					var bs = Files.readAllBytes(file.toPath());
 					return Res.ok(bs);

@@ -15,20 +15,27 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Inclusion;
-import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.Solution;
 
 public class SophenaExport {
 
 	private final JsonNodeFactory json = JsonNodeFactory.instance;
-	private final Project project;
+	private final Solution solution;
 
-	private SophenaExport(Project project) {
-		this.project = project;
+	private SophenaExport(Solution solution) {
+		this.solution = solution;
 	}
 
-	public static Res<Void> write(Project project, File file) {
+	public static Res<Void> write(Solution solution, File file) {
+		if (file == null)
+			return Res.error("No valid export file provided");
+		if (solution == null
+			|| solution.project() == null
+			|| solution.project().map() == null)
+			return Res.error("No valid solution provided");
+
 		try {
-			var export = new SophenaExport(project);
+			var export = new SophenaExport(solution);
 			var root = export.createJson();
 			var mapper = new ObjectMapper();
 			try (var fos = new FileOutputStream(file);
@@ -40,28 +47,25 @@ public class SophenaExport {
 			}
 			return Res.ok();
 		} catch (Exception e) {
-			return Res.error("failed to export project", e);
+			return Res.error("Failed to export project", e);
 		}
 	}
 
 	private ObjectNode createJson() {
 		var obj = json.objectNode();
 		var consumers = json.arrayNode();
-
-		if (project.map() != null) {
-			for (var b : project.map().buildings()) {
-				var node = mapBuilding(b);
-				if (node != null) {
-					consumers.add(node);
-				}
+		var buildings = solution.project().map().buildings();
+		for (var b : buildings) {
+			var node = consumerOf(b);
+			if (node != null) {
+				consumers.add(node);
 			}
 		}
-
 		obj.set("consumers", consumers);
 		return obj;
 	}
 
-	private ObjectNode mapBuilding(Building b) {
+	private ObjectNode consumerOf(Building b) {
 		if (b == null || !b.isHeated() || b.inclusion() != Inclusion.REQUIRED)
 			return null;
 
