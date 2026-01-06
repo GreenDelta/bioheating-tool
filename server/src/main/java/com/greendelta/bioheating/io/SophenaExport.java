@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.io.sophena;
+package com.greendelta.bioheating.io;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,6 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.greendelta.bioheating.graph.HeatFlowTree;
+import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
+import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Solution;
 
@@ -61,6 +64,12 @@ public class SophenaExport {
 			}
 		}
 		obj.set("consumers", consumers);
+
+		// add the heat flow tree
+		var tree = HeatFlowTree.of(solution);
+		if (tree.isOk()) {
+			obj.set("network", junctionOf(tree.value().root()));
+		}
 		return obj;
 	}
 
@@ -69,7 +78,7 @@ public class SophenaExport {
 			return null;
 
 		var obj = json.objectNode()
-			.put("id", UUID.randomUUID().toString())
+			.put("id", consumerIdOf(b))
 			.put("name", b.name())
 			.put("waterFraction", 12.0)
 			.put("loadHours", 1921)
@@ -94,6 +103,46 @@ public class SophenaExport {
 		obj.set("fuelConsumptions", json.arrayNode(1).add(consObj));
 
 		return obj;
+	}
+
+	private ObjectNode junctionOf(Junction junction) {
+		var obj = json.objectNode();
+
+		var building = junction.building();
+		if (building != null && building.isHeated() && building.isIncluded()) {
+			obj.put("consumerId", consumerIdOf(building));
+			obj.put("heatDemand", building.heatDemand());
+			obj.put("peakLoad", building.peakLoad());
+		}
+
+		var segments = junction.segments();
+		if (!segments.isEmpty()) {
+			var segArray = json.arrayNode();
+			for (var seg : segments) {
+				segArray.add(segmentOf(seg));
+			}
+			obj.set("segments", segArray);
+		}
+
+		return obj;
+	}
+
+	private ObjectNode segmentOf(Segment segment) {
+		var obj = json.objectNode();
+		obj.put("length", segment.length());
+		obj.set("target", junctionOf(segment.target()));
+		return obj;
+	}
+
+	private String consumerIdOf(Building building) {
+		var projectId = solution.project().id();
+		var cityId = building.cityId();
+		var buildingId = cityId != null
+			? cityId
+			: Long.toString(building.id());
+		var fullId = projectId + "/" + buildingId;
+		return UUID.nameUUIDFromBytes(
+			fullId.getBytes(StandardCharsets.UTF_8)).toString();
 	}
 
 }
