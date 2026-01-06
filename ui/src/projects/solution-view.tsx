@@ -16,7 +16,7 @@ export function SolutionView() {
 		if (isDownloading) return;
 		setDownloading(true);
 		setError(null);
-		const res = await api.getSophenaPackage(solution.projectId);
+		const res = await api.getSophenaPackage(solution.id);
 		if (!res.isOk) {
 			setError(res.error);
 		}
