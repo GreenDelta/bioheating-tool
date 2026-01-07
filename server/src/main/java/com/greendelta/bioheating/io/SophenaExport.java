@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 
@@ -11,6 +12,7 @@ import org.openlca.commons.Res;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.graph.HeatFlowTree;
@@ -65,10 +67,12 @@ public class SophenaExport {
 		}
 		obj.set("consumers", consumers);
 
-		// add the heat flow tree
+		// add the heat flow tree as a flat structure
 		var tree = HeatFlowTree.of(solution);
 		if (tree.isOk()) {
-			obj.set("network", junctionOf(tree.value().root()));
+			var junctions = json.arrayNode();
+			traversalAdd(tree.value().root(), junctions);
+			obj.set("network", junctions);
 		}
 		return obj;
 	}
@@ -105,32 +109,46 @@ public class SophenaExport {
 		return obj;
 	}
 
+	private void traversalAdd(Junction root, ArrayNode array) {
+		if (root == null)
+			return;
+		var queue = new ArrayDeque<Junction>();
+		queue.add(root);
+		while (!queue.isEmpty()) {
+			var obj = junctionOf(queue.poll());
+			array.add(obj);
+			for (var s : root.segments()) {
+				queue.add(s.target());
+			}
+		}
+	}
+
 	private ObjectNode junctionOf(Junction junction) {
 		var obj = json.objectNode();
+		obj.put("id", junction.id());
 
-		var building = junction.building();
-		if (building != null && building.isHeated() && building.isIncluded()) {
-			obj.put("consumerId", consumerIdOf(building));
-			obj.put("heatDemand", building.heatDemand());
-			obj.put("peakLoad", building.peakLoad());
+		var b = junction.building();
+		if (b != null && b.isHeated() && b.isIncluded()) {
+			obj.put("consumerId", consumerIdOf(b));
+			obj.put("heatDemand", b.heatDemand());
+			obj.put("peakLoad", b.peakLoad());
 		}
 
 		var segments = junction.segments();
 		if (!segments.isEmpty()) {
-			var segArray = json.arrayNode();
+			var array = json.arrayNode();
 			for (var seg : segments) {
-				segArray.add(segmentOf(seg));
+				array.add(segmentOf(seg));
 			}
-			obj.set("segments", segArray);
+			obj.set("segments", array);
 		}
-
 		return obj;
 	}
 
 	private ObjectNode segmentOf(Segment segment) {
 		var obj = json.objectNode();
 		obj.put("length", segment.length());
-		obj.set("target", junctionOf(segment.target()));
+		obj.put("targetId", segment.target().id());
 		return obj;
 	}
 
@@ -144,5 +162,4 @@ public class SophenaExport {
 		return UUID.nameUUIDFromBytes(
 			fullId.getBytes(StandardCharsets.UTF_8)).toString();
 	}
-
 }
