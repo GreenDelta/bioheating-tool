@@ -115,9 +115,10 @@ public class SophenaExport {
 		var queue = new ArrayDeque<Junction>();
 		queue.add(root);
 		while (!queue.isEmpty()) {
-			var obj = junctionOf(queue.poll());
+			var next = queue.poll();
+			var obj = junctionOf(next);
 			array.add(obj);
-			for (var s : root.segments()) {
+			for (var s : next.segments()) {
 				queue.add(s.target());
 			}
 		}
@@ -125,7 +126,7 @@ public class SophenaExport {
 
 	private ObjectNode junctionOf(Junction junction) {
 		var obj = json.objectNode();
-		obj.put("id", junction.id());
+		obj.put("node", junction.id());
 
 		var b = junction.building();
 		if (b != null && b.isHeated() && b.isIncluded()) {
@@ -148,7 +149,7 @@ public class SophenaExport {
 	private ObjectNode segmentOf(Segment segment) {
 		var obj = json.objectNode();
 		obj.put("length", segment.length());
-		obj.put("targetId", segment.target().id());
+		obj.put("target", segment.target().id());
 		return obj;
 	}
 
