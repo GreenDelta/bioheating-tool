@@ -50,12 +50,12 @@ cd docker
 
 # run it (with upload volume mapping)
 docker run --rm -d -p 3000:3000 \
-  -v ./upload-data:/app/uploads \
+  -v ./data/uploads:/app/uploads \
   --name bioheating-app bioheating-app
 
 # or interactively
 docker run --rm -it -p 3000:3000 \
-  -v ./upload-data:/app/uploads \
+  -v ./data/uploads:/app/uploads \
   --name bioheating-app bioheating-app
 ```
 
@@ -81,7 +81,7 @@ The `docker-compose.yml` file automatically configures:
 
 - Required environment variables for the database
 - Volume mapping for PostgreSQL data (`./data/bioheating-db`)
-- Volume mapping for file uploads (`./upload-data`)
+- Volume mapping for file uploads (`./data/uploads`)
 - Proper service dependencies and health checks
 - `network_mode: host` to allow the containers to communicate easily
 

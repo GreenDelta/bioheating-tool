@@ -131,6 +131,7 @@ class Build {
     ).copy("${appDir.path}/schema.sql");
 
     if (_withDocker) {
+      await _ensureDataDirs();
       await DockerImage.db(dockerDir).build();
     }
   }
@@ -140,7 +141,23 @@ class Build {
     await _server();
 
     if (_withDocker) {
+      await _ensureDataDirs();
       await DockerImage.app(dockerDir).build();
+    }
+  }
+
+  Future<void> _ensureDataDirs() async {
+    final dirs = [
+      join(dockerDir, "data/bioheating-db"),
+      join(dockerDir, "data/uploads"),
+    ];
+
+    for (final path in dirs) {
+      final d = Dir(path);
+      if (!await d.exists()) {
+        print("Creating directory $path ...");
+        await d.create(recursive: true);
+      }
     }
   }
 
