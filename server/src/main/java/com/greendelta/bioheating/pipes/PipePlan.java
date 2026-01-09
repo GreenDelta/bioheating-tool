@@ -9,7 +9,6 @@ import org.openlca.commons.Res;
 import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.NetworkTree.Junction;
 import com.greendelta.bioheating.graph.NetworkTree.Segment;
-import com.greendelta.bioheating.model.Building;
 
 public class PipePlan {
 
@@ -43,7 +42,7 @@ public class PipePlan {
 		if (segment == null)
 			return 0;
 		var s = segments.get(segment.id());
-		return s != null ? s.peakLoad : 0;
+		return s != null ? s.peakLoad() : 0;
 	}
 
 	public double peakLoadOf(Junction junction) {
@@ -51,7 +50,7 @@ public class PipePlan {
 			return 0;
 		var j = junctions.get(junction.id());
 		if (j != null)
-			return j.peakLoad;
+			return j.peakLoad();
 		return junction.isBuilding()
 			? junction.building().peakLoad()
 			: 0;
@@ -68,21 +67,24 @@ public class PipePlan {
 		var segments = new ArrayList<PipeSegment>();
 		for (var s : junction.segments()) {
 			var target = s.target();
+
+			// segment that connects a single building
 			if (target.isBuilding()) {
-				var segment = segmentOf(s, List.of(target.building()));
+				double load = target.building().peakLoad();
+				var sub = new PipeJunction(target.id(), 0, load, 1, List.of());
+				junctions.put(target.id(), sub);
+				var segment = segmentOf(s, sub);
 				if (segment.isError())
 					return segment.castError();
 				segments.add(segment.value());
 				continue;
 			}
-			var subJunction = traverse(s.target());
-			if (subJunction.isError())
-				return subJunction.castError();
-			var buildings = new ArrayList<Building>();
-			for (var sub : subJunction.value().segments) {
-				buildings.addAll(sub.buildings);
-			}
-			var segment = segmentOf(s, buildings);
+
+			// segment to an inner node
+			var sub = traverse(s.target());
+			if (sub.isError())
+				return sub.castError();
+			var segment = segmentOf(s, sub.value());
 			if (segment.isError())
 				return segment.castError();
 			segments.add(segment.value());
@@ -91,28 +93,23 @@ public class PipePlan {
 	}
 
 	private Res<PipeJunction> junctionOf(Junction j, List<PipeSegment> segments) {
-		int n = 0;
-		double peakLoad = 0;
+		double netLoad = 0;
+		int buildingCount = 0;
+		double buildingLoad = 0;
 		for (var s : segments) {
-			for (var b : s.buildings) {
-				n += 1;
-				peakLoad += b.peakLoad();
-			}
+			netLoad += s.netLoad;
+			buildingCount += s.buildingCount;
+			buildingLoad += s.buildingLoad;
 		}
-		peakLoad *= Pipes.diversityFactorOf(n);
-		var junction = new PipeJunction(j.id(), peakLoad, segments);
+		var junction = new PipeJunction(
+			j.id(), netLoad, buildingLoad, buildingCount, segments);
 		junctions.put(junction.id, junction);
 		return Res.ok(junction);
 	}
 
-	private Res<PipeSegment> segmentOf(Segment s, List<Building> buildings) {
+	private Res<PipeSegment> segmentOf(Segment s, PipeJunction sub) {
 		// peakLoad in kW
-		double peakLoad = 0;
-		for (var b : buildings) {
-			peakLoad += b.peakLoad();
-		}
-		peakLoad *= Pipes.diversityFactorOf(buildings.size());
-
+		double peakLoad = sub.peakLoad();
 		// temperature difference in K (°C difference equals K difference)
 		double deltaT = config.averageTemperature() - config.groundTemperature();
 
@@ -140,7 +137,7 @@ public class PipePlan {
 				* (1 + config.fittingSurcharge());
 			if (pressureLoss < config.maxPressureLoss()) {
 				pipe = p;
-				segmentLoad = totalLoad;
+				segmentLoad = pipeLoss;
 				break;
 			}
 		}
@@ -151,20 +148,38 @@ public class PipePlan {
 		}
 
 		var segment = new PipeSegment(
-			s.id(), s.length(), segmentLoad, pipe, buildings);
+			s.id(),
+			s.length(),
+			segmentLoad + sub.netLoad,
+			sub.buildingLoad,
+			sub.buildingCount,
+			pipe);
 		segments.put(segment.id, segment);
 		return Res.ok(segment);
 	}
 
 	public record PipeJunction(
-		long id, double peakLoad, List<PipeSegment> segments) {
+		long id,
+		double netLoad,
+		double buildingLoad,
+		int buildingCount,
+		List<PipeSegment> segments) {
+
+		public double peakLoad() {
+			return netLoad + buildingLoad * Pipes.diversityFactorOf(buildingCount);
+		}
 	}
 
 	public record PipeSegment(
 		long id,
 		double length,
-		double peakLoad,
-		Pipe pipe,
-		List<Building> buildings) {
+		double netLoad,
+		double buildingLoad,
+		int buildingCount,
+		Pipe pipe) {
+
+		public double peakLoad() {
+			return netLoad + buildingLoad * Pipes.diversityFactorOf(buildingCount);
+		}
 	}
 }
