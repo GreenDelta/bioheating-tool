@@ -25,6 +25,18 @@ void main(List<String> args) async {
             ..withDocker()
             ..db();
         }
+      case "docker-app":
+        {
+          await build
+            ..withDocker()
+            ..app();
+        }
+      case "docker-all":
+        {
+          await build
+            ..withDocker()
+            ..dockerAll();
+        }
     }
   }
 }
@@ -126,6 +138,23 @@ class Build {
   Future<void> app() async {
     await _ui();
     await _server();
+
+    if (_withDocker) {
+      await DockerImage.app(dockerDir).build();
+    }
+  }
+
+  Future<void> dockerAll() async {
+    await app();
+    await db();
+
+    final imagesDir = Dir(join(dockerDir, "images"));
+    if (!await imagesDir.exists()) {
+      await imagesDir.create(recursive: true);
+    }
+
+    await DockerImage.db(dockerDir).save(imagesDir);
+    await DockerImage.app(dockerDir).save(imagesDir);
   }
 
   Future<void> _ui() async {
@@ -201,5 +230,16 @@ class DockerImage {
 
     // build the image
     await run("docker", ["build", "-t", name, ".", "-f", file], dir);
+  }
+
+  Future<void> save(Dir outDir) async {
+    final tarFile = join(outDir, "$name.tar");
+    final gzFile = "$tarFile.gz";
+
+    print("Exporting $name to $tarFile ...");
+    await run("docker", ["save", "-o", tarFile, name], dir);
+
+    print("Compressing $tarFile to $gzFile ...");
+    await run("gzip", ["-f", tarFile], outDir);
   }
 }

@@ -6,6 +6,23 @@ For the Docker setup, we have two images that we need to build:
 + `bioheating-app` - the image with the application server
 
 
+## Building all images (recommended)
+
+To build both the database and application images and export them as compressed tarballs, use the `docker-all` command:
+
+```bash
+dart run docker/build.dart docker-all
+```
+
+This command will:
+1. Check that no containers (`bioheating-db`, `bioheating-app`) are currently running
+2. Delete any existing images with these names
+3. Build both images
+4. Export them to `docker/images/` as `.tar.gz` files
+
+The exported files can then be transferred to a server for deployment.
+
+
 ## Building the database image
 
 Build the `bioheating-db` image via the `docker/build.dart` script (see the `docker-db` command in the script):
@@ -19,24 +36,17 @@ For development, use `docker-compose.db-dev.yaml` to run just the database conta
 
 ## Building the application image
 
-For the application image, use the `app.Dockerfile`. **Make sure** to run the
-application build first and copy the required files to the `docker` folder, before building the
-image:
+To build only the application image, use the `docker-app` command:
 
 ```bash
+dart run docker/build.dart docker-app
+```
 
-# first build the application; this will produce the target/bioheating-tool.jar file
-mvn clean package -DskipTests
-rm docker/bioheating-tool.jar
-cp server/target/bioheating-tool-*.jar docker/bioheating-tool.jar
+This will build the UI, the server, and then the Docker image `bioheating-app`.
+To run the container after building:
 
-# copy the static files (built UI)
-cp -r server/static docker/
-
+```bash
 cd docker
-
-# build the image
-docker build -t bioheating-app . -f app.Dockerfile
 
 # run it (with upload volume mapping)
 docker run --rm -d -p 3000:3000 \
@@ -68,19 +78,7 @@ The docker-compose.yml file automatically configures:
 
 ---
 
-The current (manual) deployment strategy is to build the images locally, export
-them to a tarball, and then import them on the server. This is done like this:
-
-```bash
-docker save bioheating-db > bioheating-db.tar
-docker save bioheating-app > bioheating-app.tar
-
-# for faster transfer to the server, you want to compress the tarballs
-gzip bioheating-db.tar  # this will create bioheating-db.tar.gz
-gzip bioheating-app.tar  # this will create bioheating-app.tar.gz
-```
-
-Then copy the tarballs to the server and import them:
+To transfer images to a server, use the `docker-all` command which exports compressed tarballs to `docker/images/`. Then copy them to the server and import:
 
 ```bash
 # decompress the tarballs first
