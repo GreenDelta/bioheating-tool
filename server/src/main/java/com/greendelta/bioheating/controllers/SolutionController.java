@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.greendelta.bioheating.graph.Graph;
-import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.MinTreeSolution;
+import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.io.SophenaExport;
 import com.greendelta.bioheating.model.Database;
@@ -84,7 +84,7 @@ public class SolutionController {
 		Authentication auth, @PathVariable long id
 	) {
 		return withSolution(auth, id, solution -> {
-			var treeRes = HeatFlowTree.of(solution);
+			var treeRes = NetworkTree.of(solution);
 			if (treeRes.isError())
 				return Http.serverError(treeRes.error());
 

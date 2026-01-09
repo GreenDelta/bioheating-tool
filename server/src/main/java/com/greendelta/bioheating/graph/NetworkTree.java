@@ -15,15 +15,15 @@ import com.greendelta.bioheating.model.SolutionEdge;
 import com.greendelta.bioheating.model.SolutionNode;
 
 
-/// The heat flow tree derived from a solution tree. The root of the tree
-/// is the supply-center, heated buildings are leaves and street nodes
-/// are the inner nodes of the tree.
-public record HeatFlowTree(Junction root) {
+/// The network tree derived from a solution. The root of the tree is the
+/// supply-center, heated buildings are leaves and street nodes are the inner
+/// nodes of the tree.
+public record NetworkTree(Junction root) {
 
-	/// Creates a heat flow tree from the given solution. The solution must be
-	/// persisted (so that nodes have unique IDs) before calling this method (or
+	/// Creates a tree from the given solution. The solution must be persisted (so
+	/// that nodes and edges have unique IDs) before calling this method (or
 	/// `Solution.withTransientIds` must be called before).
-	public static Res<HeatFlowTree> of(Solution solution) {
+	public static Res<NetworkTree> of(Solution solution) {
 		if (solution == null)
 			return Res.error("No solution provided");
 
@@ -74,7 +74,7 @@ public record HeatFlowTree(Junction root) {
 			}
 		}
 
-		var tree = new HeatFlowTree(root);
+		var tree = new NetworkTree(root);
 		return Res.ok(tree);
 	}
 

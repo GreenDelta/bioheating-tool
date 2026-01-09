@@ -1,25 +1,25 @@
 package com.greendelta.bioheating.pipes;
 
-import com.greendelta.bioheating.graph.HeatFlowTree;
-import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
-import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
+import com.greendelta.bioheating.graph.NetworkTree;
+import com.greendelta.bioheating.graph.NetworkTree.Junction;
+import com.greendelta.bioheating.graph.NetworkTree.Segment;
 
 /// Visualization utilities for the heat flow tree.
 public class PipePlanViz {
 
-	private final HeatFlowTree tree;
+	private final NetworkTree tree;
 	private final PipePlan plan;
 	private final StringBuilder sb;
 	private final double total;
 
-	private PipePlanViz(HeatFlowTree tree, PipePlan plan) {
+	private PipePlanViz(NetworkTree tree, PipePlan plan) {
 		this.tree = tree;
 		this.plan = plan;
 		this.sb = new StringBuilder();
 		this.total = plan.peakLoadOf(tree.root());
 	}
 
-	public static String toDot(PipeConfig config, HeatFlowTree tree) {
+	public static String toDot(PipeConfig config, NetworkTree tree) {
 		if (tree == null || tree.root() == null)
 			return "";
 		var plan = PipePlan.of(config, tree);
@@ -37,7 +37,7 @@ public class PipePlanViz {
 		return sb.toString();
 	}
 
-	private void writeDot(HeatFlowTree.Junction node) {
+	private void writeDot(NetworkTree.Junction node) {
 		if (node == null)
 			return;
 

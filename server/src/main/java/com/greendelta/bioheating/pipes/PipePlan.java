@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.openlca.commons.Res;
 
-import com.greendelta.bioheating.graph.HeatFlowTree;
-import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
-import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
+import com.greendelta.bioheating.graph.NetworkTree;
+import com.greendelta.bioheating.graph.NetworkTree.Junction;
+import com.greendelta.bioheating.graph.NetworkTree.Segment;
 import com.greendelta.bioheating.model.Building;
 
 public class PipePlan {
@@ -23,7 +23,7 @@ public class PipePlan {
 		this.pipes = config.pipes();
 	}
 
-	public static Res<PipePlan> of(PipeConfig config, HeatFlowTree tree) {
+	public static Res<PipePlan> of(PipeConfig config, NetworkTree tree) {
 		if (config == null)
 			return Res.error("No configuration provided");
 		if (tree == null)

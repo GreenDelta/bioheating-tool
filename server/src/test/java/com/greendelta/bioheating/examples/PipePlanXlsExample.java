@@ -4,8 +4,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.greendelta.bioheating.graph.Graph;
-import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.MinTreeSolution;
+import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
@@ -29,7 +29,7 @@ public class PipePlanXlsExample {
 				.then(steiner -> new MinTreeSolution(project, steiner).create(db))
 				.orElseThrow();
 
-			var tree = HeatFlowTree.of(solution.withTransientIds()).orElseThrow();
+			var tree = NetworkTree.of(solution.withTransientIds()).orElseThrow();
 			var config = PipeConfig.forPlastic().get();
 
 			var xlsRes = PipePlanXls.create(config, tree);

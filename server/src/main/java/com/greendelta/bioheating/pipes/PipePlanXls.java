@@ -12,13 +12,13 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openlca.commons.Res;
 
-import com.greendelta.bioheating.graph.HeatFlowTree;
-import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
+import com.greendelta.bioheating.graph.NetworkTree;
+import com.greendelta.bioheating.graph.NetworkTree.Junction;
 
 /// Exports the pipe plan to a flat Excel file.
 public class PipePlanXls {
 
-	private final HeatFlowTree tree;
+	private final NetworkTree tree;
 	private final PipePlan plan;
 	private final Workbook workbook;
 	private final Sheet sheet;
@@ -27,7 +27,7 @@ public class PipePlanXls {
 	private final CellStyle streetStyle;
 	private int rowIndex;
 
-	private PipePlanXls(HeatFlowTree tree, PipePlan plan) {
+	private PipePlanXls(NetworkTree tree, PipePlan plan) {
 		this.tree = tree;
 		this.plan = plan;
 		this.workbook = new XSSFWorkbook();
@@ -38,7 +38,7 @@ public class PipePlanXls {
 		this.rowIndex = 0;
 	}
 
-	public static Res<byte[]> create(PipeConfig config, HeatFlowTree tree) {
+	public static Res<byte[]> create(PipeConfig config, NetworkTree tree) {
 		if (tree == null || tree.root() == null)
 			return Res.error("No tree provided");
 		var planRes = PipePlan.of(config, tree);
@@ -132,7 +132,7 @@ public class PipePlanXls {
 		}
 	}
 
-	private void writeSegment(HeatFlowTree.Segment segment, int level) {
+	private void writeSegment(NetworkTree.Segment segment, int level) {
 		var row = sheet.createRow(rowIndex++);
 		var style = createSegmentStyle();
 

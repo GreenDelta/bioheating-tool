@@ -3,8 +3,8 @@ package com.greendelta.bioheating.examples;
 import org.openlca.commons.Res;
 
 import com.greendelta.bioheating.graph.Graph;
-import com.greendelta.bioheating.graph.HeatFlowTree;
 import com.greendelta.bioheating.graph.MinTreeSolution;
+import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
@@ -26,7 +26,7 @@ public class PipePlanExample {
 				.then(SteinerTree::compute)
 				.then(steiner -> new MinTreeSolution(project, steiner).create(db))
 				.then(solution -> Res.ok(solution.withTransientIds()))
-				.then(HeatFlowTree::of)
+				.then(NetworkTree::of)
 				.orElseThrow();
 
 			var config = PipeConfig.forPlastic().get();

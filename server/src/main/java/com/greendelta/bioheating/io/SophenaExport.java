@@ -13,9 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.greendelta.bioheating.graph.HeatFlowTree;
-import com.greendelta.bioheating.graph.HeatFlowTree.Junction;
-import com.greendelta.bioheating.graph.HeatFlowTree.Segment;
+import com.greendelta.bioheating.graph.NetworkTree;
+import com.greendelta.bioheating.graph.NetworkTree.Junction;
+import com.greendelta.bioheating.graph.NetworkTree.Segment;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Solution;
 
@@ -66,7 +66,7 @@ public class SophenaExport {
 		obj.set("consumers", consumers);
 
 		// add the heat flow tree
-		var tree = HeatFlowTree.of(solution);
+		var tree = NetworkTree.of(solution);
 		if (tree.isOk()) {
 			obj.set("network", junctionOf(tree.value().root()));
 		}

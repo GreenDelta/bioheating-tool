@@ -13,7 +13,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.openlca.commons.Res;
 
-import com.greendelta.bioheating.graph.HeatFlowTree;
+import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Solution;
@@ -24,7 +24,7 @@ public class PipePlanImage {
 
 	private final Solution solution;
 	private final GeoMap map;
-	private final HeatFlowTree tree;
+	private final NetworkTree tree;
 	private final PipePlan plan;
 	private final Envelope envelope;
 	private final Map<Long, Pipe> edgePipes;
@@ -44,7 +44,7 @@ public class PipePlanImage {
 	private final Color PINK_8 = new Color(136, 14, 79);
 
 	private PipePlanImage(
-			Solution solution, HeatFlowTree tree, PipePlan plan) {
+			Solution solution, NetworkTree tree, PipePlan plan) {
 		this.solution = solution;
 		this.map = solution.project().map();
 		this.tree = tree;
@@ -67,7 +67,7 @@ public class PipePlanImage {
 		if (solution.project() == null || solution.project().map() == null)
 			return Res.error("Solution has no project or map");
 
-		var treeRes = HeatFlowTree.of(solution.withTransientIds());
+		var treeRes = NetworkTree.of(solution.withTransientIds());
 		if (treeRes.isError())
 			return treeRes.castError();
 
@@ -110,7 +110,7 @@ public class PipePlanImage {
 		return map;
 	}
 
-	private void traverseForPipes(HeatFlowTree.Junction junction, Map<Long, Pipe> map) {
+	private void traverseForPipes(NetworkTree.Junction junction, Map<Long, Pipe> map) {
 		if (junction == null)
 			return;
 		for (var seg : junction.segments()) {
