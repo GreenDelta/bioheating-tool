@@ -62,21 +62,32 @@ docker run --rm -it -p 3000:3000 \
 
 ## Deployment
 
-**Recommended:** Use docker-compose to run both services with proper configuration:
+**Recommended:** Use docker-compose to run both services with proper configuration. Run these commands from the `docker/` directory:
 
 ```bash
+cd docker
+
+# Start everything
 docker compose up
 
-# add the -d flag to run it in detached mode
+# OR: add the -d flag to run it in detached mode
 docker compose up -d
+
+# To stop (if run in detached mode)
+docker compose down
 ```
 
-The docker-compose.yml file automatically configures:
+The `docker-compose.yml` file automatically configures:
+
 - Required environment variables for the database
-- Volume mapping for file uploads (`./upload-data:/app/uploads`)
+- Volume mapping for PostgreSQL data (`./data/bioheating-db`)
+- Volume mapping for file uploads (`./upload-data`)
 - Proper service dependencies and health checks
+- `network_mode: host` to allow the containers to communicate easily
 
 ---
+
+### External Deployment (Server)
 
 To transfer images to a server, use the `docker-all` command which exports compressed tarballs to `docker/images/`. Then copy them to the server and import:
 
@@ -91,13 +102,3 @@ docker load < bioheating-app.tar
 ```
 
 (Note that we plan to use a proper CI/CD pipeline in the future.)
-
-There is a `docker-compose.yml` file that can be used to run the application
-and the database together with all required environment variables pre-configured.
-
-```bash
-docker compose up
-
-# add the -d flag to run it in detached mode
-docker compose up -d
-```

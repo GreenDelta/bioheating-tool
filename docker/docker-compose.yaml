@@ -1,9 +1,24 @@
+# Docker Compose file for running the complete BioHeating application.
+#
+# Usage:
+#   docker compose up        # Ctrl+C to stop
+#   docker compose up -d     # detached mode
+#   docker compose down      # stop (detached)
+#
+# Database data is stored in ./data/bioheating-db (persistent across restarts).
+# Application uploads are stored in ./data/uploads.
+#
+# Note: The data/ folders may be owned by Docker (root), so you
+# may need sudo to delete them if needed:
+#   sudo rm -rf ./data/bioheating-db
+#   sudo rm -rf ./data/uploads
+
 services:
   bioheating-db:
     image: bioheating-db:latest
     container_name: bioheating-db
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ./data/bioheating-db:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: bioheating
