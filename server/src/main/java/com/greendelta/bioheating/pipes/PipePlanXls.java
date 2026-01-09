@@ -25,6 +25,7 @@ public class PipePlanXls {
 	private final CellStyle headerStyle;
 	private final CellStyle buildingStyle;
 	private final CellStyle streetStyle;
+	private final CellStyle segmentStyle;
 	private int rowIndex;
 
 	private PipePlanXls(NetworkTree tree, PipePlan plan) {
@@ -35,6 +36,7 @@ public class PipePlanXls {
 		this.headerStyle = createHeaderStyle();
 		this.buildingStyle = createBuildingStyle();
 		this.streetStyle = createStreetStyle();
+		this.segmentStyle = createSegmentStyle();
 		this.rowIndex = 0;
 	}
 
@@ -67,8 +69,8 @@ public class PipePlanXls {
 	private void writeHeader() {
 		var row = sheet.createRow(rowIndex++);
 		var headers = new String[]{
-			"Level", "Node ID", "Type", "Building","Peak Load (kW)",
-			"Pipe Diameter (mm)", "Pipe Length (m)"
+			"Level", "Node ID", "Type", "Building", "Heat Demand (kWh/a)",
+			"Peak Load (kW)", "Pipe Diameter (mm)", "Pipe Length (m)"
 		};
 
 		for (int i = 0; i < headers.length; i++) {
@@ -100,33 +102,39 @@ public class PipePlanXls {
 		typeCell.setCellValue(node.isBuilding() ? "Building" : "Street Node");
 		typeCell.setCellStyle(style);
 
-		// Building name/info
+		// Building name/info & Heat Demand (building-specific)
 		var buildingCell = row.createCell(3);
-		if (node.building() != null) {
-			var building = node.building();
-			var name = building.name() != null
-				? building.name()
-				: "Building-" + building.id();
-			if (building.isSupplyCenter()) {
-				name += " (Supply Center)";
-			}
-			buildingCell.setCellValue(name);
-		} else {
+		var demandCell = row.createCell(4);
+		if (node.building() == null) {
 			buildingCell.setCellValue("-");
+		} else {
+			var building = node.building();
+			if (building.isSupplyCenter()) {
+				buildingCell.setCellValue("Supply Hub");
+			} else {
+				var name = building.name() != null
+					? building.name()
+					: "Building-" + building.cityId();
+				buildingCell.setCellValue(name);
+				demandCell.setCellValue(
+					Math.round(building.heatDemand() * 10.0) / 10.0);
+			}
 		}
 		buildingCell.setCellStyle(style);
+		demandCell.setCellStyle(style);
 
 		// Peak Load
-		var loadCell = row.createCell(4);
+		var loadCell = row.createCell(5);
 		loadCell.setCellValue(Math.round(plan.peakLoadOf(node) * 10.0) / 10.0);
 		loadCell.setCellStyle(style);
 
 		// Pipe diameter and length are for incoming segments
-		row.createCell(5).setCellStyle(style);
 		row.createCell(6).setCellStyle(style);
+		row.createCell(7).setCellStyle(style);
 
 		// Write child segments
-		for (var segment : node.segments()) {
+		for (
+			var segment : node.segments()) {
 			writeSegment(segment, level + 1);
 			writeNode(segment.target(), level + 1);
 		}
@@ -134,7 +142,7 @@ public class PipePlanXls {
 
 	private void writeSegment(NetworkTree.Segment segment, int level) {
 		var row = sheet.createRow(rowIndex++);
-		var style = createSegmentStyle();
+		var style = segmentStyle;
 
 		// Level
 		var levelCell = row.createCell(0);
@@ -154,24 +162,26 @@ public class PipePlanXls {
 		// Empty building column
 		row.createCell(3).setCellStyle(style);
 
+		// Empty heat demand column (segments don't have building demand)
+		row.createCell(4).setCellStyle(style);
+
 		// Peak Load
-		var loadCell = row.createCell(4);
+		var loadCell = row.createCell(5);
 		loadCell.setCellValue(Math.round(plan.peakLoadOf(segment) * 10.0) / 10.0);
 		loadCell.setCellStyle(style);
 
 		// Pipe info
 		var pipe = plan.pipeOf(segment);
 		if (pipe != null) {
-			var diameterCell = row.createCell(5);
-			diameterCell.setCellValue(Math.round(pipe.innerDiameter()));
+			var diameterCell = row.createCell(6);
+			diameterCell.setCellValue(Math.round(pipe.innerDiameter() * 10.0) / 10.0);
 			diameterCell.setCellStyle(style);
 		} else {
-			row.createCell(5).setCellStyle(style);
-			row.createCell(7).setCellStyle(style);
+			row.createCell(6).setCellStyle(style);
 		}
 
 		// Length
-		var lengthCell = row.createCell(6);
+		var lengthCell = row.createCell(7);
 		lengthCell.setCellValue(Math.round(segment.length() * 10.0) / 10.0);
 		lengthCell.setCellStyle(style);
 	}
@@ -182,7 +192,7 @@ public class PipePlanXls {
 		font.setBold(true);
 		font.setColor(IndexedColors.WHITE.getIndex());
 		style.setFont(font);
-		style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+		style.setFillForegroundColor(IndexedColors.GREY_80_PERCENT.getIndex());
 		style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 		style.setAlignment(HorizontalAlignment.CENTER);
 		style.setBorderBottom(BorderStyle.THIN);
@@ -197,7 +207,7 @@ public class PipePlanXls {
 		var font = workbook.createFont();
 		font.setBold(true);
 		style.setFont(font);
-		style.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+		style.setFillForegroundColor(IndexedColors.LEMON_CHIFFON.getIndex());
 		style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 		style.setBorderBottom(BorderStyle.THIN);
 		style.setBorderTop(BorderStyle.THIN);
@@ -208,7 +218,7 @@ public class PipePlanXls {
 
 	private CellStyle createStreetStyle() {
 		var style = workbook.createCellStyle();
-		style.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+		style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
 		style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 		style.setBorderBottom(BorderStyle.THIN);
 		style.setBorderTop(BorderStyle.THIN);
@@ -221,7 +231,6 @@ public class PipePlanXls {
 		var style = workbook.createCellStyle();
 		var font = workbook.createFont();
 		font.setItalic(true);
-		font.setColor(IndexedColors.GREY_50_PERCENT.getIndex());
 		style.setFont(font);
 		style.setBorderBottom(BorderStyle.THIN);
 		style.setBorderTop(BorderStyle.THIN);
