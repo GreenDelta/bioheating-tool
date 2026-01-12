@@ -83,9 +83,16 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 			// Remove existing event handlers
 			layerRef.current.off("click");
 			mapRef.current.off("lasso.finished");
+			mapRef.current.off("click");
+
+			// Add click handler on map to clear selection when clicking empty space
+			mapRef.current.on("click", () => {
+				handleSelect([]);
+			});
 
 			// Add event handlers with current selection state
 			layerRef.current.on("click", evt => {
+				L.DomEvent.stopPropagation(evt);
 				const f = evt?.propagatedFrom?.feature;
 				if (f) {
 					handleSelect([f]);
