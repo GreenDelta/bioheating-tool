@@ -67,12 +67,15 @@ public class SophenaExport {
 		}
 		obj.set("consumers", consumers);
 
-		// add the heat flow tree as a flat structure
+		// add the heat flow tree
 		var tree = NetworkTree.of(solution);
 		if (tree.isOk()) {
+			var networkObj = json.objectNode();
+			networkObj.put("root", tree.value().root().id());
 			var junctions = json.arrayNode();
 			traversalAdd(tree.value().root(), junctions);
-			obj.set("network", junctions);
+			networkObj.set("nodes", junctions);
+			obj.set("network", networkObj);
 		}
 		return obj;
 	}
@@ -148,6 +151,7 @@ public class SophenaExport {
 
 	private ObjectNode segmentOf(Segment segment) {
 		var obj = json.objectNode();
+		obj.put("id", segment.id());
 		obj.put("length", segment.length());
 		obj.put("target", segment.target().id());
 		return obj;
