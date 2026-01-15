@@ -49,6 +49,7 @@ public record MinTreeSolution(Project project, SpanningTree<Edge> tree) {
 		}
 
 		// store the solution to create the IDs of nodes and edges
+		setSolutionParameters(solution);
 		db.insert(solution);
 
 		// create the pipe plan image
@@ -65,6 +66,23 @@ public record MinTreeSolution(Project project, SpanningTree<Edge> tree) {
 		db.update(solution);
 
 		return Res.ok(solution);
+	}
+
+	private void setSolutionParameters(Solution solution) {
+		double heatDemand = 0;
+		for (var n : solution.nodes()) {
+			var b = n.building();
+			if (b != null && b.isIncluded() && b.isHeated()) {
+				heatDemand += b.heatDemand();
+			}
+		}
+		solution.heatDemand(heatDemand);
+
+		double length = 0;
+		for (var e : solution.edges()) {
+			length += e.length();
+		}
+		solution.length(length);
 	}
 
 	private void deleteOutdatedOf(Database db, Solution solution) {

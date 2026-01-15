@@ -11,7 +11,9 @@ public record ClientSolution(
 	long id,
 	String name,
 	long projectId,
-	String calculatedAt
+	String calculatedAt,
+	double heatDemand,
+	double length
 ) {
 
 	private static final DateTimeFormatter FORMATTER =
@@ -30,7 +32,8 @@ public record ClientSolution(
 			);
 			timeStamp = dateTime.format(FORMATTER);
 		}
-		return new ClientSolution(s.id(), name, projectId, timeStamp);
+		return new ClientSolution(
+			s.id(), name, projectId, timeStamp, s.heatDemand(), s.length());
 	}
 
 }
