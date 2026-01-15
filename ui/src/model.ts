@@ -177,10 +177,17 @@ export interface Solution {
 	name: string;
 	projectId: number;
 	calculatedAt: string;
+	heatDemand: number;
+	length: number;
 }
 
 export enum TaskStatus {
 	RUNNING = "RUNNING",
 	READY = "READY",
 	ERROR = "ERROR",
+}
+
+export function round(num: number, places: number): number {
+	const f = Math.pow(10, places);
+	return Math.round(num * f) / f;
 }

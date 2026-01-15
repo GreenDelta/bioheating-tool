@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLoaderData, Link } from "react-router-dom";
-import { Solution } from "../model";
+import { Solution, round } from "../model";
 import { DownloadIcon } from "../components/icons";
 import { BreadcrumbRow } from "../components/navi";
 import * as api from "../api";
@@ -141,6 +141,33 @@ const DetailsPanel = ({ solution }: { solution: Solution }) => {
 							<label className="form-label fw-bold">Calculated at</label>
 							<p className="form-control-plaintext">
 								{new Date(solution.calculatedAt).toLocaleString()}
+							</p>
+						</div>
+					)}
+
+					{solution.heatDemand != null && (
+						<div className="col-12">
+							<label className="form-label fw-bold">Heat demand</label>
+							<p className="form-control-plaintext">
+								{round(solution.heatDemand / 1000, 2).toLocaleString()} MWh
+							</p>
+						</div>
+					)}
+
+					{solution.length != null && (
+						<div className="col-12">
+							<label className="form-label fw-bold">Network length</label>
+							<p className="form-control-plaintext">
+								{round(solution.length, 2).toLocaleString()} m
+							</p>
+						</div>
+					)}
+
+					{solution.heatDemand != null && solution.length != null && solution.length > 0 && (
+						<div className="col-12">
+							<label className="form-label fw-bold">Linear heat density</label>
+							<p className="form-control-plaintext">
+								{round(solution.heatDemand / (1000 * solution.length), 2).toLocaleString()} MWh/(m·a)
 							</p>
 						</div>
 					)}

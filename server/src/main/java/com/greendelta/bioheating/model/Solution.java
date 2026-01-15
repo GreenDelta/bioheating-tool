@@ -25,6 +25,14 @@ public class Solution extends BaseEntity {
 	@Column(name = "calculated_at")
 	private long calculatedAt;
 
+	/// The total heat demand of the calculated network solution in kWh.
+	@Column(name = "heat_demand")
+	private double heatDemand;
+
+	/// The total length of the network in m.
+	@Column(name = "length")
+	private double length;
+
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "f_solution")
 	private final List<SolutionNode> nodes = new ArrayList<>();
@@ -57,6 +65,24 @@ public class Solution extends BaseEntity {
 
 	public Solution calculatedAt(long calculatedAt) {
 		this.calculatedAt = calculatedAt;
+		return this;
+	}
+
+	public double heatDemand() {
+		return heatDemand;
+	}
+
+	public Solution heatDemand(double heatDemand) {
+		this.heatDemand = heatDemand;
+		return this;
+	}
+
+	public double length() {
+		return length;
+	}
+
+	public Solution length(double length) {
+		this.length = length;
 		return this;
 	}
 

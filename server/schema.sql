@@ -94,7 +94,9 @@ create table tbl_solutions (
     id int not null primary key,
     f_project int,
     image bytea,
-    calculated_at bigint
+    calculated_at bigint,
+    heat_demand double precision,
+    length double precision
 );
 
 drop table if exists tbl_solution_nodes cascade;
