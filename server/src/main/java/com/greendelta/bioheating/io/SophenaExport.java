@@ -8,6 +8,7 @@ import java.util.ArrayDeque;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 
+import org.locationtech.jts.geom.GeometryFactory;
 import org.openlca.commons.Res;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,8 +24,9 @@ import com.greendelta.bioheating.model.Solution;
 
 public class SophenaExport {
 
-	private final JsonNodeFactory json = JsonNodeFactory.instance;
 	private final Solution solution;
+	private final JsonNodeFactory json = JsonNodeFactory.instance;
+	private final GeometryFactory geometries = new GeometryFactory();
 
 	private SophenaExport(Solution solution) {
 		this.solution = solution;
@@ -90,6 +92,7 @@ public class SophenaExport {
 			.put("waterFraction", 12.0)
 			.put("loadHours", 1921)
 			.put("heatingLimit", 14.0);
+		obj.set("location", locationOf(b));
 
 		// building state
 		var stateObj = json.objectNode()
@@ -166,5 +169,33 @@ public class SophenaExport {
 		var fullId = projectId + "/" + buildingId;
 		return UUID.nameUUIDFromBytes(
 			fullId.getBytes(StandardCharsets.UTF_8)).toString();
+	}
+
+	private ObjectNode locationOf(Building b) {
+		var node = json.objectNode();
+		node.put("id", UUID.randomUUID().toString());
+		node.put("name", b.name());
+		String street = b.street();
+		var num = b.streetNumber();
+		if (Strings.isNotBlank(num)) {
+			street = street == null
+				? num
+				: street + " " + num;
+		}
+		node.put("street", street);
+		node.put("zipCode", b.postalCode());
+		node.put("city", b.locality());
+
+		var coords = b.coordinates();
+		if (coords != null && coords.length > 0) {
+			try {
+				var geom = geometries.createPolygon(coords);
+				var centroid = geom.getCentroid();
+				node.put("latitude", centroid.getY());
+				node.put("longitude", centroid.getX());
+			} catch (Exception ignored) {
+			}
+		}
+		return node;
 	}
 }
