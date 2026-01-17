@@ -10,6 +10,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.locationtech.jts.geom.GeometryFactory;
 import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -27,9 +28,11 @@ public class SophenaExport {
 	private final Solution solution;
 	private final JsonNodeFactory json = JsonNodeFactory.instance;
 	private final GeometryFactory geometries = new GeometryFactory();
+	private final CoordinateTransformer wgs84;
 
-	private SophenaExport(Solution solution) {
+	private SophenaExport(Solution solution, CoordinateTransformer wgs84) {
 		this.solution = solution;
+		this.wgs84 = wgs84;
 	}
 
 	public static Res<Void> write(Solution solution, File file) {
@@ -41,7 +44,10 @@ public class SophenaExport {
 			return Res.error("No valid solution provided");
 
 		try {
-			var export = new SophenaExport(solution);
+			var result = CoordinateTransformer.toWgs84From(solution.project().map());
+			if (result.isError())
+				return result.wrapError("Failed to create WGS84 transformer");
+			var export = new SophenaExport(solution, result.value());
 			var root = export.createJson();
 			var mapper = new ObjectMapper();
 			try (var fos = new FileOutputStream(file);
@@ -191,8 +197,11 @@ public class SophenaExport {
 			try {
 				var geom = geometries.createPolygon(coords);
 				var centroid = geom.getCentroid();
-				node.put("latitude", centroid.getY());
-				node.put("longitude", centroid.getX());
+				var res = wgs84.project(centroid.getX(), centroid.getY());
+				if (res.isOk()) {
+					node.put("latitude", res.value().y);
+					node.put("longitude", res.value().x);
+				}
 			} catch (Exception ignored) {
 			}
 		}

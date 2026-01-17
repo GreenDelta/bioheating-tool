@@ -19,6 +19,7 @@ public class Building extends BaseEntity {
 	@Column(name = "city_id")
 	private String cityId;
 
+	/// The coordinates of the building ground surface in UTM.
 	@Column(name = "coordinates")
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
@@ -100,6 +101,7 @@ public class Building extends BaseEntity {
 		return this;
 	}
 
+	/// The coordinates of the building ground surface in UTM.
 	public Coordinate[] coordinates() {
 		return coordinates;
 	}
