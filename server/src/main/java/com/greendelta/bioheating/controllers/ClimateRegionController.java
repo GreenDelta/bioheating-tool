@@ -1,14 +1,12 @@
 package com.greendelta.bioheating.controllers;
 
+import com.greendelta.bioheating.model.ClimateRegion;
+import com.greendelta.bioheating.model.Database;
 import java.util.Comparator;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.greendelta.bioheating.model.ClimateRegion;
-import com.greendelta.bioheating.model.Database;
 
 @RestController
 @RequestMapping("/api/climate-regions")

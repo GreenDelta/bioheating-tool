@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.citygml;
 
 import java.util.List;
-
 import org.citygml4j.core.model.building.Building;
 import org.xmlobjects.xal.model.Address;
 import org.xmlobjects.xal.model.types.Name;

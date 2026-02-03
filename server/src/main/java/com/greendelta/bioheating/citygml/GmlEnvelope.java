@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.citygml;
 
 import java.util.Optional;
-
 import org.citygml4j.core.model.core.CityModel;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;

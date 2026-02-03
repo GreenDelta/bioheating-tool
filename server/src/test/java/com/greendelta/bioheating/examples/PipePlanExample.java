@@ -1,7 +1,5 @@
 package com.greendelta.bioheating.examples;
 
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.NetworkTree;
@@ -10,6 +8,7 @@ import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.pipes.PipeConfig;
 import com.greendelta.bioheating.pipes.PipePlanViz;
+import org.openlca.commons.Res;
 
 public class PipePlanExample {
 

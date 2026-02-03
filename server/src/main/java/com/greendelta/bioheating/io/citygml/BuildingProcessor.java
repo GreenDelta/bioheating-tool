@@ -1,13 +1,5 @@
 package com.greendelta.bioheating.io.citygml;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.openlca.commons.Res;
-import org.openlca.commons.Strings;
-
 import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlFunctionType;
@@ -15,6 +7,12 @@ import com.greendelta.bioheating.citygml.GmlRoofType;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.predict.FeatureValue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.locationtech.jts.geom.Coordinate;
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 
 /// Maps the building attributes of the CityGML model to the domain model.
 class BuildingProcessor {

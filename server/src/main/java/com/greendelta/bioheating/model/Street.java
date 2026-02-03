@@ -1,11 +1,10 @@
 package com.greendelta.bioheating.model;
 
-import org.locationtech.jts.geom.Coordinate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import org.locationtech.jts.geom.Coordinate;
 
 @Entity
 @Table(name = "tbl_streets")

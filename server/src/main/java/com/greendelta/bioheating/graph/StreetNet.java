@@ -1,15 +1,13 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.graph.Node.StreetNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.openlca.commons.Res;
-
-import com.greendelta.bioheating.graph.Node.StreetNode;
 
 record StreetNet(List<Edge> edges, STRtree index) {
 	static Res<StreetNet> create(GraphConfig config) {

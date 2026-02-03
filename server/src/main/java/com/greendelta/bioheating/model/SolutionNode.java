@@ -1,12 +1,11 @@
 package com.greendelta.bioheating.model;
 
-import org.locationtech.jts.geom.Coordinate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.locationtech.jts.geom.Coordinate;
 
 @Entity
 @Table(name = "tbl_solution_nodes")

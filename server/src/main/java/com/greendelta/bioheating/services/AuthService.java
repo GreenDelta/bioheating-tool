@@ -1,12 +1,11 @@
 package com.greendelta.bioheating.services;
 
+import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.User;
 
 @Service
 public class AuthService implements UserDetailsService {

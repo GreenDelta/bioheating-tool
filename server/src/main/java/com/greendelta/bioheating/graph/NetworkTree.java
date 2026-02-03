@@ -1,18 +1,16 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.model.Building;
+import com.greendelta.bioheating.model.Solution;
+import com.greendelta.bioheating.model.SolutionEdge;
+import com.greendelta.bioheating.model.SolutionNode;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-
 import org.openlca.commons.Res;
-
-import com.greendelta.bioheating.model.Building;
-import com.greendelta.bioheating.model.Solution;
-import com.greendelta.bioheating.model.SolutionEdge;
-import com.greendelta.bioheating.model.SolutionNode;
 
 /// The network tree derived from a solution. The root of the tree is the
 /// supply-center, heated buildings are leaves and street nodes are the inner

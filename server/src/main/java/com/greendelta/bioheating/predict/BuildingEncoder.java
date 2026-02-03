@@ -1,13 +1,10 @@
 package com.greendelta.bioheating.predict;
 
-import java.util.List;
-
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.ClimateRegion;
-
+import java.util.List;
 import ml.dmlc.xgboost4j.java.DMatrix;
+import org.openlca.commons.Res;
 
 class BuildingEncoder {
 

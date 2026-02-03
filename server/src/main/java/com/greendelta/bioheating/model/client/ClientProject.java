@@ -1,11 +1,10 @@
 package com.greendelta.bioheating.model.client;
 
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;
+import org.openlca.commons.Res;
 
 public record ClientProject(
 	long id,

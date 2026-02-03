@@ -1,21 +1,18 @@
 package com.greendelta.bioheating.config;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Fuel;
 import com.greendelta.bioheating.model.User;
-
 import jakarta.annotation.PreDestroy;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DataConfig {

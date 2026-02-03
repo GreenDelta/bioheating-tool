@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.io.citygml;
 
 import java.util.List;
-
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.operation.distance.DistanceOp;
 import org.openlca.commons.Res;

@@ -1,15 +1,13 @@
 package com.greendelta.bioheating.io.citygml;
 
+import com.greendelta.bioheating.io.CoordinateTransformer;
+import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Street;
 import java.util.List;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.openlca.commons.Res;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.greendelta.bioheating.io.CoordinateTransformer;
-import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Street;
 
 class OsmStreetFetch {
 

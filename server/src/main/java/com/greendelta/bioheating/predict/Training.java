@@ -5,11 +5,9 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-
-import org.openlca.commons.Res;
-
 import ml.dmlc.xgboost4j.java.Booster;
 import ml.dmlc.xgboost4j.java.XGBoost;
+import org.openlca.commons.Res;
 
 public class Training {
 

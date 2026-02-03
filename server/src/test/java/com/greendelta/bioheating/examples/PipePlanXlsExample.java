@@ -1,8 +1,5 @@
 package com.greendelta.bioheating.examples;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.NetworkTree;
@@ -11,6 +8,8 @@ import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.pipes.PipeConfig;
 import com.greendelta.bioheating.pipes.PipePlanXls;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class PipePlanXlsExample {
 

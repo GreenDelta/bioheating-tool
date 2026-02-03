@@ -1,11 +1,10 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.model.Building;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-
-import com.greendelta.bioheating.model.Building;
 
 public sealed interface Node {
 	long id();

@@ -1,7 +1,8 @@
 package com.greendelta.bioheating.pipes;
 
+import com.greendelta.bioheating.graph.NetworkTree;
+import com.greendelta.bioheating.graph.NetworkTree.Junction;
 import java.io.ByteArrayOutputStream;
-
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -11,9 +12,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openlca.commons.Res;
-
-import com.greendelta.bioheating.graph.NetworkTree;
-import com.greendelta.bioheating.graph.NetworkTree.Junction;
 
 /// Exports the pipe plan to a flat Excel file.
 public class PipePlanXls {

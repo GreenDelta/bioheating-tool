@@ -1,23 +1,20 @@
 package com.greendelta.bioheating.pipes;
 
-import java.awt.Color;
-import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.SolutionNode;
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import javax.imageio.ImageIO;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.openlca.commons.Res;
 
 /// Creates an image visualization of a pipe plan solution.
 public class PipePlanImage {

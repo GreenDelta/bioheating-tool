@@ -1,15 +1,12 @@
 package com.greendelta.bioheating.examples;
 
-import java.awt.Color;
-import java.io.File;
-
-import javax.imageio.ImageIO;
-
-import org.locationtech.jts.geom.Envelope;
-
 import com.greendelta.bioheating.Tests;
 import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.Project;
+import java.awt.Color;
+import java.io.File;
+import javax.imageio.ImageIO;
+import org.locationtech.jts.geom.Envelope;
 
 public class GeoImageExample {
 

@@ -1,16 +1,14 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.graph.Node.BuildingNode;
+import com.greendelta.bioheating.model.Project;
 import java.util.concurrent.ThreadLocalRandom;
-
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
 import org.openlca.commons.Res;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.greendelta.bioheating.graph.Node.BuildingNode;
-import com.greendelta.bioheating.model.Project;
 
 public class MinTree {
 

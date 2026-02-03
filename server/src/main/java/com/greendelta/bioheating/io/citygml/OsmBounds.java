@@ -1,9 +1,8 @@
 package com.greendelta.bioheating.io.citygml;
 
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.GeoMap;
+import org.openlca.commons.Res;
 
 /// The south-west and north-east coordinates (in WGS 84) of a rectangle for
 /// which we want to query the streets from Open-Street-Map (OSM).

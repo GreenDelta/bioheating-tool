@@ -1,17 +1,15 @@
 package com.greendelta.bioheating.io.citygml;
 
-import java.io.File;
-import java.util.concurrent.Callable;
-
-import org.openlca.commons.Res;
-import org.openlca.commons.Strings;
-
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
+import java.io.File;
+import java.util.concurrent.Callable;
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 
 public class CityGmlImport implements Callable<Res<Project>> {
 

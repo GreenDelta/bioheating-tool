@@ -1,18 +1,16 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.model.Building;
+import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.Street;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.openlca.commons.Res;
-
-import com.greendelta.bioheating.model.Building;
-import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.model.Street;
 
 record GraphConfig(Project project, AtomicLong ids, GeometryFactory factory) {
 	static Res<GraphConfig> of(Project project) {

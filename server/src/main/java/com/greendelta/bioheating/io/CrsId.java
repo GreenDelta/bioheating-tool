@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.io;
 
 import java.util.OptionalInt;
-
 import org.openlca.commons.Strings;
 
 public record CrsId(int code, String value) {

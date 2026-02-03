@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.citygml4j.core.model.building.Building;
 import org.citygml4j.core.model.core.CityModel;
 import org.locationtech.jts.geom.GeometryFactory;

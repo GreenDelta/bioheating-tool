@@ -1,20 +1,5 @@
 package com.greendelta.bioheating.controllers;
 
-import java.nio.file.Files;
-import java.util.function.Function;
-
-import org.openlca.commons.Res;
-import org.openlca.commons.Strings;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.NetworkTree;
@@ -31,6 +16,19 @@ import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
 import com.greendelta.bioheating.services.UserService;
+import java.nio.file.Files;
+import java.util.function.Function;
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/solutions")

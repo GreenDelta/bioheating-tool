@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.List;
-
 import org.citygml4j.core.model.core.CityModel;
 import org.citygml4j.xml.CityGMLContext;
 import org.citygml4j.xml.reader.CityGMLReadException;

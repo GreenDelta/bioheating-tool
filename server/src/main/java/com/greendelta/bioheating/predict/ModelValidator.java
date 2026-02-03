@@ -4,10 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import org.openlca.commons.Res;
-
 import ml.dmlc.xgboost4j.java.Booster;
+import org.openlca.commons.Res;
 
 public class ModelValidator {
 

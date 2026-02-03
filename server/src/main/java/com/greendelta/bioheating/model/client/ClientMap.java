@@ -1,12 +1,10 @@
 package com.greendelta.bioheating.model.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.GeoMap;
+import java.util.ArrayList;
+import java.util.List;
+import org.openlca.commons.Res;
 
 public record ClientMap(List<GeoFeature> features) {
 	public static Res<ClientMap> of(GeoMap map) {

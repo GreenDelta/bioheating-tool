@@ -1,13 +1,11 @@
 package com.greendelta.bioheating.model.client;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Street;
+import java.util.HashMap;
+import java.util.Map;
+import org.openlca.commons.Res;
 
 public record GeoFeature(
 	String type,

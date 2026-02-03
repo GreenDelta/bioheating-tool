@@ -1,7 +1,7 @@
 package com.greendelta.bioheating.io;
 
+import com.greendelta.bioheating.model.GeoMap;
 import java.util.Objects;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.proj4j.CRSFactory;
 import org.locationtech.proj4j.CoordinateReferenceSystem;
@@ -10,8 +10,6 @@ import org.locationtech.proj4j.CoordinateTransformFactory;
 import org.locationtech.proj4j.ProjCoordinate;
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
-
-import com.greendelta.bioheating.model.GeoMap;
 
 public class CoordinateTransformer {
 

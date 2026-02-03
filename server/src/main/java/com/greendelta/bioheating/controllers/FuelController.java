@@ -1,12 +1,11 @@
 package com.greendelta.bioheating.controllers;
 
+import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Fuel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.Fuel;
 
 @RestController
 @RequestMapping("/api/fuels")

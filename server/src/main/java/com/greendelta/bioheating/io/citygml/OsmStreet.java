@@ -1,13 +1,11 @@
 package com.greendelta.bioheating.io.citygml;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.openlca.commons.Res;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public record OsmStreet(
 	String type,

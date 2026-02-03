@@ -1,5 +1,9 @@
 package com.greendelta.bioheating.services;
 
+import com.greendelta.bioheating.model.User;
+import com.greendelta.bioheating.services.TaskService.Task.Error;
+import com.greendelta.bioheating.services.TaskService.Task.NewTask;
+import com.greendelta.bioheating.services.TaskService.Task.Result;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,11 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import com.greendelta.bioheating.model.User;
-import com.greendelta.bioheating.services.TaskService.Task.Error;
-import com.greendelta.bioheating.services.TaskService.Task.NewTask;
-import com.greendelta.bioheating.services.TaskService.Task.Result;
 
 @Service
 public class TaskService {

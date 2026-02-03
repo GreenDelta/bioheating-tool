@@ -1,17 +1,5 @@
 package com.greendelta.bioheating.io;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
-import java.util.UUID;
-import java.util.zip.GZIPOutputStream;
-
-import org.locationtech.jts.geom.GeometryFactory;
-import org.openlca.commons.Res;
-import org.openlca.commons.Strings;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -22,6 +10,16 @@ import com.greendelta.bioheating.graph.NetworkTree.Junction;
 import com.greendelta.bioheating.graph.NetworkTree.Segment;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Solution;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.UUID;
+import java.util.zip.GZIPOutputStream;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 
 public class SophenaExport {
 

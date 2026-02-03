@@ -1,10 +1,12 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.graph.Node.BuildingNode;
+import com.greendelta.bioheating.graph.Node.StreetNode;
+import com.greendelta.bioheating.model.Project;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.locationtech.jts.geom.Coordinate;
@@ -14,10 +16,6 @@ import org.locationtech.jts.index.strtree.ItemDistance;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.operation.distance.DistanceOp;
 import org.openlca.commons.Res;
-
-import com.greendelta.bioheating.graph.Node.BuildingNode;
-import com.greendelta.bioheating.graph.Node.StreetNode;
-import com.greendelta.bioheating.model.Project;
 
 public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 

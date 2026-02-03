@@ -1,11 +1,9 @@
 package com.greendelta.bioheating.model;
 
-import java.nio.ByteBuffer;
-
-import org.locationtech.jts.geom.Coordinate;
-
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import java.nio.ByteBuffer;
+import org.locationtech.jts.geom.Coordinate;
 
 @Converter(autoApply = true)
 public class CoordinateConverter

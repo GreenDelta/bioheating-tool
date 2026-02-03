@@ -1,14 +1,12 @@
 package com.greendelta.bioheating.io.citygml;
 
+import com.greendelta.bioheating.citygml.GmlBuilding;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import org.locationtech.jts.geom.Envelope;
-
-import com.greendelta.bioheating.citygml.GmlBuilding;
 
 /// The building shape with which we can determine the building type.
 record BuildingShape(

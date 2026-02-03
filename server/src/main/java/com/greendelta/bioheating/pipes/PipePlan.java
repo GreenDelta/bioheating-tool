@@ -1,14 +1,12 @@
 package com.greendelta.bioheating.pipes;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.NetworkTree.Junction;
 import com.greendelta.bioheating.graph.NetworkTree.Segment;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import org.openlca.commons.Res;
 
 public class PipePlan {
 

@@ -1,19 +1,16 @@
 package com.greendelta.bioheating.graph;
 
-import java.awt.Color;
-import java.io.ByteArrayOutputStream;
-
-import javax.imageio.ImageIO;
-
-import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Envelope;
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.graph.Node.BuildingNode;
 import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
+import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.openlca.commons.Res;
 
 class SolutionImage {
 

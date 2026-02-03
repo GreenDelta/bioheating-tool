@@ -4,7 +4,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.openlca.commons.Res;
 
 /// Contains training or validation data of a building for the heat demand

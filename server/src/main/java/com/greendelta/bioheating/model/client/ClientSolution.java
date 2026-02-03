@@ -1,11 +1,10 @@
 package com.greendelta.bioheating.model.client;
 
+import com.greendelta.bioheating.model.Solution;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-
-import com.greendelta.bioheating.model.Solution;
 
 public record ClientSolution(
 	long id,

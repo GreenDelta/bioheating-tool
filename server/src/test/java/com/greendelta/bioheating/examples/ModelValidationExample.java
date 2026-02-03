@@ -1,12 +1,11 @@
 package com.greendelta.bioheating.examples;
 
+import com.greendelta.bioheating.predict.BoostPredictor;
+import com.greendelta.bioheating.predict.ModelValidator;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-
-import com.greendelta.bioheating.predict.BoostPredictor;
-import com.greendelta.bioheating.predict.ModelValidator;
 
 public class ModelValidationExample {
 

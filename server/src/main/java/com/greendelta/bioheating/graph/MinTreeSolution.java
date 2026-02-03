@@ -1,11 +1,5 @@
 package com.greendelta.bioheating.graph;
 
-import java.util.HashMap;
-import java.util.function.Function;
-
-import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
-import org.openlca.commons.Res;
-
 import com.greendelta.bioheating.graph.Node.BuildingNode;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
@@ -13,6 +7,10 @@ import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.SolutionEdge;
 import com.greendelta.bioheating.model.SolutionNode;
 import com.greendelta.bioheating.pipes.PipePlanImage;
+import java.util.HashMap;
+import java.util.function.Function;
+import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
+import org.openlca.commons.Res;
 
 public record MinTreeSolution(Project project, SpanningTree<Edge> tree) {
 	public Res<Solution> create(Database db) {

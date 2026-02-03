@@ -1,11 +1,10 @@
 package com.greendelta.bioheating.model;
 
-import org.openlca.commons.Res;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import org.openlca.commons.Res;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Entity
 @Table(name = "tbl_users")

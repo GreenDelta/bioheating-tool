@@ -1,13 +1,12 @@
 package com.greendelta.bioheating.examples;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.SteinerTree;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class PipePlanImageExample {
 

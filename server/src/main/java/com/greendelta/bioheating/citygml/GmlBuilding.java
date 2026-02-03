@@ -2,7 +2,6 @@ package com.greendelta.bioheating.citygml;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.citygml4j.core.model.building.Building;
 import org.locationtech.jts.geom.Polygon;
 

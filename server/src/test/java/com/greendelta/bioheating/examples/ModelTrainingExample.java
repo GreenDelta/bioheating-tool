@@ -1,8 +1,7 @@
 package com.greendelta.bioheating.examples;
 
-import java.io.File;
-
 import com.greendelta.bioheating.predict.Training;
+import java.io.File;
 
 public class ModelTrainingExample {
 

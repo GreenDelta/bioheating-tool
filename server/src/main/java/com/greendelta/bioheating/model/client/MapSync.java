@@ -1,14 +1,13 @@
 package com.greendelta.bioheating.model.client;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 public class MapSync {
 

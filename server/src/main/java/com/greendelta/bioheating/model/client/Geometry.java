@@ -1,14 +1,12 @@
 package com.greendelta.bioheating.model.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.locationtech.jts.geom.Coordinate;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.greendelta.bioheating.model.client.Geometry.GeoLine;
 import com.greendelta.bioheating.model.client.Geometry.GeoPolygon;
+import java.util.ArrayList;
+import java.util.List;
+import org.locationtech.jts.geom.Coordinate;
 
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,

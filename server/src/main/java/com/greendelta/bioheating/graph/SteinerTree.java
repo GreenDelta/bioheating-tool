@@ -1,19 +1,17 @@
 package com.greendelta.bioheating.graph;
 
+import com.greendelta.bioheating.graph.Node.BuildingNode;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-
 import org.jgrapht.alg.interfaces.ManyToManyShortestPathsAlgorithm.ManyToManyShortestPaths;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm.SpanningTree;
 import org.jgrapht.alg.shortestpath.CHManyToManyShortestPaths;
 import org.jgrapht.alg.spanning.KruskalMinimumSpanningTree;
 import org.openlca.commons.Res;
-
-import com.greendelta.bioheating.graph.Node.BuildingNode;
 
 public class SteinerTree {
 

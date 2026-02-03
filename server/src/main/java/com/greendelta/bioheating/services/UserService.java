@@ -1,17 +1,15 @@
 package com.greendelta.bioheating.services;
 
+import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
-import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.model.User;
 
 @Service
 public class UserService {
