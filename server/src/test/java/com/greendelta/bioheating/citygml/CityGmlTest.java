@@ -19,7 +19,6 @@ public class CityGmlTest {
 
 	@Test
 	public void testReadEnvelope() {
-
 		var env = model.envelope();
 		assertEquals("urn:adv:crs:ETRS89_UTM32*DE_DHHN92_NH", env.srs());
 		assertEquals(3, env.dimension());
@@ -68,12 +67,12 @@ public class CityGmlTest {
 	@Test
 	public void testBuildingPolygon() {
 		var poly = model.buildings().getFirst().groundSurface();
-		var expectedCoords = new Coordinate[]{
+		var expectedCoords = new Coordinate[] {
 			new Coordinate(558459.101, 5935606.158, 28.598),
 			new Coordinate(558466.79, 5935606.053, 28.598),
 			new Coordinate(558466.67, 5935597.228, 28.598),
 			new Coordinate(558459.125, 5935597.332, 28.598),
-			new Coordinate(558459.101, 5935606.158, 28.598)
+			new Coordinate(558459.101, 5935606.158, 28.598),
 		};
 		var coords = poly.getCoordinates();
 		assertEquals(expectedCoords.length, coords.length);

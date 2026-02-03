@@ -52,13 +52,9 @@ class BuildingProcessor {
 		var gml = shape.gml();
 
 		var func = functionTypes.get(gml.function());
-		var isHeated = func != null
-			? func.isHeated()
-			: gml.address() != null;
+		var isHeated = func != null ? func.isHeated() : gml.address() != null;
 		var roofType = roofTypes.get(gml.roofType());
-		var type = isHeated
-			? typeOf(shape)
-			: BuildingType.OTHER;
+		var type = isHeated ? typeOf(shape) : BuildingType.OTHER;
 		int storeys = storeysOf(gml, type);
 
 		var building = new Building()
@@ -73,12 +69,10 @@ class BuildingProcessor {
 			.isIncluded(false);
 
 		if (func != null) {
-			building.functionCode(func.code())
-				.functionLabel(func.label());
+			building.functionCode(func.code()).functionLabel(func.label());
 		}
 		if (roofType != null) {
-			building.roofTypeCode(roofType.code())
-				.roofTypeLabel(roofType.label());
+			building.roofTypeCode(roofType.code()).roofTypeLabel(roofType.label());
 		}
 		mapAddress(gml.address(), building);
 
@@ -86,20 +80,16 @@ class BuildingProcessor {
 	}
 
 	private BuildingType typeOf(BuildingShape shape) {
-		if (shape.height() > 25)
-			return BuildingType.HIGH_RISE;
+		if (shape.height() > 25) return BuildingType.HIGH_RISE;
 		if (shape.height() > 12) {
-			if (shape.blockVolume() < 2000)
-				return BuildingType.MULTI_FAMILY_SMALL;
+			if (shape.blockVolume() < 2000) return BuildingType.MULTI_FAMILY_SMALL;
 			return shape.blockVolume() < 5000
 				? BuildingType.MULTI_FAMILY_MEDIUM
 				: BuildingType.MULTI_FAMILY_LARGE;
 		}
 
-		if (shape.groundArea() > 150)
-			return BuildingType.MULTI_FAMILY_SMALL;
-		if (shape.groundArea() < 30)
-			return BuildingType.BUILDING_PART;
+		if (shape.groundArea() > 150) return BuildingType.MULTI_FAMILY_SMALL;
+		if (shape.groundArea() < 30) return BuildingType.BUILDING_PART;
 
 		return switch (shape.neighborCount()) {
 			case 0 -> BuildingType.SINGLE_FAMILY;
@@ -111,32 +101,25 @@ class BuildingProcessor {
 
 	private String nameOf(GmlBuilding gml) {
 		var address = gml.address();
-		if (address == null)
-			return gml.id();
+		if (address == null) return gml.id();
 
 		var street = address.street();
 		var number = address.number();
-		if (Strings.isBlank(street))
-			return gml.id();
-		return Strings.isBlank(number)
-			? street
-			: street + " " + number;
+		if (Strings.isBlank(street)) return gml.id();
+		return Strings.isBlank(number) ? street : street + " " + number;
 	}
 
 	private Coordinate[] coordinatesOf(GmlBuilding gml) {
 		var polygon = gml.groundSurface();
-		if (polygon == null)
-			return null;
+		if (polygon == null) return null;
 		var shell = polygon.getExteriorRing();
-		return shell != null
-			? shell.getCoordinates()
-			: null;
+		return shell != null ? shell.getCoordinates() : null;
 	}
 
 	private void mapAddress(GmlAddress a, Building b) {
-		if (a == null)
-			return;
-		b.country(a.country())
+		if (a == null) return;
+		b
+			.country(a.country())
 			.locality(a.locality())
 			.postalCode(a.postalCode())
 			.street(a.street())
@@ -144,8 +127,7 @@ class BuildingProcessor {
 	}
 
 	private static int storeysOf(GmlBuilding gml, BuildingType type) {
-		if (gml.storeys() > 0)
-			return gml.storeys();
+		if (gml.storeys() > 0) return gml.storeys();
 		var hs = FeatureValue.defaultStoreyHeight(type);
 		var storeys = (int) Math.round(gml.height() / hs);
 		return Math.max(storeys, 1);

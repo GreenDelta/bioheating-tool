@@ -20,11 +20,9 @@ public class PipePlanViz {
 	}
 
 	public static String toDot(PipeConfig config, NetworkTree tree) {
-		if (tree == null || tree.root() == null)
-			return "";
+		if (tree == null || tree.root() == null) return "";
 		var plan = PipePlan.of(config, tree);
-		if (plan.isError())
-			return "Error: " + plan.error();
+		if (plan.isError()) return "Error: " + plan.error();
 		return new PipePlanViz(tree, plan.value()).build();
 	}
 
@@ -38,8 +36,7 @@ public class PipePlanViz {
 	}
 
 	private void writeDot(NetworkTree.Junction node) {
-		if (node == null)
-			return;
+		if (node == null) return;
 
 		var id = Long.toString(node.id());
 		boolean isBuilding = node.isBuilding();
@@ -47,7 +44,9 @@ public class PipePlanViz {
 
 		if (isBuilding) {
 			// buildings (leaves and root) are squares
-			sb.append("  ").append(id)
+			sb
+				.append("  ")
+				.append(id)
 				.append(" [shape=square, label=\"\", width=")
 				.append(String.format("%.2f", size))
 				.append(", height=")
@@ -55,7 +54,9 @@ public class PipePlanViz {
 				.append("];\n");
 		} else {
 			// street nodes (inner nodes) are filled circles
-			sb.append("  ").append(id)
+			sb
+				.append("  ")
+				.append(id)
 				.append(" [shape=circle, label=\"\", width=")
 				.append(String.format("%.2f", size))
 				.append(", height=")
@@ -69,10 +70,11 @@ public class PipePlanViz {
 			double edgeWidth = edgeWidthOf(seg);
 			var pipe = plan.pipeOf(seg);
 			var color = pipe != null ? pipe.rgb() : "#000000";
-			var diameter = pipe != null
-				? String.format("%.0f", pipe.innerDiameter())
-				: "";
-			sb.append("  ").append(id)
+			var diameter =
+				pipe != null ? String.format("%.0f", pipe.innerDiameter()) : "";
+			sb
+				.append("  ")
+				.append(id)
 				.append(" -> ")
 				.append(childId)
 				.append(" [penwidth=")
@@ -86,15 +88,13 @@ public class PipePlanViz {
 	}
 
 	private double nodeSizeOf(Junction j) {
-		if (total <= 0)
-			return 0.1;
+		if (total <= 0) return 0.1;
 		double ratio = plan.peakLoadOf(j) / total;
 		return 0.1 + ratio * 0.4;
 	}
 
 	private double edgeWidthOf(Segment s) {
-		if (total <= 0)
-			return 0.5;
+		if (total <= 0) return 0.5;
 		double ratio = plan.peakLoadOf(s) / total;
 		return 0.5 + ratio * 8;
 	}

@@ -39,7 +39,9 @@ public class PipePlanXlsExample {
 			}
 
 			Files.write(Path.of("target/pipe-plan.xlsx"), xlsRes.value());
-			System.out.println("Pipe plan Excel file written to target/pipe-plan.xlsx");
+			System.out.println(
+				"Pipe plan Excel file written to target/pipe-plan.xlsx"
+			);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -33,10 +33,8 @@ public class FileService {
 	/// Uploads the file, calls the given function on that file, and deletes the
 	/// file afterward.
 	public <T> Res<T> useUpload(MultipartFile f, Function<File, Res<T>> fn) {
-		if (f == null)
-			return Res.error("no upload file provided");
-		if (fn == null)
-			return Res.error("no handler function for file provided");
+		if (f == null) return Res.error("no upload file provided");
+		if (fn == null) return Res.error("no handler function for file provided");
 
 		File file;
 		try {
@@ -73,9 +71,10 @@ public class FileService {
 		try {
 			Files.delete(file);
 		} catch (Exception e) {
-			LoggerFactory.getLogger(getClass())
-				.error("failed to delete file in work dir", e);
+			LoggerFactory.getLogger(getClass()).error(
+				"failed to delete file in work dir",
+				e
+			);
 		}
 	}
-
 }

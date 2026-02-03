@@ -1,8 +1,3 @@
 package com.greendelta.bioheating.predict;
 
-public record BuildingFeature(
-	int climateRegion,
-	double heatDemandAge) {
-
-
-}
+public record BuildingFeature(int climateRegion, double heatDemandAge) {}

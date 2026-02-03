@@ -29,11 +29,18 @@ public class Training {
 	private Res<Booster> train() {
 		try {
 			var data = CsvEncoder.withLabels().encode(items);
-			if (data.isError())
-				return data.wrapError("Failed to encode training data");
+			if (data.isError()) return data.wrapError(
+				"Failed to encode training data"
+			);
 			var config = getConfig();
 			var model = XGBoost.train(
-				data.value(), config, 1000, new HashMap<>(), null, null);
+				data.value(),
+				config,
+				1000,
+				new HashMap<>(),
+				null,
+				null
+			);
 			return Res.ok(model);
 		} catch (Exception e) {
 			return Res.error("Failed to train model", e);

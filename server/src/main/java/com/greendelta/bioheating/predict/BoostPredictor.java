@@ -12,11 +12,9 @@ import ml.dmlc.xgboost4j.java.DMatrix;
 import ml.dmlc.xgboost4j.java.XGBoost;
 
 public record BoostPredictor(Booster booster) {
-
 	public static Res<BoostPredictor> getDefault() {
 		var stream = BoostPredictor.class.getResourceAsStream("model.ubj");
-		if (stream == null)
-			return Res.error("Default model not found");
+		if (stream == null) return Res.error("Default model not found");
 		try (stream) {
 			var booster = XGBoost.loadModel(stream);
 			var predictor = new BoostPredictor(booster);
@@ -27,11 +25,9 @@ public record BoostPredictor(Booster booster) {
 	}
 
 	public Res<Float> predict(ClimateRegion region, Building b) {
-		if (b == null)
-			return Res.error("No building data provided");
+		if (b == null) return Res.error("No building data provided");
 		var res = predictAll(region, List.of(b));
-		if (res.isError())
-			return res.castError();
+		if (res.isError()) return res.castError();
 		var xs = res.value();
 		return xs.length == 0
 			? Res.error("Invalid value predicted")

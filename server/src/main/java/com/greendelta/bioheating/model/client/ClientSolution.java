@@ -15,7 +15,6 @@ public record ClientSolution(
 	double heatDemand,
 	double length
 ) {
-
 	private static final DateTimeFormatter FORMATTER =
 		DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -33,7 +32,12 @@ public record ClientSolution(
 			timeStamp = dateTime.format(FORMATTER);
 		}
 		return new ClientSolution(
-			s.id(), name, projectId, timeStamp, s.heatDemand(), s.length());
+			s.id(),
+			name,
+			projectId,
+			timeStamp,
+			s.heatDemand(),
+			s.length()
+		);
 	}
-
 }

@@ -25,9 +25,7 @@ public class OsmClient implements AutoCloseable {
 	}
 
 	public static OsmClient of(String api) {
-		return Strings.isBlank(api)
-			? getDefault()
-			: new OsmClient(api);
+		return Strings.isBlank(api) ? getDefault() : new OsmClient(api);
 	}
 
 	public static OsmClient getDefault() {
@@ -36,10 +34,13 @@ public class OsmClient implements AutoCloseable {
 
 	public Res<List<OsmStreet>> queryStreets(OsmBounds bounds) {
 		try {
-
 			var query = String.format(
 				"[out:json];way[highway](%f,%f,%f,%f);out geom;",
-				bounds.south(), bounds.west(), bounds.north(), bounds.east());
+				bounds.south(),
+				bounds.west(),
+				bounds.north(),
+				bounds.east()
+			);
 			var formData = "data=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
 			var request = HttpRequest.newBuilder()
 				.uri(URI.create(api))
@@ -49,8 +50,9 @@ public class OsmClient implements AutoCloseable {
 
 			var response = http.send(request, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() != 200) {
-				return Res.error("HTTP error: " + response.statusCode()
-					+ " - " + response.body());
+				return Res.error(
+					"HTTP error: " + response.statusCode() + " - " + response.body()
+				);
 			}
 
 			var mapper = new ObjectMapper();

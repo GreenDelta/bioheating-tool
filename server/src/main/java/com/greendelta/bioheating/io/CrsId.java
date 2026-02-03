@@ -5,7 +5,6 @@ import java.util.OptionalInt;
 import org.openlca.commons.Strings;
 
 public record CrsId(int code, String value) {
-
 	/// [EPSG:4326](https://epsg.io/4326), this is the standard CRS in GeoJSON.
 	/// Also, Open-Street-Map data are provided in this CRS.
 	public static CrsId wgs84() {
@@ -43,8 +42,7 @@ public record CrsId(int code, String value) {
 	}
 
 	public static CrsId parse(String id) {
-		if (id == null || id.isBlank())
-			return new CrsId(-1, "");
+		if (id == null || id.isBlank()) return new CrsId(-1, "");
 
 		var part = new StringBuilder();
 		boolean isNextCode = false;
@@ -57,8 +55,7 @@ public record CrsId(int code, String value) {
 
 			if (isNextCode) {
 				var code = eatInt(part);
-				if (code.isPresent())
-					return CrsId.of(code.getAsInt());
+				if (code.isPresent()) return CrsId.of(code.getAsInt());
 				continue;
 			}
 
@@ -78,8 +75,7 @@ public record CrsId(int code, String value) {
 		if (!part.isEmpty()) {
 			if (isNextCode) {
 				var code = eatInt(part);
-				if (code.isPresent())
-					return CrsId.of(code.getAsInt());
+				if (code.isPresent()) return CrsId.of(code.getAsInt());
 			} else {
 				switch (part.toString().toUpperCase()) {
 					case "ETRS89_UTM32" -> {
@@ -96,15 +92,11 @@ public record CrsId(int code, String value) {
 	}
 
 	private static boolean isPart(char c) {
-		return !Character.isWhitespace(c)
-			&& c != ':'
-			&& c != ','
-			&& c != '*';
+		return !Character.isWhitespace(c) && c != ':' && c != ',' && c != '*';
 	}
 
 	private static OptionalInt eatInt(StringBuilder buff) {
-		if (buff.isEmpty())
-			return OptionalInt.empty();
+		if (buff.isEmpty()) return OptionalInt.empty();
 		var s = buff.toString();
 		buff.setLength(0);
 		try {

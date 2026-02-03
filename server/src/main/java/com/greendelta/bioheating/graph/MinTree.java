@@ -14,8 +14,7 @@ import com.greendelta.bioheating.model.Project;
 
 public class MinTree {
 
-	private MinTree() {
-	}
+	private MinTree() {}
 
 	public static Res<SpanningTree<Edge>> of(Project project) {
 		return project != null
@@ -35,37 +34,41 @@ public class MinTree {
 		Res<SpanningTree<Edge>> build() {
 			log.info("create minimal spanning tree of project {}", project.id());
 			try {
-
 				log.info("build full graph");
 				var graphRes = Graph.buildFrom(project);
-				if (graphRes.isError())
-					return graphRes.wrapError("failed to create project graph");
+				if (graphRes.isError()) return graphRes.wrapError(
+					"failed to create project graph"
+				);
 				var g = graphRes.value();
-				log.info("created graph with {} nodes and {} edges",
-					g.vertexSet().size(), g.edgeSet().size());
+				log.info(
+					"created graph with {} nodes and {} edges",
+					g.vertexSet().size(),
+					g.edgeSet().size()
+				);
 
 				log.info("select center node");
-				var buildingNodes = g.vertexSet()
+				var buildingNodes = g
+					.vertexSet()
 					.stream()
 					.filter(BuildingNode.class::isInstance)
 					.map(BuildingNode.class::cast)
 					.toList();
-				var cix = ThreadLocalRandom
-					.current()
-					.nextInt(buildingNodes.size());
+				var cix = ThreadLocalRandom.current().nextInt(buildingNodes.size());
 				var center = buildingNodes.get(cix);
 				log.info("selected center: {}", center.id());
 
 				log.info("build minimal graph");
 				var minGraph = new Graph();
 				for (var target : buildingNodes) {
-					if (target.equals(center))
-						continue;
+					if (target.equals(center)) continue;
 					var path = DijkstraShortestPath.findPathBetween(g, center, target);
 					minGraph.add(path);
 				}
-				log.info("created graph with {} nodes and {} edges",
-					minGraph.vertexSet().size(), minGraph.edgeSet().size());
+				log.info(
+					"created graph with {} nodes and {} edges",
+					minGraph.vertexSet().size(),
+					minGraph.edgeSet().size()
+				);
 
 				log.info("build minimal spanning tree");
 				var tree = new KruskalMinimumSpanningTree<>(minGraph).getSpanningTree();
@@ -77,5 +80,4 @@ public class MinTree {
 			}
 		}
 	}
-
 }

@@ -35,21 +35,19 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getUser(
-		Authentication auth, @PathVariable int id
-	) {
+	public ResponseEntity<?> getUser(Authentication auth, @PathVariable int id) {
 		var req = UserRequest.of(this, auth, id);
-		return req.isError()
-			? req.error()
-			: Http.ok(UserInfo.of(req.user()));
+		return req.isError() ? req.error() : Http.ok(UserInfo.of(req.user()));
 	}
 
 	@PostMapping
 	public ResponseEntity<?> createUser(
-		Authentication auth, @RequestBody UserData data
+		Authentication auth,
+		@RequestBody UserData data
 	) {
-		if (Http.isNotAdmin(users, auth))
-			return Http.badRequest("only admins can create or update users");
+		if (Http.isNotAdmin(users, auth)) return Http.badRequest(
+			"only admins can create or update users"
+		);
 		var res = users.create(data);
 		return res.isError()
 			? Http.badRequest("invalid user data: " + res.error())
@@ -58,11 +56,12 @@ public class UserController {
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateUser(
-		Authentication auth, @PathVariable long id, @RequestBody UserData data
+		Authentication auth,
+		@PathVariable long id,
+		@RequestBody UserData data
 	) {
 		var req = UserRequest.of(this, auth, id);
-		if (req.isError())
-			return req.error();
+		if (req.isError()) return req.error();
 		var res = users.update(req.user(), data);
 		return res.isError()
 			? Http.badRequest("invalid user data: " + res.error())
@@ -71,22 +70,24 @@ public class UserController {
 
 	@GetMapping
 	public ResponseEntity<?> getUsers(Authentication auth) {
-		if (Http.isNotAdmin(users, auth))
-			return Http.forbidden("Only allowed for admins");
+		if (Http.isNotAdmin(users, auth)) return Http.forbidden(
+			"Only allowed for admins"
+		);
 		var infos = users.getUserInfos();
 		return Http.ok(infos);
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteUser(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
 		var current = users.getCurrentUser(auth).orElse(null);
-		if (current == null || !current.isAdmin())
-			return Http.forbidden("Only allowed for admins");
+		if (current == null || !current.isAdmin()) return Http.forbidden(
+			"Only allowed for admins"
+		);
 		var req = UserRequest.of(this, auth, id);
-		if (req.isError())
-			return req.error();
+		if (req.isError()) return req.error();
 		var res = users.delete(req.user());
 		return res.isError()
 			? Http.badRequest(res.error())
@@ -94,7 +95,6 @@ public class UserController {
 	}
 
 	private record UserRequest(User user, ResponseEntity<?> error) {
-
 		static UserRequest ok(User user) {
 			return new UserRequest(user, null);
 		}
@@ -105,16 +105,12 @@ public class UserController {
 
 		static UserRequest of(UserController self, Authentication auth, long id) {
 			var caller = self.users.getCurrentUser(auth).orElse(null);
-			if (caller == null)
-				return error(Http.forbidden("Not authenticated"));
+			if (caller == null) return error(Http.forbidden("Not authenticated"));
 
 			// fine for every user to get its own data;
 			// otherwise only allowed for admins
-			if (id == caller.id())
-				return ok(caller);
-			if (!caller.isAdmin())
-				return error(Http.forbidden("Not allowed"));
-
+			if (id == caller.id()) return ok(caller);
+			if (!caller.isAdmin()) return error(Http.forbidden("Not allowed"));
 
 			var user = self.users.get(id).orElse(null);
 			return user != null

@@ -28,11 +28,10 @@ public record CsvItem(
 	int climateRegionCode,
 	int constructionAgeCode,
 	double roofTypeFactor,
-	double heatDemand) {
-
+	double heatDemand
+) {
 	public static Res<List<CsvItem>> readFrom(File file) {
-		if (file == null)
-			return Res.error("No file provided");
+		if (file == null) return Res.error("No file provided");
 		try {
 			var items = new ArrayList<CsvItem>();
 			var first = true;
@@ -43,8 +42,9 @@ public record CsvItem(
 				}
 				var row = line.split(",");
 				var item = fromRow(row);
-				if (item.isError())
-					return Res.error("Failed to read CSV row " + (items.size() + 1));
+				if (item.isError()) return Res.error(
+					"Failed to read CSV row " + (items.size() + 1)
+				);
 				items.add(item.value());
 			}
 			return Res.ok(items);
@@ -55,25 +55,26 @@ public record CsvItem(
 
 	private static Res<CsvItem> fromRow(String[] row) {
 		try {
-			if (row.length < 9)
-				return Res.error("CSV row has insufficient columns");
+			if (row.length < 9) return Res.error("CSV row has insufficient columns");
 
 			var id = row[0].strip();
 			if (id.startsWith("\"") && id.endsWith("\"")) {
 				id = id.substring(1, id.length() - 1);
 			}
 
-			return Res.ok(new CsvItem(
-				id,
-				Double.parseDouble(row[1]), // height
-				Integer.parseInt(row[2]), // storeys
-				Double.parseDouble(row[3]), // ground area
-				Integer.parseInt(row[4]), // building type code
-				Integer.parseInt(row[5]), // climate region code
-				Integer.parseInt(row[6]), // construction age code
-				Double.parseDouble(row[7]), // roof type factor
-				Double.parseDouble(row[8]) // heat demand
-			));
+			return Res.ok(
+				new CsvItem(
+					id,
+					Double.parseDouble(row[1]), // height
+					Integer.parseInt(row[2]), // storeys
+					Double.parseDouble(row[3]), // ground area
+					Integer.parseInt(row[4]), // building type code
+					Integer.parseInt(row[5]), // climate region code
+					Integer.parseInt(row[6]), // construction age code
+					Double.parseDouble(row[7]), // roof type factor
+					Double.parseDouble(row[8]) // heat demand
+				)
+			);
 		} catch (Exception e) {
 			return Res.error("Failed to parse CSV item", e);
 		}

@@ -36,7 +36,8 @@ public class GeoImage implements AutoCloseable {
 		g = image.createGraphics();
 		g.setRenderingHint(
 			RenderingHints.KEY_ANTIALIASING,
-			RenderingHints.VALUE_ANTIALIAS_ON);
+			RenderingHints.VALUE_ANTIALIAS_ON
+		);
 		g.setBackground(Color.WHITE);
 		g.clearRect(0, 0, width, height);
 	}
@@ -70,8 +71,7 @@ public class GeoImage implements AutoCloseable {
 	}
 
 	public void drawPolygon(Coordinate[] cs, Color color) {
-		if (cs == null || color == null)
-			return;
+		if (cs == null || color == null) return;
 		var fill = new Color(
 			color.getRed(),
 			color.getGreen(),
@@ -88,15 +88,13 @@ public class GeoImage implements AutoCloseable {
 	}
 
 	public void drawLine(Coordinate[] cs, Color color) {
-		if (cs == null || color == null)
-			return;
+		if (cs == null || color == null) return;
 		var shape = shapeOf(cs);
 		shape.drawLine(g, color);
 	}
 
 	public void drawLine(Coordinate[] cs, Color color, float strokeWidth) {
-		if (cs == null || color == null)
-			return;
+		if (cs == null || color == null) return;
 		var shape = shapeOf(cs);
 		shape.drawLine(g, color, strokeWidth);
 	}
@@ -113,13 +111,12 @@ public class GeoImage implements AutoCloseable {
 		for (int i = 0; i < n; i++) {
 			var point = cs[i];
 			xs[i] = margin + (int) ((point.getX() - minX) * scaleX);
-			ys[i] = margin + (int) (height -((point.getY() - minY) * scaleY));
+			ys[i] = margin + (int) (height - ((point.getY() - minY) * scaleY));
 		}
 		return new Shape(xs, ys, n);
 	}
 
 	private record Shape(int[] xs, int[] ys, int n) {
-
 		void fillPolygon(Graphics2D g2d, Color color) {
 			g2d.setColor(color);
 			g2d.fillPolygon(xs, ys, n);
@@ -140,8 +137,13 @@ public class GeoImage implements AutoCloseable {
 
 		void drawLine(Graphics2D g2d, Color color, float strokeWidth) {
 			var oldStroke = g2d.getStroke();
-			g2d.setStroke(new BasicStroke(
-				strokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g2d.setStroke(
+				new BasicStroke(
+					strokeWidth,
+					BasicStroke.CAP_ROUND,
+					BasicStroke.JOIN_ROUND
+				)
+			);
 			g2d.setColor(color);
 			for (int j = 1; j < n; j++) {
 				int i = j - 1;

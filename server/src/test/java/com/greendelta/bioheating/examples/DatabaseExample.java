@@ -17,6 +17,5 @@ public class DatabaseExample {
 			db.insert(project);
 			System.out.println("Database connected: " + db);
 		}
-
 	}
 }

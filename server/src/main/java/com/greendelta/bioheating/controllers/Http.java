@@ -8,8 +8,7 @@ import com.greendelta.bioheating.services.UserService;
 
 final class Http {
 
-	private Http() {
-	}
+	private Http() {}
 
 	static ResponseEntity<?> badRequest(String message) {
 		return ResponseEntity.badRequest().body(message);
@@ -32,10 +31,8 @@ final class Http {
 	}
 
 	static boolean isNotAdmin(UserService users, Authentication auth) {
-		if (users == null || auth == null)
-			return true;
+		if (users == null || auth == null) return true;
 		var user = users.getCurrentUser(auth).orElse(null);
 		return user == null || !user.isAdmin();
 	}
 }
-

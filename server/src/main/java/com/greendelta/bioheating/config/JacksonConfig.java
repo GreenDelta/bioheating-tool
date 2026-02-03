@@ -15,6 +15,4 @@ public class JacksonConfig {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		return mapper;
 	}
-
 }
-

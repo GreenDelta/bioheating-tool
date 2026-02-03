@@ -60,8 +60,9 @@ public class User extends BaseEntity {
 	}
 
 	public static Res<String> hashPassword(String pw) {
-		if (pw == null || pw.isBlank())
-			return Res.error("invalid password provided");
+		if (pw == null || pw.isBlank()) return Res.error(
+			"invalid password provided"
+		);
 		var hash = new BCryptPasswordEncoder().encode(pw);
 		return Res.ok(hash);
 	}

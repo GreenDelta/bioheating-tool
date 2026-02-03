@@ -14,17 +14,14 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Street;
 
-record GraphConfig(
-	Project project,
-	AtomicLong ids,
-	GeometryFactory factory
-) {
-
+record GraphConfig(Project project, AtomicLong ids, GeometryFactory factory) {
 	static Res<GraphConfig> of(Project project) {
-		if (project == null || project.map() == null)
-			return Res.error("The provided project is empty.");
-		if (project.map().streets().isEmpty())
-			return Res.error("The project does not contain any streets");
+		if (project == null || project.map() == null) return Res.error(
+			"The provided project is empty."
+		);
+		if (project.map().streets().isEmpty()) return Res.error(
+			"The project does not contain any streets"
+		);
 
 		boolean hasBuildings = false;
 		long maxId = 0;
@@ -34,17 +31,22 @@ record GraphConfig(
 				hasBuildings = true;
 			}
 		}
-		if (!hasBuildings)
-			return Res.error("Project does not contain any heated buildings");
+		if (!hasBuildings) return Res.error(
+			"Project does not contain any heated buildings"
+		);
 
 		var config = new GraphConfig(
-			project, new AtomicLong(maxId), new GeometryFactory());
+			project,
+			new AtomicLong(maxId),
+			new GeometryFactory()
+		);
 		return Res.ok(config);
 	}
 
 	private static boolean isIncluded(Building b) {
-		return b != null &&
-			(b.isSupplyCenter() || (b.isHeated() && b.isIncluded()));
+		return (
+			b != null && (b.isSupplyCenter() || (b.isHeated() && b.isIncluded()))
+		);
 	}
 
 	List<Street> streets() {
@@ -55,7 +57,7 @@ record GraphConfig(
 		return ids.incrementAndGet();
 	}
 
-	LineString lineOf(Coordinate...cs) {
+	LineString lineOf(Coordinate... cs) {
 		return factory.createLineString(cs);
 	}
 

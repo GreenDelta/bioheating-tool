@@ -11,21 +11,20 @@ import com.greendelta.bioheating.predict.ModelValidator;
 public class ModelValidationExample {
 
 	public static void main(String[] args) {
-
-		var model = BoostPredictor.getDefault()
-			.orElseThrow()
-			.booster();
+		var model = BoostPredictor.getDefault().orElseThrow().booster();
 
 		var dataDir = new File("./model-training/data");
 
-		var selfCheck = ModelValidator.validate(model,
-				new File(dataDir, "training-data.csv"))
-			.orElseThrow();
+		var selfCheck = ModelValidator.validate(
+			model,
+			new File(dataDir, "training-data.csv")
+		).orElseThrow();
 		writeResults(selfCheck, new File(dataDir, "self-check.txt"));
 
-		var validationCheck = ModelValidator.validate(model,
-				new File(dataDir, "validation-data.csv"))
-			.orElseThrow();
+		var validationCheck = ModelValidator.validate(
+			model,
+			new File(dataDir, "validation-data.csv")
+		).orElseThrow();
 		writeResults(validationCheck, new File(dataDir, "validation-check.txt"));
 
 		System.out.println("All done!");
@@ -37,10 +36,7 @@ public class ModelValidationExample {
 	) {
 		try (var w = new PrintWriter(new FileWriter(outputFile))) {
 			for (var pair : result.pairs()) {
-				w.printf("%f\t%f%n",
-					pair.actual(),
-					pair.predicted()
-				);
+				w.printf("%f\t%f%n", pair.actual(), pair.predicted());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -28,5 +28,4 @@ class PipesTest {
 		var v = Pipes.flowVelocityOf(12.5, 90e-3, 60);
 		assertEquals(300, Pipes.pressureLossOf(v, 90e-3, 0.007e-3, 60), 10);
 	}
-
 }

@@ -18,19 +18,15 @@ public class AuthService implements UserDetailsService {
 	}
 
 	@Override
-	public UserDetails loadUserByUsername(
-		String userName
-	) throws UsernameNotFoundException {
-
+	public UserDetails loadUserByUsername(String userName)
+		throws UsernameNotFoundException {
 		for (var u : db.getAll(User.class)) {
-			if (u.name() == null)
-				continue;
-			if (!u.name().equalsIgnoreCase(userName))
-				continue;
+			if (u.name() == null) continue;
+			if (!u.name().equalsIgnoreCase(userName)) continue;
 
 			var roles = u.isAdmin()
-				? new String[]{"USER", "ADMIN"}
-				: new String[]{"USER"};
+				? new String[] { "USER", "ADMIN" }
+				: new String[] { "USER" };
 
 			return org.springframework.security.core.userdetails.User.builder()
 				.username(u.name())

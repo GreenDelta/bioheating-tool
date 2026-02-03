@@ -10,19 +10,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public record OsmStreet(
-    String type,
-    long id,
-    OsmBounds bounds,
-    List<Long> nodes,
-    List<OsmCoordinate> geometry,
-    Map<String, String> tags
+	String type,
+	long id,
+	OsmBounds bounds,
+	List<Long> nodes,
+	List<OsmCoordinate> geometry,
+	Map<String, String> tags
 ) {
-
 	public static Res<List<OsmStreet>> allFrom(
-		JsonNode array, ObjectMapper mapper
+		JsonNode array,
+		ObjectMapper mapper
 	) {
-		if (array == null || !array.isArray())
-			return Res.error("provided JSON is not an array");
+		if (array == null || !array.isArray()) return Res.error(
+			"provided JSON is not an array"
+		);
 
 		var streets = new ArrayList<OsmStreet>(array.size());
 		for (var e : array) {
@@ -41,12 +42,7 @@ public record OsmStreet(
 		double minlon,
 		double maxlat,
 		double maxlon
-	) {
-	}
+	) {}
 
-	public record OsmCoordinate(
-		double lat,
-		double lon
-	) {
-	}
+	public record OsmCoordinate(double lat, double lon) {}
 }

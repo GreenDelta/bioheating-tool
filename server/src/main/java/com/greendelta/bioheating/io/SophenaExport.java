@@ -36,23 +36,26 @@ public class SophenaExport {
 	}
 
 	public static Res<Void> write(Solution solution, File file) {
-		if (file == null)
-			return Res.error("No valid export file provided");
-		if (solution == null
-			|| solution.project() == null
-			|| solution.project().map() == null)
-			return Res.error("No valid solution provided");
+		if (file == null) return Res.error("No valid export file provided");
+		if (
+			solution == null ||
+			solution.project() == null ||
+			solution.project().map() == null
+		) return Res.error("No valid solution provided");
 
 		try {
 			var result = CoordinateTransformer.toWgs84From(solution.project().map());
-			if (result.isError())
-				return result.wrapError("Failed to create WGS84 transformer");
+			if (result.isError()) return result.wrapError(
+				"Failed to create WGS84 transformer"
+			);
 			var export = new SophenaExport(solution, result.value());
 			var root = export.createJson();
 			var mapper = new ObjectMapper();
-			try (var fos = new FileOutputStream(file);
-					 var gzos = new GZIPOutputStream(fos);
-					 var writer = new OutputStreamWriter(gzos, StandardCharsets.UTF_8)) {
+			try (
+				var fos = new FileOutputStream(file);
+				var gzos = new GZIPOutputStream(fos);
+				var writer = new OutputStreamWriter(gzos, StandardCharsets.UTF_8)
+			) {
 				mapper
 					.enable(SerializationFeature.INDENT_OUTPUT)
 					.writeValue(writer, root);
@@ -89,10 +92,10 @@ public class SophenaExport {
 	}
 
 	private ObjectNode consumerOf(Building b) {
-		if (b == null || !b.isHeated() || !b.isIncluded())
-			return null;
+		if (b == null || !b.isHeated() || !b.isIncluded()) return null;
 
-		var obj = json.objectNode()
+		var obj = json
+			.objectNode()
 			.put("id", consumerIdOf(b))
 			.put("name", b.name())
 			.put("waterFraction", 12.0)
@@ -101,16 +104,19 @@ public class SophenaExport {
 		obj.set("location", locationOf(b));
 
 		// building state
-		var stateObj = json.objectNode()
+		var stateObj = json
+			.objectNode()
 			.put("id", "4e1a2929-e59a-4b1a-bb3c-dec917eb9849")
 			.put("name", "Standard 1979-1994");
 		obj.set("buildingState", stateObj);
 
-		var fuelObj = json.objectNode()
+		var fuelObj = json
+			.objectNode()
 			.put("id", "031987ab-4a0d-43b3-b3e5-8f50d8e5df1e")
 			.put("name", "Warmwasser");
 
-		var consObj = json.objectNode()
+		var consObj = json
+			.objectNode()
 			.put("id", UUID.randomUUID().toString())
 			.put("utilisationRate", 85.73)
 			.put("waterContent", 0.0)
@@ -122,8 +128,7 @@ public class SophenaExport {
 	}
 
 	private void traversalAdd(Junction root, ArrayNode array) {
-		if (root == null)
-			return;
+		if (root == null) return;
 		var queue = new ArrayDeque<Junction>();
 		queue.add(root);
 		while (!queue.isEmpty()) {
@@ -169,12 +174,11 @@ public class SophenaExport {
 	private String consumerIdOf(Building building) {
 		var projectId = solution.project().id();
 		var cityId = building.cityId();
-		var buildingId = cityId != null
-			? cityId
-			: Long.toString(building.id());
+		var buildingId = cityId != null ? cityId : Long.toString(building.id());
 		var fullId = projectId + "/" + buildingId;
 		return UUID.nameUUIDFromBytes(
-			fullId.getBytes(StandardCharsets.UTF_8)).toString();
+			fullId.getBytes(StandardCharsets.UTF_8)
+		).toString();
 	}
 
 	private ObjectNode locationOf(Building b) {
@@ -184,9 +188,7 @@ public class SophenaExport {
 		String street = b.street();
 		var num = b.streetNumber();
 		if (Strings.isNotBlank(num)) {
-			street = street == null
-				? num
-				: street + " " + num;
+			street = street == null ? num : street + " " + num;
 		}
 		node.put("street", street);
 		node.put("zipCode", b.postalCode());
@@ -202,8 +204,7 @@ public class SophenaExport {
 					node.put("latitude", res.value().y);
 					node.put("longitude", res.value().x);
 				}
-			} catch (Exception ignored) {
-			}
+			} catch (Exception ignored) {}
 		}
 		return node;
 	}

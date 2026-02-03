@@ -17,7 +17,8 @@ public class OsmStreetTest {
 		var stream = getClass().getResourceAsStream("osm-street.json");
 		assertNotNull(stream);
 		try (stream) {
-			way = new ObjectMapper().createParser(stream)
+			way = new ObjectMapper()
+				.createParser(stream)
 				.readValueAs(OsmStreet.class);
 		}
 	}
@@ -71,5 +72,4 @@ public class OsmStreetTest {
 		assertEquals("way", way.type());
 		assertEquals(28419583, way.id());
 	}
-
 }

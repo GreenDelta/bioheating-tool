@@ -9,18 +9,15 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
 public record GmlRoofType(String code, String label, double volumeFactor) {
-
 	public static Map<String, GmlRoofType> getAll() {
+		var stream = GmlRoofType.class.getResourceAsStream("roof-types.csv");
+		if (stream == null) return Map.of();
 
-		var stream = GmlRoofType.class
-			.getResourceAsStream("roof-types.csv");
-		if (stream == null)
-			return Map.of();
-
-		try (stream;
+		try (
+			stream;
 			var reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
-			var parser = CSVParser.parse(reader, CSVFormat.DEFAULT)) {
-
+			var parser = CSVParser.parse(reader, CSVFormat.DEFAULT)
+		) {
 			var types = new HashMap<String, GmlRoofType>();
 			boolean header = true;
 			for (var row : parser) {
@@ -29,8 +26,7 @@ public record GmlRoofType(String code, String label, double volumeFactor) {
 					continue;
 				}
 
-				if (row.size() < 2)
-					continue;
+				if (row.size() < 2) continue;
 				var code = row.get(0);
 				var label = row.get(1);
 				var factor = Double.parseDouble(row.get(2));

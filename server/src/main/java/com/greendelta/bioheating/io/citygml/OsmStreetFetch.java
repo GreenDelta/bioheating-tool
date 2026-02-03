@@ -31,27 +31,25 @@ class OsmStreetFetch {
 
 		// initialize the projector
 		var transRes = CoordinateTransformer.fromWgs84To(map.crs());
-		if (transRes.isError())
-			return transRes.wrapError("failed to load projector");
+		if (transRes.isError()) return transRes.wrapError(
+			"failed to load projector"
+		);
 		var trans = transRes.value();
 
 		// calculate the map bounds
 		var bounds = OsmBounds.of(map);
-		if (bounds.isError())
-			return bounds.wrapError("Failed to get map bounds.");
+		if (bounds.isError()) return bounds.wrapError("Failed to get map bounds.");
 
 		// fetch the streets within these bounds
 		var osm = fetchStreets(bounds.value());
-		if (osm.isError())
-			return osm.wrapError("Failed to fetch OSM streets");
+		if (osm.isError()) return osm.wrapError("Failed to fetch OSM streets");
 		var streets = osm.value();
 
 		// convert the streets
 		log.info("Fetched {} streets; convert them", streets.size());
 		for (var s : streets) {
 			var geometry = s.geometry();
-			if (geometry == null || geometry.isEmpty())
-				continue;
+			if (geometry == null || geometry.isEmpty()) continue;
 			var street = convert(s, trans);
 			if (street.isError()) {
 				log.debug("Error in street conversion: {}", street.error());
@@ -70,10 +68,12 @@ class OsmStreetFetch {
 		try (var client = OsmClient.getDefault()) {
 			int trial = 0;
 			do {
-
 				if (trial > 0) {
-					log.warn("Fetching OSM streets in trial {} failed; "
-						+ "waiting for next trial", trial);
+					log.warn(
+						"Fetching OSM streets in trial {} failed; " +
+							"waiting for next trial",
+						trial
+					);
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -83,12 +83,9 @@ class OsmStreetFetch {
 				}
 
 				trial++;
-				log.info(
-					"Fetch OSM streets for bounds={}; trial={}", bounds, trial);
+				log.info("Fetch OSM streets for bounds={}; trial={}", bounds, trial);
 				var res = client.queryStreets(bounds);
-				if (res.isOk())
-					return res;
-
+				if (res.isOk()) return res;
 			} while (trial < 10);
 			return Res.error("Failed to fetch OSM streets after several trials");
 		} catch (Exception e) {
@@ -97,8 +94,9 @@ class OsmStreetFetch {
 	}
 
 	private Res<Street> convert(OsmStreet s, CoordinateTransformer trans) {
-		if (s == null || s.geometry() == null || s.geometry().size() < 2)
-			return Res.error("not a street with valid geometry");
+		if (
+			s == null || s.geometry() == null || s.geometry().size() < 2
+		) return Res.error("not a street with valid geometry");
 		var geometry = s.geometry();
 		var cs = new Coordinate[geometry.size()];
 		for (int i = 0; i < geometry.size(); i++) {
@@ -106,12 +104,9 @@ class OsmStreetFetch {
 			cs[i] = new Coordinate(osmCoord.lon(), osmCoord.lat());
 		}
 		var transformed = trans.transform(cs);
-		if (transformed.isError())
-			return transformed.castError();
+		if (transformed.isError()) return transformed.castError();
 
-		var name = s.tags() != null
-			? s.tags().get("name")
-			: null;
+		var name = s.tags() != null ? s.tags().get("name") : null;
 		if (name == null) {
 			name = "Unnamed path " + s.id();
 		}
@@ -122,5 +117,4 @@ class OsmStreetFetch {
 			.coordinates(transformed.value());
 		return Res.ok(street);
 	}
-
 }

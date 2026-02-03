@@ -22,7 +22,8 @@ public class AsyncConfig implements AsyncConfigurer {
 	public AsyncConfig(
 		@Value("${bioheating.tasks.pool-size:4}") int poolSize,
 		@Value("${bioheating.tasks.max-pool-size:8}") int maxPoolSize,
-		@Value("${bioheating.tasks.queue-capacity:100}") int queueCapacity) {
+		@Value("${bioheating.tasks.queue-capacity:100}") int queueCapacity
+	) {
 		this.poolSize = poolSize;
 		this.maxPoolSize = maxPoolSize;
 		this.queueCapacity = queueCapacity;

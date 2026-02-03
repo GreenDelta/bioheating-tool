@@ -15,12 +15,13 @@ import com.greendelta.bioheating.model.client.Geometry.GeoPolygon;
 	include = JsonTypeInfo.As.PROPERTY,
 	property = "type"
 )
-@JsonSubTypes({
-	@JsonSubTypes.Type(value = GeoPolygon.class, name = "Polygon"),
-	@JsonSubTypes.Type(value = GeoLine.class, name = "LineString")
-})
+@JsonSubTypes(
+	{
+		@JsonSubTypes.Type(value = GeoPolygon.class, name = "Polygon"),
+		@JsonSubTypes.Type(value = GeoLine.class, name = "LineString"),
+	}
+)
 public sealed interface Geometry {
-
 	static GeoPolygon polygonOf(Coordinate[] cs) {
 		var ring = new ArrayList<List<Double>>(cs.length);
 		for (var c : cs) {
@@ -37,11 +38,7 @@ public sealed interface Geometry {
 		return new GeoLine(line);
 	}
 
-	record GeoPolygon(List<List<List<Double>>> coordinates)
-		implements Geometry {
-	}
+	record GeoPolygon(List<List<List<Double>>> coordinates) implements Geometry {}
 
-	record GeoLine(List<List<Double>> coordinates)
-		implements Geometry {
-	}
+	record GeoLine(List<List<Double>> coordinates) implements Geometry {}
 }

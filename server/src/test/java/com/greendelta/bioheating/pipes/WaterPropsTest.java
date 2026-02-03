@@ -1,6 +1,6 @@
 package com.greendelta.bioheating.pipes;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,5 +32,4 @@ class WaterPropsTest {
 		assertEquals(4192d / 3600, WaterProps.heatCapacityOf(75), 1e-3);
 		assertEquals(4217d / 3600, WaterProps.heatCapacityOf(100), 1e-3);
 	}
-
 }

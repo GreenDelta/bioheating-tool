@@ -61,8 +61,9 @@ class SolutionImage {
 	}
 
 	static Res<byte[]> create(Project project, SpanningTree<Edge> tree) {
-		if (project == null || project.map() == null || tree == null)
-			return Res.error("empty project or solution");
+		if (
+			project == null || project.map() == null || tree == null
+		) return Res.error("empty project or solution");
 		try {
 			return new SolutionImage(project, tree).create();
 		} catch (Exception e) {
@@ -88,13 +89,12 @@ class SolutionImage {
 	private void renderStreets(GeoImage img) {
 		for (var street : map.streets()) {
 			var cs = street.coordinates();
-			if (cs == null || cs.length < 2)
-				continue;
+			if (cs == null || cs.length < 2) continue;
 			for (int i = 1; i < cs.length; i++) {
-				var start = cs[i-1];
+				var start = cs[i - 1];
 				var end = cs[i];
 				if (envelope.contains(start) && envelope.contains(end)) {
-					img.drawLine(new Coordinate[]{start, end}, DISABLED_COLOR);
+					img.drawLine(new Coordinate[] { start, end }, DISABLED_COLOR);
 				}
 			}
 		}
@@ -103,8 +103,7 @@ class SolutionImage {
 	private void renderPipes(GeoImage img) {
 		for (var edge : tree.getEdges()) {
 			var line = edge.line();
-			if (line == null)
-				continue;
+			if (line == null) continue;
 			img.draw(line, PIPE_COLOR);
 		}
 	}
@@ -132,14 +131,13 @@ class SolutionImage {
 
 	private void renderBuilding(GeoImage img, BuildingNode n, double maxDemand) {
 		var b = n.building();
-		if (b == null)
-			return;
+		if (b == null) return;
 		if (!b.isHeated() || !b.isIncluded() || maxDemand == 0) {
 			img.draw(n.polygon(), BORDER_COLOR, DISABLED_COLOR);
 			return;
 		}
 
-		int share = (int) (Math.round(10 * b.heatDemand() / maxDemand));
+		int share = (int) (Math.round((10 * b.heatDemand()) / maxDemand));
 		var color = switch (share) {
 			case 0, 1 -> PINK_1;
 			case 2 -> PINK_2;
@@ -152,5 +150,4 @@ class SolutionImage {
 		};
 		img.draw(n.polygon(), BORDER_COLOR, color);
 	}
-
 }

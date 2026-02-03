@@ -34,8 +34,9 @@ class CsvEncoder {
 	}
 
 	Res<DMatrix> encode(List<CsvItem> items) {
-		if (items == null || items.isEmpty())
-			return Res.error("CSV item data missing");
+		if (items == null || items.isEmpty()) return Res.error(
+			"CSV item data missing"
+		);
 
 		try {
 			var data = new float[PARAMS * items.size()];

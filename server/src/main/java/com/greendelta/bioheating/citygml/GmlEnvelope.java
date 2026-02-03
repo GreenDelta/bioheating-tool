@@ -14,41 +14,35 @@ public record GmlEnvelope(
 	Point lowerCorner,
 	Point upperCorner
 ) {
-
 	public static Optional<GmlEnvelope> of(
-		CityModel model, GeometryFactory factory
+		CityModel model,
+		GeometryFactory factory
 	) {
-		if (model == null)
-			return Optional.empty();
+		if (model == null) return Optional.empty();
 		var bounds = model.getBoundedBy();
-		if (bounds == null)
-			return Optional.empty();
+		if (bounds == null) return Optional.empty();
 		var env = bounds.getEnvelope();
-		if (env == null)
-			return Optional.empty();
+		if (env == null) return Optional.empty();
 
-		return Optional.of(new GmlEnvelope(
-			env.getSrsName(),
-			env.getDimension(),
-			pointOf(env.getLowerCorner(), factory),
-			pointOf(env.getUpperCorner(), factory)
-		));
+		return Optional.of(
+			new GmlEnvelope(
+				env.getSrsName(),
+				env.getDimension(),
+				pointOf(env.getLowerCorner(), factory),
+				pointOf(env.getUpperCorner(), factory)
+			)
+		);
 	}
 
 	private static Point pointOf(DirectPosition pos, GeometryFactory factory) {
-		if (pos == null || factory == null)
-			return null;
+		if (pos == null || factory == null) return null;
 		var coos = pos.getValue();
-		if (coos == null || coos.size() < 2)
-			return null;
+		if (coos == null || coos.size() < 2) return null;
 		var x = coos.getFirst();
 		var y = coos.get(1);
 		var z = coos.size() > 2 ? coos.get(2) : null;
-		if (x == null || y == null)
-			return null;
-		var c = z != null
-			? new Coordinate(x, y, z)
-			: new Coordinate(x, y);
+		if (x == null || y == null) return null;
+		var c = z != null ? new Coordinate(x, y, z) : new Coordinate(x, y);
 		return factory.createPoint(c);
 	}
 }

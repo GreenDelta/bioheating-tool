@@ -41,11 +41,9 @@ public class UserService {
 	}
 
 	private Optional<User> getForName(String name) {
-		if (Strings.isBlank(name))
-			return Optional.empty();
+		if (Strings.isBlank(name)) return Optional.empty();
 		for (var u : db.getAll(User.class)) {
-			if (Strings.equalsIgnoreCase(name, u.name()))
-				return Optional.of(u);
+			if (Strings.equalsIgnoreCase(name, u.name())) return Optional.of(u);
 		}
 		return Optional.empty();
 	}
@@ -57,8 +55,7 @@ public class UserService {
 	}
 
 	public Res<UserInfo> update(User user, UserData data) {
-		if (user == null || data == null)
-			return Res.error("No user data provided");
+		if (user == null || data == null) return Res.error("No user data provided");
 
 		// check that we always have an admin
 		if (user.isAdmin() && !data.isAdmin()) {
@@ -78,10 +75,8 @@ public class UserService {
 	}
 
 	public Res<Void> delete(User user) {
-		if (user == null)
-			return Res.error("No user provided");
-		if (user.isAdmin())
-			return Res.error("Admins cannot be deleted");
+		if (user == null) return Res.error("No user provided");
+		if (user.isAdmin()) return Res.error("Admins cannot be deleted");
 		// delete all projects of that user
 		for (var p : db.getAll(Project.class)) {
 			if (user.equals(p.user())) {
@@ -94,18 +89,18 @@ public class UserService {
 
 	private Res<UserInfo> apply(User user, UserData data) {
 		var err = data.validate();
-		if (err != null)
-			return Res.error("Invalid user data: " + err);
+		if (err != null) return Res.error("Invalid user data: " + err);
 
 		var other = getForName(data.name).orElse(null);
-		if (other != null && !user.equals(other))
-			return Res.error("Another user with this name exists");
+		if (other != null && !user.equals(other)) return Res.error(
+			"Another user with this name exists"
+		);
 
 		var hash = User.hashPassword(data.password.strip());
-		if (hash.isError())
-			return Res.error("Failed to process password");
+		if (hash.isError()) return Res.error("Failed to process password");
 
-		user.name(data.name.strip())
+		user
+			.name(data.name.strip())
 			.fullName(data.fullName)
 			.password(hash.value())
 			.isAdmin(data.isAdmin);
@@ -125,7 +120,6 @@ public class UserService {
 		String fullName,
 		boolean isAdmin
 	) {
-
 		public static UserInfo of(User user) {
 			return new UserInfo(
 				user.id(),
@@ -142,20 +136,14 @@ public class UserService {
 		String fullName,
 		boolean isAdmin
 	) {
-
 		String validate() {
-
-			if (Strings.isBlank(name))
-				return "User name is empty";
+			if (Strings.isBlank(name)) return "User name is empty";
 			var n = name.strip();
-			if (n.length() < 2)
-				return "User name is shorter than 2 characters.";
+			if (n.length() < 2) return "User name is shorter than 2 characters.";
 
-			if (Strings.isBlank(password))
-				return "Password is empty";
+			if (Strings.isBlank(password)) return "Password is empty";
 			var p = password.strip();
-			if (p.length() < 4)
-				return "Password is too short";
+			if (p.length() < 4) return "Password is too short";
 
 			return null;
 		}

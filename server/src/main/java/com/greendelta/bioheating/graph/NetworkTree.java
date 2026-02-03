@@ -14,18 +14,15 @@ import com.greendelta.bioheating.model.Solution;
 import com.greendelta.bioheating.model.SolutionEdge;
 import com.greendelta.bioheating.model.SolutionNode;
 
-
 /// The network tree derived from a solution. The root of the tree is the
 /// supply-center, heated buildings are leaves and street nodes are the inner
 /// nodes of the tree.
 public record NetworkTree(Junction root) {
-
 	/// Creates a tree from the given solution. The solution must be persisted (so
 	/// that nodes and edges have unique IDs) before calling this method (or
 	/// `Solution.withTransientIds` must be called before).
 	public static Res<NetworkTree> of(Solution solution) {
-		if (solution == null)
-			return Res.error("No solution provided");
+		if (solution == null) return Res.error("No solution provided");
 
 		// find the supply center
 		Junction root = null;
@@ -36,18 +33,13 @@ public record NetworkTree(Junction root) {
 				break;
 			}
 		}
-		if (root == null)
-			return Res.error("No supply center found in solution");
+		if (root == null) return Res.error("No supply center found in solution");
 
 		// build the edge index
 		var edges = new HashMap<Long, List<SolutionEdge>>();
 		for (var e : solution.edges()) {
-			edges
-				.computeIfAbsent(e.source().id(), $ -> new ArrayList<>())
-				.add(e);
-			edges
-				.computeIfAbsent(e.target().id(), $ -> new ArrayList<>())
-				.add(e);
+			edges.computeIfAbsent(e.source().id(), $ -> new ArrayList<>()).add(e);
+			edges.computeIfAbsent(e.target().id(), $ -> new ArrayList<>()).add(e);
 		}
 
 		// build the tree
@@ -58,14 +50,12 @@ public record NetworkTree(Junction root) {
 		while (!queue.isEmpty()) {
 			var next = queue.poll();
 			var exs = edges.get(next.id());
-			if (exs == null)
-				continue;
+			if (exs == null) continue;
 			for (var e : exs) {
 				var t = Objects.equals(e.source(), next.node())
 					? e.target()
 					: e.source();
-				if (visited.contains(t.id()))
-					continue;
+				if (visited.contains(t.id())) continue;
 				var target = new Junction(t);
 				var seg = new Segment(e, target);
 				next.segments().add(seg);
@@ -81,7 +71,6 @@ public record NetworkTree(Junction root) {
 	/// A connection point of a street or building node of the
 	/// network graph with (pipe) segments to other nodes.
 	public record Junction(SolutionNode node, List<Segment> segments) {
-
 		Junction(SolutionNode node) {
 			this(node, new ArrayList<>());
 		}
@@ -101,7 +90,6 @@ public record NetworkTree(Junction root) {
 
 	/// A pipe segment to a connection point in the network graph.
 	public record Segment(SolutionEdge edge, Junction target) {
-
 		public long id() {
 			return edge.id();
 		}

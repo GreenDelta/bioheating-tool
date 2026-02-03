@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.model;
 
 public enum BuildingType {
-
 	HIGH_RISE(1),
 	MULTI_FAMILY_SMALL(2),
 	MULTI_FAMILY_MEDIUM(3),
@@ -25,8 +24,7 @@ public enum BuildingType {
 
 	public static BuildingType of(int code) {
 		for (var t : values()) {
-			if (t.code == code)
-				return t;
+			if (t.code == code) return t;
 		}
 		return OTHER;
 	}

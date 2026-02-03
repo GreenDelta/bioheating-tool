@@ -32,9 +32,9 @@ public class AuthConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(
-		HttpSecurity http, AuthenticationConfiguration authConfig
+		HttpSecurity http,
+		AuthenticationConfiguration authConfig
 	) throws Exception {
-
 		var authMan = authConfig.getAuthenticationManager();
 		var authFilter = new AuthFilter(authMan, json);
 		authFilter.setFilterProcessesUrl("/api/users/login");
@@ -43,34 +43,31 @@ public class AuthConfig {
 			.cors(conf -> conf.configurationSource(cors()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session ->
-				session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+				session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+			)
 			.securityContext(ctx -> ctx.requireExplicitSave(false))
-
 			//.rememberMe(conf -> conf.rememberMeServices(rememberMeServices).tokenValiditySeconds(60 * 60 * 24))
 
-			.securityMatcher("/**").authorizeHttpRequests(authorize -> authorize
-
-				.requestMatchers(
-					"/api/users/login",
-					"/api/users/logout")
-				.permitAll()
-
-				.requestMatchers(HttpMethod.GET, "/api/users")
-				.hasRole("ADMIN")
-
-				.requestMatchers(HttpMethod.POST, "/api/users")
-				.hasRole("ADMIN")
-
-				.requestMatchers("/api/**")
-				.authenticated()
-
-				.anyRequest().permitAll()
+			.securityMatcher("/**")
+			.authorizeHttpRequests(authorize ->
+				authorize
+					.requestMatchers("/api/users/login", "/api/users/logout")
+					.permitAll()
+					.requestMatchers(HttpMethod.GET, "/api/users")
+					.hasRole("ADMIN")
+					.requestMatchers(HttpMethod.POST, "/api/users")
+					.hasRole("ADMIN")
+					.requestMatchers("/api/**")
+					.authenticated()
+					.anyRequest()
+					.permitAll()
 			)
 			.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-			.logout(logout -> logout
-				.logoutUrl("/api/users/logout")
-				.addLogoutHandler(new SecurityContextLogoutHandler())
-				.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+			.logout(logout ->
+				logout
+					.logoutUrl("/api/users/logout")
+					.addLogoutHandler(new SecurityContextLogoutHandler())
+					.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
 			);
 		return http.build();
 	}
@@ -91,4 +88,3 @@ public class AuthConfig {
 		return source;
 	}
 }
-

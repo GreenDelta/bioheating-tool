@@ -21,14 +21,19 @@ public class ModelValidator {
 
 	public static Res<ValidationResult> validate(Booster model, File csvFile) {
 		var itemsRes = CsvItem.readFrom(csvFile);
-		if (itemsRes.isError())
-			return itemsRes.wrapError("Failed to read validation data");
+		if (itemsRes.isError()) return itemsRes.wrapError(
+			"Failed to read validation data"
+		);
 		return new ModelValidator(model, itemsRes.value()).run();
 	}
 
-	public static Res<ValidationResult> validate(Booster model, List<CsvItem> items) {
-		if (items == null || items.isEmpty())
-			return Res.error("No validation data provided");
+	public static Res<ValidationResult> validate(
+		Booster model,
+		List<CsvItem> items
+	) {
+		if (items == null || items.isEmpty()) return Res.error(
+			"No validation data provided"
+		);
 		return new ModelValidator(model, items).run();
 	}
 
@@ -36,13 +41,15 @@ public class ModelValidator {
 		try {
 			// Encode features without labels for prediction
 			var matrixRes = CsvEncoder.withoutLabels().encode(items);
-			if (matrixRes.isError())
-				return matrixRes.wrapError("Failed to encode validation data");
+			if (matrixRes.isError()) return matrixRes.wrapError(
+				"Failed to encode validation data"
+			);
 
 			// Get predictions
 			var predictions = model.predict(matrixRes.value());
-			if (predictions.length != items.size())
-				return Res.error("Prediction count mismatch");
+			if (predictions.length != items.size()) return Res.error(
+				"Prediction count mismatch"
+			);
 
 			// Build results
 			var results = new ArrayList<ValidationPair>(items.size());
@@ -53,11 +60,9 @@ public class ModelValidator {
 			for (int i = 0; i < items.size(); i++) {
 				var actual = items.get(i).heatDemand();
 				var predicted = (double) predictions[i][0];
-				results.add(new ValidationPair(
-					items.get(i).buildingId(),
-					actual,
-					predicted
-				));
+				results.add(
+					new ValidationPair(items.get(i).buildingId(), actual, predicted)
+				);
 
 				var error = actual - predicted;
 				sumSquaredError += error * error;
@@ -101,8 +106,8 @@ public class ModelValidator {
 	public record ValidationPair(
 		String buildingId,
 		double actual,
-		double predicted) {
-
+		double predicted
+	) {
 		public double error() {
 			return actual - predicted;
 		}
@@ -126,13 +131,16 @@ public class ModelValidator {
 		double rmse,
 		double mae,
 		double mse,
-		double r2) {
-
+		double r2
+	) {
 		@Override
 		public String toString() {
 			return String.format(
 				"RMSE: %.2f, MAE: %.2f, MSE: %.2f, R²: %.4f",
-				rmse, mae, mse, r2
+				rmse,
+				mae,
+				mse,
+				r2
 			);
 		}
 	}
@@ -143,6 +151,6 @@ public class ModelValidator {
 	/// @param metrics aggregated quality metrics
 	public record ValidationResult(
 		List<ValidationPair> pairs,
-		ValidationMetrics metrics) {
-	}
+		ValidationMetrics metrics
+	) {}
 }

@@ -24,7 +24,6 @@ public record PipeConfig(
 	double groundTemperature,
 	List<Pipe> pipes
 ) {
-
 	public static Builder forPlastic() {
 		return new Builder().withRoughness(0.002e-3);
 	}

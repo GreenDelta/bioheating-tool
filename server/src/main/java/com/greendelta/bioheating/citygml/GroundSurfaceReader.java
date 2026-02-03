@@ -21,8 +21,7 @@ class GroundSurfaceReader {
 
 	Res<org.locationtech.jts.geom.Polygon> read(Building building) {
 		var cs3d = coosOf(building);
-		if (cs3d == null)
-			return Res.error("could not get coordinates of building");
+		if (cs3d == null) return Res.error("could not get coordinates of building");
 		int n = cs3d.size() / 3;
 		var coordinates = new Coordinate[n];
 		for (int i = 0; i < n; i++) {
@@ -32,60 +31,51 @@ class GroundSurfaceReader {
 			coordinates[i] = new Coordinate(x, y, z);
 		}
 		var ring = factory.createLinearRing(coordinates);
-		var polygon =  factory.createPolygon(ring);
+		var polygon = factory.createPolygon(ring);
 		return Res.ok(polygon);
 	}
 
 	private static List<Double> coosOf(Building b) {
-		if (b == null)
-			return null;
+		if (b == null) return null;
 		for (var bound : b.getBoundaries()) {
 			if (bound.getObject() instanceof GroundSurface gs) {
 				var coos = groundCoosOf(gs);
-				if (coos != null)
-					return coos;
+				if (coos != null) return coos;
 			}
 		}
 		return null;
 	}
 
 	private static List<Double> groundCoosOf(GroundSurface gs) {
-		if (gs == null)
-			return null;
+		if (gs == null) return null;
 		for (int i = 0; i < 4; i++) {
 			var prop = gs.getMultiSurface(i);
 			if (prop != null) {
 				var cs = surfaceCoosOf(prop.getObject());
-				if (cs != null)
-					return cs;
+				if (cs != null) return cs;
 			}
 		}
 		return null;
 	}
 
 	private static List<Double> surfaceCoosOf(MultiSurface ms) {
-		if (ms == null)
-			return null;
+		if (ms == null) return null;
 		for (var member : ms.getSurfaceMember()) {
 			if (member.getObject() instanceof Polygon p) {
 				var cs = polygonCoosOf(p);
-				if (cs != null)
-					return cs;
+				if (cs != null) return cs;
 			}
 		}
 		return null;
 	}
 
 	private static List<Double> polygonCoosOf(Polygon p) {
-		if (p == null)
-			return null;
+		if (p == null) return null;
 		var cs = ringCoosOf(p.getExterior());
-		if (cs != null)
-			return cs;
+		if (cs != null) return cs;
 		for (var hole : p.getInterior()) {
 			cs = ringCoosOf(hole);
-			if (cs != null)
-				return cs;
+			if (cs != null) return cs;
 		}
 		return null;
 	}
@@ -96,4 +86,3 @@ class GroundSurfaceReader {
 			: null;
 	}
 }
-

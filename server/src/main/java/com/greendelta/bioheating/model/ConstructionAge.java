@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.model;
 
 public enum ConstructionAge {
-
 	UNKNOWN(0, "unknown"),
 	AGE_1900_1919(1, "1900-1919"),
 	AGE_1919_1948(2, "1919-1948"),
@@ -49,20 +48,13 @@ public enum ConstructionAge {
 	}
 
 	public static ConstructionAge ofYear(int year) {
-		if (year < 1900)
-			return UNKNOWN;
-		if (year <= 1919)
-			return AGE_1900_1919;
-		if (year <= 1948)
-			return AGE_1919_1948;
-		if (year <= 1978)
-			return AGE_1949_1978;
-		if (year <= 1995)
-			return AGE_1979_1995;
-		if (year <= 2009)
-			return AGE_1995_2009;
-		if (year <= 2030)
-			return AGE_2010_2030;
+		if (year < 1900) return UNKNOWN;
+		if (year <= 1919) return AGE_1900_1919;
+		if (year <= 1948) return AGE_1919_1948;
+		if (year <= 1978) return AGE_1949_1978;
+		if (year <= 1995) return AGE_1979_1995;
+		if (year <= 2009) return AGE_1995_2009;
+		if (year <= 2030) return AGE_2010_2030;
 		return UNKNOWN;
 	}
 }

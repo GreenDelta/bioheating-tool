@@ -43,8 +43,7 @@ public class PipePlanImage {
 	private final Color PINK_7 = new Color(173, 20, 87);
 	private final Color PINK_8 = new Color(136, 14, 79);
 
-	private PipePlanImage(
-			Solution solution, NetworkTree tree, PipePlan plan) {
+	private PipePlanImage(Solution solution, NetworkTree tree, PipePlan plan) {
 		this.solution = solution;
 		this.map = solution.project().map();
 		this.tree = tree;
@@ -62,22 +61,23 @@ public class PipePlanImage {
 	/// Creates a pipe plan image from the given solution using the given
 	/// pipe configuration.
 	public static Res<byte[]> create(Solution solution, PipeConfig config) {
-		if (solution == null)
-			return Res.error("No solution provided");
-		if (solution.project() == null || solution.project().map() == null)
-			return Res.error("Solution has no project or map");
+		if (solution == null) return Res.error("No solution provided");
+		if (
+			solution.project() == null || solution.project().map() == null
+		) return Res.error("Solution has no project or map");
 
 		var treeRes = NetworkTree.of(solution.withTransientIds());
-		if (treeRes.isError())
-			return treeRes.castError();
+		if (treeRes.isError()) return treeRes.castError();
 
 		var planRes = PipePlan.of(config, treeRes.value());
-		if (planRes.isError())
-			return planRes.castError();
+		if (planRes.isError()) return planRes.castError();
 
 		try {
 			return new PipePlanImage(
-				solution, treeRes.value(), planRes.value()).render();
+				solution,
+				treeRes.value(),
+				planRes.value()
+			).render();
 		} catch (Exception e) {
 			return Res.error("Failed to create pipe plan image", e);
 		}
@@ -93,8 +93,7 @@ public class PipePlanImage {
 	}
 
 	private void expandWithNode(Envelope env, SolutionNode node) {
-		if (node == null)
-			return;
+		if (node == null) return;
 		var b = node.building();
 		if (b != null && b.coordinates() != null) {
 			for (var c : b.coordinates()) {
@@ -110,9 +109,11 @@ public class PipePlanImage {
 		return map;
 	}
 
-	private void traverseForPipes(NetworkTree.Junction junction, Map<Long, Pipe> map) {
-		if (junction == null)
-			return;
+	private void traverseForPipes(
+		NetworkTree.Junction junction,
+		Map<Long, Pipe> map
+	) {
+		if (junction == null) return;
 		for (var seg : junction.segments()) {
 			var pipe = plan.pipeOf(seg);
 			if (pipe != null) {
@@ -140,8 +141,7 @@ public class PipePlanImage {
 	private void renderStreets(GeoImage img) {
 		for (var street : map.streets()) {
 			var cs = street.coordinates();
-			if (cs == null || cs.length < 2)
-				continue;
+			if (cs == null || cs.length < 2) continue;
 			for (int i = 1; i < cs.length; i++) {
 				var start = cs[i - 1];
 				var end = cs[i];
@@ -156,13 +156,10 @@ public class PipePlanImage {
 		var factory = new GeometryFactory();
 		for (var edge : solution.edges()) {
 			var coords = edge.coordinates();
-			if (coords == null || coords.length < 2)
-				continue;
+			if (coords == null || coords.length < 2) continue;
 
 			var pipe = edgePipes.get(edge.id());
-			var color = pipe != null
-				? Color.decode(pipe.rgb())
-				: DISABLED_COLOR;
+			var color = pipe != null ? Color.decode(pipe.rgb()) : DISABLED_COLOR;
 
 			LineString line = factory.createLineString(coords);
 			img.draw(line, color, 3.0f);
@@ -180,16 +177,18 @@ public class PipePlanImage {
 
 		for (var node : solution.nodes()) {
 			var b = node.building();
-			if (b == null)
-				continue;
+			if (b == null) continue;
 			renderBuilding(img, node, maxDemand);
 		}
 	}
 
-	private void renderBuilding(GeoImage img, SolutionNode node, double maxDemand) {
+	private void renderBuilding(
+		GeoImage img,
+		SolutionNode node,
+		double maxDemand
+	) {
 		var b = node.building();
-		if (b == null || b.coordinates() == null)
-			return;
+		if (b == null || b.coordinates() == null) return;
 
 		var factory = new GeometryFactory();
 		var polygon = factory.createPolygon(b.coordinates());
@@ -203,7 +202,7 @@ public class PipePlanImage {
 			return;
 		}
 
-		int share = (int) (Math.round(10 * b.heatDemand() / maxDemand));
+		int share = (int) (Math.round((10 * b.heatDemand()) / maxDemand));
 		var color = switch (share) {
 			case 0, 1 -> PINK_1;
 			case 2 -> PINK_2;

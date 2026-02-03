@@ -17,31 +17,23 @@ public record GmlModel(
 	GmlEnvelope envelope,
 	List<GmlBuilding> buildings
 ) {
-
 	public static Res<GmlModel> readFrom(File file) {
 		var model = CityGML.readModel(file);
-		return model.isError()
-			? model.castError()
-			: map(model.value());
+		return model.isError() ? model.castError() : map(model.value());
 	}
 
 	public static Res<GmlModel> readFrom(Reader reader) {
 		var model = CityGML.readModel(reader);
-		return model.isError()
-			? model.castError()
-			: map(model.value());
+		return model.isError() ? model.castError() : map(model.value());
 	}
 
 	public static Res<GmlModel> readFrom(InputStream stream) {
 		var model = CityGML.readModel(stream);
-		return model.isError()
-			? model.castError()
-			: map(model.value());
+		return model.isError() ? model.castError() : map(model.value());
 	}
 
 	private static Res<GmlModel> map(CityModel model) {
-		if (model == null)
-			return Res.error("model is null");
+		if (model == null) return Res.error("model is null");
 		var factory = new GeometryFactory();
 
 		try {

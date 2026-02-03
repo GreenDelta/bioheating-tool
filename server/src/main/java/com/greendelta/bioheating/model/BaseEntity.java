@@ -21,7 +21,8 @@ public abstract class BaseEntity {
 		valueColumnName = "seq_value",
 		pkColumnValue = "entity_seq",
 		allocationSize = 150,
-		table = "tbl_sequences")
+		table = "tbl_sequences"
+	)
 	@JsonProperty
 	private long id;
 
@@ -35,12 +36,9 @@ public abstract class BaseEntity {
 
 	@Override
 	public final boolean equals(Object obj) {
-		if (obj == null)
-			return false;
-		if (obj == this)
-			return true;
-		if (!(this.getClass().isInstance(obj)))
-			return false;
+		if (obj == null) return false;
+		if (obj == this) return true;
+		if (!(this.getClass().isInstance(obj))) return false;
 		var other = (BaseEntity) obj;
 		// when the IDs are 0, so not saved in the database yet, the
 		// entities are only equal when they are identical (obj == this)
@@ -49,9 +47,7 @@ public abstract class BaseEntity {
 
 	@Override
 	public final int hashCode() {
-		return id != 0
-			? Long.hashCode(id)
-			: super.hashCode();
+		return id != 0 ? Long.hashCode(id) : super.hashCode();
 	}
 
 	@Override

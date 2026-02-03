@@ -16,15 +16,13 @@ record BuildingShape(
 	Envelope envelope,
 	double groundArea,
 	double blockVolume,
-	Set<String> neighbors) {
-
+	Set<String> neighbors
+) {
 	static List<BuildingShape> allOf(List<GmlBuilding> gmls) {
-		if (gmls == null || gmls.isEmpty())
-			return List.of();
+		if (gmls == null || gmls.isEmpty()) return List.of();
 		var shapes = new ArrayList<BuildingShape>(gmls.size());
 		for (var gml : gmls) {
-			if (gml.groundSurface() == null)
-				continue;
+			if (gml.groundSurface() == null) continue;
 			shapes.add(of(gml));
 		}
 		return shapes;
@@ -35,7 +33,12 @@ record BuildingShape(
 		double blockVolume = gml.height() * groundArea;
 		var envelope = gml.groundSurface().getEnvelopeInternal();
 		return new BuildingShape(
-			gml, envelope, groundArea, blockVolume, new HashSet<>());
+			gml,
+			envelope,
+			groundArea,
+			blockVolume,
+			new HashSet<>()
+		);
 	}
 
 	String id() {
@@ -58,9 +61,10 @@ record BuildingShape(
 
 	@Override
 	public final boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		return obj instanceof BuildingShape other
-			&& Objects.equals(this.id(), other.id());
+		if (this == obj) return true;
+		return (
+			obj instanceof BuildingShape other &&
+			Objects.equals(this.id(), other.id())
+		);
 	}
 }

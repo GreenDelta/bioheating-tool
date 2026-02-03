@@ -13,4 +13,3 @@ public class WebController {
 		return "forward:/index.html";
 	}
 }
-

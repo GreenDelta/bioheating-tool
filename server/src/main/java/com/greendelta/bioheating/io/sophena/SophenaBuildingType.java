@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.io.sophena;
 
 public enum SophenaBuildingType {
-
 	SINGLE_FAMILY_HOUSE,
 
 	MULTI_FAMILY_HOUSE,
@@ -28,6 +27,5 @@ public enum SophenaBuildingType {
 
 	FERMENTER,
 
-	OTHER
-
+	OTHER,
 }

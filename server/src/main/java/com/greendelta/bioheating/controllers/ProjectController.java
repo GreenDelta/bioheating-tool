@@ -52,9 +52,10 @@ public class ProjectController {
 	@GetMapping
 	public ResponseEntity<?> getProjects(Authentication auth) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-		var data = projects.getProjects(user).stream()
+		if (user == null) return Http.badRequest("not authenticated");
+		var data = projects
+			.getProjects(user)
+			.stream()
 			.map(ProjectInfo::of)
 			.toList();
 		return Http.ok(data);
@@ -62,7 +63,8 @@ public class ProjectController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getProject(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
 		return withProject(auth, id, project -> {
 			var res = ClientProject.of(db, project);
@@ -80,35 +82,35 @@ public class ProjectController {
 		@RequestParam(value = "description", required = false) String description,
 		@RequestParam("file") MultipartFile file
 	) {
-
 		// check input data
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
-		if (Strings.isBlank(name))
-			return Http.badRequest("a project name is required");
-		if (file.isEmpty())
-			return Http.badRequest("a CityGML file is required");
+		if (user == null) return Http.badRequest("not authenticated");
+		if (Strings.isBlank(name)) return Http.badRequest(
+			"a project name is required"
+		);
+		if (file.isEmpty()) return Http.badRequest("a CityGML file is required");
 
 		var region = db.getForId(ClimateRegion.class, climateRegionId);
-		if (region == null)
-			return Http.badRequest(
-				"no climate region found for ID=" + climateRegionId);
+		if (region == null) return Http.badRequest(
+			"no climate region found for ID=" + climateRegionId
+		);
 
 		var project = new Project()
 			.name(name)
 			.description(description)
 			.climateRegion(region)
 			.user(user);
-		var task = NewTask.of(user,
-			() -> files.useUpload(file, (gml) -> projects.addMap(project, gml)));
+		var task = NewTask.of(user, () ->
+			files.useUpload(file, gml -> projects.addMap(project, gml))
+		);
 		tasks.schedule(task);
 		return Http.ok(task.toState());
 	}
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteProject(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
 		return withProject(auth, id, project -> {
 			var err = projects.delete(project);
@@ -120,7 +122,9 @@ public class ProjectController {
 
 	@PostMapping("/{id}")
 	public ResponseEntity<?> updateProject(
-		Authentication auth, @PathVariable long id, @RequestBody ClientProject data
+		Authentication auth,
+		@PathVariable long id,
+		@RequestBody ClientProject data
 	) {
 		return withProject(auth, id, project -> {
 			data.writeUpdatesTo(project);
@@ -132,26 +136,21 @@ public class ProjectController {
 	}
 
 	private ResponseEntity<?> withProject(
-		Authentication auth, long id, Function<Project, ResponseEntity<?>> fn
+		Authentication auth,
+		long id,
+		Function<Project, ResponseEntity<?>> fn
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
+		if (user == null) return Http.badRequest("not authenticated");
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
 			? Http.notFound("project not found: " + id)
 			: fn.apply(project);
 	}
 
-	public record ProjectInfo(
-		long id, String name, String description
-	) {
-
+	public record ProjectInfo(long id, String name, String description) {
 		public static ProjectInfo of(Project p) {
-			return new ProjectInfo(
-				p.id(), p.name(), p.description()
-			);
+			return new ProjectInfo(p.id(), p.name(), p.description());
 		}
 	}
-
 }

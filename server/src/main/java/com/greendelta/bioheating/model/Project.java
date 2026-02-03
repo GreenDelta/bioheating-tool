@@ -42,6 +42,7 @@ public class Project extends BaseEntity {
 	public String description() {
 		return description;
 	}
+
 	public Project description(String description) {
 		this.description = description;
 		return this;

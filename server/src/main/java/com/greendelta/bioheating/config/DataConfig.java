@@ -86,42 +86,39 @@ public class DataConfig {
 
 	private int importClimateRegions(Database db) {
 		var stream = getClass().getResourceAsStream("climate-regions.json");
-		if (stream == null)
-			return -1;
+		if (stream == null) return -1;
 
 		try (stream) {
 			var mapper = new ObjectMapper();
-			var typeRef = new TypeReference<List<ClimateRegion>>() {
-			};
+			var typeRef = new TypeReference<List<ClimateRegion>>() {};
 			var regions = mapper.readValue(stream, typeRef);
 			for (var data : regions) {
 				db.insert(data);
 			}
 			return regions.size();
 		} catch (IOException e) {
-			LoggerFactory.getLogger(getClass())
-				.error("failed to import climate regions", e);
+			LoggerFactory.getLogger(getClass()).error(
+				"failed to import climate regions",
+				e
+			);
 			return -1;
 		}
 	}
 
 	private int importFuels(Database db) {
 		var stream = getClass().getResourceAsStream("fuels.json");
-		if (stream == null)
-			return -1;
+		if (stream == null) return -1;
 
 		try (stream) {
 			var mapper = new ObjectMapper();
-			var typeRef = new TypeReference<List<Fuel>>() {
-			};
+			var typeRef = new TypeReference<List<Fuel>>() {};
 			var fuels = mapper.readValue(stream, typeRef);
 			for (var data : fuels) {
 				db.insert(data);
 			}
 			return fuels.size();
 		} catch (IOException e) {
-			LoggerFactory.getLogger(getClass())
-				.error("failed to import fuels", e);
+			LoggerFactory.getLogger(getClass()).error("failed to import fuels", e);
 			return -1;
 		}
 	}

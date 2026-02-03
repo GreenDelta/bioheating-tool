@@ -15,13 +15,10 @@ public record ClientProject(
 	ClientMap map,
 	Long solutionId
 ) {
-
 	public static Res<ClientProject> of(Database db, Project project) {
-		if (project == null)
-			return Res.error("project is null");
+		if (project == null) return Res.error("project is null");
 		var map = ClientMap.of(project.map());
-		if (map.isError())
-			return map.castError();
+		if (map.isError()) return map.castError();
 		var p = new ClientProject(
 			project.id(),
 			project.name(),
@@ -34,7 +31,8 @@ public record ClientProject(
 	}
 
 	private static Long findSolutionId(Database db, Project project) {
-		var solution = db.getAll(Solution.class)
+		var solution = db
+			.getAll(Solution.class)
 			.stream()
 			.filter(s -> project.equals(s.project()))
 			.findAny()
@@ -43,13 +41,11 @@ public record ClientProject(
 	}
 
 	public void writeUpdatesTo(Project project) {
-		if (project == null)
-			return;
+		if (project == null) return;
 		project.name(name);
 		project.description(description);
 		if (project.map() != null && map != null) {
 			MapSync.updateFromClient(project.map(), map);
 		}
 	}
-
 }

@@ -5,8 +5,8 @@ import com.greendelta.bioheating.model.ConstructionAge;
 import com.greendelta.bioheating.model.Project;
 
 public class FeatureValue {
-	private FeatureValue() {
-	}
+
+	private FeatureValue() {}
 
 	public static float climateRegionFactor(Project project) {
 		return project != null && project.climateRegion() != null
@@ -36,8 +36,7 @@ public class FeatureValue {
 	}
 
 	public static float typeFactor(BuildingType type) {
-		if (type == null)
-			return 0.8f;
+		if (type == null) return 0.8f;
 		return switch (type) {
 			case HIGH_RISE -> 0.65f;
 			case MULTI_FAMILY_SMALL -> 0.8f;
@@ -54,8 +53,7 @@ public class FeatureValue {
 
 	/// Returns the default storey height in meters for the given building type.
 	public static float defaultStoreyHeight(BuildingType type) {
-		if (type == null)
-			return 2.85f;
+		if (type == null) return 2.85f;
 		return switch (type) {
 			case HIGH_RISE -> 3.3f;
 			case MULTI_FAMILY_SMALL -> 3.0f;
@@ -72,8 +70,7 @@ public class FeatureValue {
 
 	/// Returns the heated area factor for the given building type.
 	public static float heatedAreaFactor(BuildingType type) {
-		if (type == null)
-			return 0.8f;
+		if (type == null) return 0.8f;
 		return switch (type) {
 			case HIGH_RISE -> 0.75f;
 			case MULTI_FAMILY_SMALL -> 0.8f;
@@ -91,8 +88,7 @@ public class FeatureValue {
 	/// Returns the average annual heat demand of a building of the given age in
 	/// kWh/m2/year.
 	public static float averageHeatDemand(ConstructionAge age) {
-		if (age == null)
-			return 130f;
+		if (age == null) return 130f;
 		return switch (age) {
 			case UNKNOWN -> 130f;
 			case AGE_1900_1919 -> 180f;
@@ -106,8 +102,7 @@ public class FeatureValue {
 
 	/// Returns the feature factor for the given CityGML code of a roof type.
 	public static float roofTypeFacor(String code) {
-		if (code == null)
-			return 0.85f;
+		if (code == null) return 0.85f;
 		return switch (code) {
 			case "1000" -> 1f;
 			case "2100" -> 0.95f;
@@ -127,5 +122,4 @@ public class FeatureValue {
 			default -> 0.85f;
 		};
 	}
-
 }

@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.citygml;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,5 +29,4 @@ public class GmlRoofTypeTest {
 		assertEquals("Sonstiges", t3.label());
 		assertEquals(0.85, t3.volumeFactor(), 1e-16);
 	}
-
 }

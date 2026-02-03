@@ -24,7 +24,6 @@ public class Database implements AutoCloseable {
 	}
 
 	private Database(Config config) {
-
 		// create the connection pool
 		var poolConf = new HikariConfig();
 		poolConf.setJdbcUrl(config.url());
@@ -36,8 +35,10 @@ public class Database implements AutoCloseable {
 		var jpaConfig = new HashMap<>();
 		jpaConfig.put("jakarta.persistence.nonJtaDataSource", pool);
 		jpaConfig.put("eclipselink.target-database", "PostgreSQL");
-		entityFactory = new PersistenceProvider()
-			.createEntityManagerFactory("bio-heating", jpaConfig);
+		entityFactory = new PersistenceProvider().createEntityManagerFactory(
+			"bio-heating",
+			jpaConfig
+		);
 	}
 
 	public <T extends BaseEntity> T getForId(Class<T> type, long id) {
@@ -49,7 +50,9 @@ public class Database implements AutoCloseable {
 	public <T extends BaseEntity> List<T> getAll(Class<T> type) {
 		try (var em = entityFactory.createEntityManager()) {
 			var q = em.createQuery(
-				"SELECT e FROM " + type.getSimpleName() + " e", type);
+				"SELECT e FROM " + type.getSimpleName() + " e",
+				type
+			);
 			return q.getResultList();
 		}
 	}
@@ -67,9 +70,7 @@ public class Database implements AutoCloseable {
 
 	public <T extends BaseEntity> void delete(T entity) {
 		withTransaction(em -> {
-			var e = em.contains(entity)
-				? entity
-				: em.merge(entity);
+			var e = em.contains(entity) ? entity : em.merge(entity);
 			em.remove(e);
 		});
 	}
@@ -96,6 +97,7 @@ public class Database implements AutoCloseable {
 	}
 
 	public static class Config {
+
 		private final String database;
 		private String user = "postgres";
 		private String password = "password";

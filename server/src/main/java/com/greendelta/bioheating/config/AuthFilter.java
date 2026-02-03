@@ -30,11 +30,11 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 
 	@Override
 	public Authentication attemptAuthentication(
-		HttpServletRequest req, HttpServletResponse resp
+		HttpServletRequest req,
+		HttpServletResponse resp
 	) throws AuthenticationException {
 		try {
-			var authData = json.readValue(
-				req.getInputStream(), AuthData.class);
+			var authData = json.readValue(req.getInputStream(), AuthData.class);
 			return authMan.authenticate(authData.token());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -52,13 +52,13 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 	}
 
 	public record AuthData(String user, String password) {
-
 		UsernamePasswordAuthenticationToken token() {
 			return new UsernamePasswordAuthenticationToken(user, password);
 		}
 	}
 
 	public static class SuccessHandler implements AuthenticationSuccessHandler {
+
 		@Override
 		public void onAuthenticationSuccess(
 			HttpServletRequest req,
@@ -71,4 +71,3 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 		}
 	}
 }
-

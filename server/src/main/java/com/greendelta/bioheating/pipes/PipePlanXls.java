@@ -41,11 +41,11 @@ public class PipePlanXls {
 	}
 
 	public static Res<byte[]> create(PipeConfig config, NetworkTree tree) {
-		if (tree == null || tree.root() == null)
-			return Res.error("No tree provided");
+		if (tree == null || tree.root() == null) return Res.error(
+			"No tree provided"
+		);
 		var planRes = PipePlan.of(config, tree);
-		if (planRes.isError())
-			return planRes.castError();
+		if (planRes.isError()) return planRes.castError();
 		return new PipePlanXls(tree, planRes.value()).build();
 	}
 
@@ -68,9 +68,15 @@ public class PipePlanXls {
 
 	private void writeHeader() {
 		var row = sheet.createRow(rowIndex++);
-		var headers = new String[]{
-			"Level", "Node ID", "Type", "Building", "Heat Demand (kWh/a)",
-			"Peak Load (kW)", "Pipe Diameter (mm)", "Pipe Length (m)"
+		var headers = new String[] {
+			"Level",
+			"Node ID",
+			"Type",
+			"Building",
+			"Heat Demand (kWh/a)",
+			"Peak Load (kW)",
+			"Pipe Diameter (mm)",
+			"Pipe Length (m)",
 		};
 
 		for (int i = 0; i < headers.length; i++) {
@@ -81,8 +87,7 @@ public class PipePlanXls {
 	}
 
 	private void writeNode(Junction node, int level) {
-		if (node == null)
-			return;
+		if (node == null) return;
 
 		var row = sheet.createRow(rowIndex++);
 		var style = node.isBuilding() ? buildingStyle : streetStyle;
@@ -112,12 +117,14 @@ public class PipePlanXls {
 			if (building.isSupplyCenter()) {
 				buildingCell.setCellValue("Supply Hub");
 			} else {
-				var name = building.name() != null
-					? building.name()
-					: "Building-" + building.cityId();
+				var name =
+					building.name() != null
+						? building.name()
+						: "Building-" + building.cityId();
 				buildingCell.setCellValue(name);
 				demandCell.setCellValue(
-					Math.round(building.heatDemand() * 10.0) / 10.0);
+					Math.round(building.heatDemand() * 10.0) / 10.0
+				);
 			}
 		}
 		buildingCell.setCellStyle(style);
@@ -133,8 +140,7 @@ public class PipePlanXls {
 		row.createCell(7).setCellStyle(style);
 
 		// Write child segments
-		for (
-			var segment : node.segments()) {
+		for (var segment : node.segments()) {
 			writeSegment(segment, level + 1);
 			writeNode(segment.target(), level + 1);
 		}

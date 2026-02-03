@@ -16,7 +16,6 @@ public record GmlBuilding(
 	String roofType,
 	Map<String, String> attributes
 ) {
-
 	static GmlBuilding of(Building b, GroundSurfaceReader surfaceReader) {
 		var groundSurface = surfaceReader.read(b).orElse(null);
 		return new GmlBuilding(
@@ -35,8 +34,7 @@ public record GmlBuilding(
 		var attributes = new HashMap<String, String>();
 		for (var a : b.getGenericAttributes()) {
 			var obj = a.getObject();
-			if (obj == null)
-				continue;
+			if (obj == null) continue;
 			var name = obj.getName();
 			if (name != null && obj.getValue() instanceof String value) {
 				attributes.put(name, value);
@@ -47,17 +45,14 @@ public record GmlBuilding(
 
 	private static double heightOf(Building b) {
 		var heights = b.getHeights();
-		if (heights == null || heights.isEmpty())
-			return 0.0;
+		if (heights == null || heights.isEmpty()) return 0.0;
 		int n = 0;
 		double sum = 0.0;
 		for (var h : heights) {
 			var obj = h.getObject();
-			if (obj == null || obj.getValue() == null)
-				continue;
+			if (obj == null || obj.getValue() == null) continue;
 			var v = obj.getValue().getValue();
-			if (v == null)
-				continue;
+			if (v == null) continue;
 			n += 1;
 			sum += v;
 		}

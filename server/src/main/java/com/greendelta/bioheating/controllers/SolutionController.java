@@ -58,20 +58,24 @@ public class SolutionController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getSolution(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
-		return withSolution(
-			auth, id, solution -> Http.ok(ClientSolution.of(solution)));
+		return withSolution(auth, id, solution ->
+			Http.ok(ClientSolution.of(solution))
+		);
 	}
 
 	@GetMapping("/{id}/image")
 	public ResponseEntity<?> getSolutionImage(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
 		return withSolution(auth, id, solution -> {
 			var image = solution.image();
-			if (image == null || image.length == 0)
-				return ResponseEntity.notFound().build();
+			if (
+				image == null || image.length == 0
+			) return ResponseEntity.notFound().build();
 			return ResponseEntity.ok()
 				.contentType(MediaType.IMAGE_PNG)
 				.header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
@@ -81,38 +85,43 @@ public class SolutionController {
 
 	@GetMapping("/{id}/xls")
 	public ResponseEntity<?> getSolutionXls(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
 		return withSolution(auth, id, solution -> {
 			var treeRes = NetworkTree.of(solution);
-			if (treeRes.isError())
-				return Http.serverError(treeRes.error());
+			if (treeRes.isError()) return Http.serverError(treeRes.error());
 
 			var config = PipeConfig.forPlastic().get();
 			var xls = PipePlanXls.create(config, treeRes.value());
-			if (xls.isError())
-				return Http.serverError(xls.error());
+			if (xls.isError()) return Http.serverError(xls.error());
 
 			var fileName = "pipe-plan-" + solution.id() + ".xlsx";
 			return ResponseEntity.ok()
-				.contentType(MediaType.parseMediaType(
-					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-				.header(HttpHeaders.CONTENT_DISPOSITION,
-					"attachment; filename=\"" + fileName + "\"")
+				.contentType(
+					MediaType.parseMediaType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+					)
+				)
+				.header(
+					HttpHeaders.CONTENT_DISPOSITION,
+					"attachment; filename=\"" + fileName + "\""
+				)
 				.body(xls.value());
 		});
 	}
 
 	@GetMapping("/{id}/sophena-package")
 	public ResponseEntity<?> getSophenaPackage(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
 		return withSolution(auth, id, solution -> {
 			Res<byte[]> bytes = files.withTempFile(".gz", file -> {
 				var res = SophenaExport.write(solution, file);
-				if (res.isError())
-					return res.wrapError(
-						"Failed to write Sophena package: " + res.error());
+				if (res.isError()) return res.wrapError(
+					"Failed to write Sophena package: " + res.error()
+				);
 				try {
 					var bs = Files.readAllBytes(file.toPath());
 					return Res.ok(bs);
@@ -120,16 +129,18 @@ public class SolutionController {
 					return Res.error("Failed to read exported Sophena package", e);
 				}
 			});
-			if (bytes.isError())
-				return Http.serverError(bytes.error());
+			if (bytes.isError()) return Http.serverError(bytes.error());
 
 			var project = solution.project();
-			var name = project != null && Strings.isNotBlank(project.name())
-				? project.name().replaceAll("\\W+", "_")
-				: "solution";
+			var name =
+				project != null && Strings.isNotBlank(project.name())
+					? project.name().replaceAll("\\W+", "_")
+					: "solution";
 			return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION,
-					"attachment; filename=\"" + name + ".json.gz\"")
+				.header(
+					HttpHeaders.CONTENT_DISPOSITION,
+					"attachment; filename=\"" + name + ".json.gz\""
+				)
 				.header(HttpHeaders.CONTENT_TYPE, "application/gzip")
 				.body(bytes.value());
 		});
@@ -137,22 +148,23 @@ public class SolutionController {
 
 	@PostMapping("/project/{id}")
 	public ResponseEntity<?> calculate(
-		Authentication auth, @PathVariable long id
+		Authentication auth,
+		@PathVariable long id
 	) {
 		return withProject(auth, id, project -> {
 			var user = users.getCurrentUser(auth).orElse(null);
-			if (user == null)
-				return Http.badRequest("not authenticated");
+			if (user == null) return Http.badRequest("not authenticated");
 
 			var task = NewTask.of(user, () -> {
-
 				var graph = Graph.buildFrom(project);
-				if (graph.isError())
-					return graph.wrapError("failed to create project graph");
+				if (graph.isError()) return graph.wrapError(
+					"failed to create project graph"
+				);
 
 				var tree = SteinerTree.compute(graph.value());
-				if (tree.isError())
-					return tree.wrapError("failed to create Steiner-Tree");
+				if (tree.isError()) return tree.wrapError(
+					"failed to create Steiner-Tree"
+				);
 
 				return new MinTreeSolution(project, tree.value()).create(db);
 			});
@@ -162,11 +174,12 @@ public class SolutionController {
 	}
 
 	private ResponseEntity<?> withProject(
-		Authentication auth, long id, Function<Project, ResponseEntity<?>> fn
+		Authentication auth,
+		long id,
+		Function<Project, ResponseEntity<?>> fn
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
+		if (user == null) return Http.badRequest("not authenticated");
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
 			? Http.notFound("project not found: " + id)
@@ -174,14 +187,14 @@ public class SolutionController {
 	}
 
 	private ResponseEntity<?> withSolution(
-		Authentication auth, long id, Function<Solution, ResponseEntity<?>> fn
+		Authentication auth,
+		long id,
+		Function<Solution, ResponseEntity<?>> fn
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
+		if (user == null) return Http.badRequest("not authenticated");
 		var solution = db.getForId(Solution.class, id);
-		if (solution == null)
-			return Http.notFound("solution not found: " + id);
+		if (solution == null) return Http.notFound("solution not found: " + id);
 		var project = solution.project();
 		return project == null || !user.equals(project.user())
 			? Http.forbidden("access denied")

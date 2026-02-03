@@ -1,9 +1,6 @@
 package com.greendelta.bioheating.citygml;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,8 +42,7 @@ public class CityGmlImportTest {
 	@Test
 	public void testImport() {
 		var region = db.insert(new ClimateRegion().number(13));
-		var project = new Project().name("test project")
-			.climateRegion(region);
+		var project = new Project().name("test project").climateRegion(region);
 		project = new CityGmlImport(db, project, file)
 			.withOsmImport(WITH_OSM)
 			.call()

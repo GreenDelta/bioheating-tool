@@ -20,9 +20,18 @@ public class CrsIdTest {
 	@Test
 	public void testParse() {
 		assertEquals(CrsId.utm33(), CrsId.parse("EPSG:25833"));
-		assertEquals(CrsId.utm32(), CrsId.parse("urn:adv:crs:ETRS89_UTM32*DE_DHHN2016_NH"));
-		assertEquals(CrsId.utm33(), CrsId.parse("urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH"));
-		assertEquals(CrsId.utm33(), CrsId.parse("urn:ogc:def:crs,crs:EPSG:6.12:25833,crs:EPSG:6.12:5783"));
+		assertEquals(
+			CrsId.utm32(),
+			CrsId.parse("urn:adv:crs:ETRS89_UTM32*DE_DHHN2016_NH")
+		);
+		assertEquals(
+			CrsId.utm33(),
+			CrsId.parse("urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH")
+		);
+		assertEquals(
+			CrsId.utm33(),
+			CrsId.parse("urn:ogc:def:crs,crs:EPSG:6.12:25833,crs:EPSG:6.12:5783")
+		);
 		assertEquals(CrsId.utm32(), CrsId.parse("etrs89_utm32"));
 		assertEquals(CrsId.utm33(), CrsId.parse("etrs89_utm33"));
 		assertEquals(CrsId.utm32(), CrsId.parse("ETRS89_UTM32"));

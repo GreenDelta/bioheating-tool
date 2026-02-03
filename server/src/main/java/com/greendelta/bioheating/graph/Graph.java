@@ -28,33 +28,31 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 	public static Res<Graph> buildFrom(Project project) {
 		try {
 			var config = GraphConfig.of(project);
-			if (config.isError())
-				return config.wrapError("Failed to create graph configuration");
+			if (config.isError()) return config.wrapError(
+				"Failed to create graph configuration"
+			);
 
 			var streetNet = StreetNet.create(config.value());
-			if (streetNet.isError())
-				return streetNet.wrapError("Failed to create street graph");
+			if (streetNet.isError()) return streetNet.wrapError(
+				"Failed to create street graph"
+			);
 
 			var g = new Builder(config.value(), streetNet.value()).build();
 			return Res.ok(g);
 		} catch (Exception e) {
 			return Res.error("Failed to create graph", e);
 		}
-
 	}
 
-
 	public void add(GraphPath<Node, Edge> path) {
-		if (path == null)
-			return;
+		if (path == null) return;
 		for (var edge : path.getEdgeList()) {
 			add(edge);
 		}
 	}
 
 	void add(Edge edge) {
-		if (edge == null)
-			return;
+		if (edge == null) return;
 		addVertex(edge.source());
 		addVertex(edge.target());
 		var b = addEdge(edge.source(), edge.target(), edge);
@@ -100,34 +98,31 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 		/// may are split into several parts. The final street segments are added
 		/// to the graph when this is finished.
 		private void linkBuildings() {
-
 			var distanceFunc = new DistanceFunction();
 			config.eachIncludedBuilding(b -> {
 				var node = BuildingNode.of(b, config.factory());
 				var n = streetIndex.nearestNeighbour(
-					node.envelope(), node.polygon(), distanceFunc);
-				if (!(n instanceof Edge street))
-					return;
+					node.envelope(),
+					node.polygon(),
+					distanceFunc
+				);
+				if (!(n instanceof Edge street)) return;
 				graph.addVertex(node);
 				var cs = DistanceOp.nearestPoints(node.polygon(), street.line());
 				var streetNode = connectionPointOf(cs[1], street);
 				var line = config.lineOf(cs);
-				var connection = config.edgeOf(node, streetNode,line);
+				var connection = config.edgeOf(node, streetNode, line);
 				graph.add(connection);
 			});
-
 		}
 
 		private Node connectionPointOf(Coordinate coo, Edge street) {
-			if (config.isClose(coo, street.source()))
-				return street.source();
-			if (config.isClose(coo, street.target()))
-				return street.target();
+			if (config.isClose(coo, street.source())) return street.source();
+			if (config.isClose(coo, street.target())) return street.target();
 
 			var parts = streetParts.get(street.id());
 			var node = splitParts(coo, parts);
-			if (node != null)
-				return node;
+			if (node != null) return node;
 
 			var p = edgePointOf(coo, street);
 			if (p.hasEdges()) {
@@ -140,8 +135,7 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 		}
 
 		private Node splitParts(Coordinate coo, List<Edge> parts) {
-			if (parts == null || parts.isEmpty())
-				return null;
+			if (parts == null || parts.isEmpty()) return null;
 
 			var point = config.pointOf(coo);
 			Edge part = null;
@@ -154,11 +148,9 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 				}
 			}
 
-			if (part == null)
-				return null;
+			if (part == null) return null;
 			var p = edgePointOf(coo, part);
-			if (!p.hasEdges())
-				return p.node;
+			if (!p.hasEdges()) return p.node;
 
 			parts.remove(part);
 			parts.add(p.edge1);
@@ -166,11 +158,13 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 			return p.node;
 		}
 
-		private EdgePoint edgePointOf(Coordinate coo,  Edge edge) {
-			if (config.isClose(coo, edge.source()))
-				return EdgePoint.of(edge.source());
-			if (config.isClose(coo, edge.target()))
-				return EdgePoint.of(edge.target());
+		private EdgePoint edgePointOf(Coordinate coo, Edge edge) {
+			if (config.isClose(coo, edge.source())) return EdgePoint.of(
+				edge.source()
+			);
+			if (config.isClose(coo, edge.target())) return EdgePoint.of(
+				edge.target()
+			);
 
 			var point = config.pointOf(coo);
 			var node = new StreetNode(config.nextId(), point);
@@ -184,7 +178,6 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 	}
 
 	private record EdgePoint(Node node, Edge edge1, Edge edge2) {
-
 		static EdgePoint of(Node node) {
 			return new EdgePoint(node, null, null);
 		}
@@ -211,7 +204,8 @@ public class Graph extends DefaultUndirectedWeightedGraph<Node, Edge> {
 				case StreetNode n -> n.center();
 				case Geometry g -> g;
 				case null, default -> throw new RuntimeException(
-					"Unexpected object type for distance calculation: " + item);
+					"Unexpected object type for distance calculation: " + item
+				);
 			};
 		}
 	}

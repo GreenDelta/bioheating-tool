@@ -23,10 +23,10 @@ class BuildingEncoder {
 		this.data = new float[PARAMS * buildings.size()];
 	}
 
-	static Res<DMatrix> encode(
-		ClimateRegion region, List<Building> buildings) {
-		if (region == null || buildings == null || buildings.isEmpty())
-			return Res.error("Climate region or building data missing");
+	static Res<DMatrix> encode(ClimateRegion region, List<Building> buildings) {
+		if (
+			region == null || buildings == null || buildings.isEmpty()
+		) return Res.error("Climate region or building data missing");
 
 		float regionParam = FeatureValue.climateRegionFactor(region.number());
 		return new BuildingEncoder(regionParam, buildings).run();

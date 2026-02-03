@@ -36,8 +36,12 @@ public class PipePlanExample {
 
 	private static void render(String dot) {
 		try {
-			var p = new ProcessBuilder("dot", "-Tpng", "-o", "target/tree.png")
-				.start();
+			var p = new ProcessBuilder(
+				"dot",
+				"-Tpng",
+				"-o",
+				"target/tree.png"
+			).start();
 			try (var os = p.getOutputStream()) {
 				os.write(dot.getBytes());
 			}
@@ -46,5 +50,4 @@ public class PipePlanExample {
 			e.printStackTrace();
 		}
 	}
-
 }

@@ -12,6 +12,7 @@ import com.greendelta.bioheating.io.GeoImage;
 import com.greendelta.bioheating.model.Project;
 
 public class GeoImageExample {
+
 	public static void main(String[] args) {
 		try (var db = Tests.db()) {
 			var project = db.getAll(Project.class).getFirst();
@@ -24,7 +25,6 @@ public class GeoImageExample {
 			}
 
 			try (var img = new GeoImage(1024, 800, envelope)) {
-
 				for (var street : project.map().streets()) {
 					img.drawLine(street.coordinates(), Color.DARK_GRAY);
 				}
@@ -36,10 +36,8 @@ public class GeoImageExample {
 
 				ImageIO.write(img.getImage(), "png", new File("target/project.png"));
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
 }

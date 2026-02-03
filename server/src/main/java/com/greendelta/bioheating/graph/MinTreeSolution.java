@@ -15,20 +15,14 @@ import com.greendelta.bioheating.model.SolutionNode;
 import com.greendelta.bioheating.pipes.PipePlanImage;
 
 public record MinTreeSolution(Project project, SpanningTree<Edge> tree) {
-
 	public Res<Solution> create(Database db) {
-
-		var solution = new Solution()
-			.project(project);
+		var solution = new Solution().project(project);
 
 		var nodes = new HashMap<Long, SolutionNode>();
 		Function<Node, SolutionNode> nodeFetch = n -> {
 			var node = nodes.get(n.id());
-			if (node != null)
-				return node;
-			node = new SolutionNode()
-				.x(n.center().getX())
-				.y(n.center().getY());
+			if (node != null) return node;
+			node = new SolutionNode().x(n.center().getX()).y(n.center().getY());
 			if (n instanceof BuildingNode bn) {
 				node.building(bn.building());
 			}
@@ -86,12 +80,11 @@ public record MinTreeSolution(Project project, SpanningTree<Edge> tree) {
 	}
 
 	private void deleteOutdatedOf(Database db, Solution solution) {
-		if (solution == null || solution.project() == null)
-			return;
+		if (solution == null || solution.project() == null) return;
 		for (var s : db.getAll(Solution.class)) {
-			if (solution.equals(s)
-				|| !solution.project().equals(s.project()))
-				continue;
+			if (
+				solution.equals(s) || !solution.project().equals(s.project())
+			) continue;
 			db.delete(s);
 		}
 	}

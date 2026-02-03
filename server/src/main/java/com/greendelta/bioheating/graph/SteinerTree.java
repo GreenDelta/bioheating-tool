@@ -23,11 +23,12 @@ public class SteinerTree {
 		this.exec = exec;
 	}
 
-	public static Res<SpanningTree<Edge>> compute(ThreadPoolExecutor exec, Graph g) {
-		if (exec == null)
-			return Res.error("no executor provided");
-		if (g == null)
-			return Res.error("no graph provided");
+	public static Res<SpanningTree<Edge>> compute(
+		ThreadPoolExecutor exec,
+		Graph g
+	) {
+		if (exec == null) return Res.error("no executor provided");
+		if (g == null) return Res.error("no graph provided");
 		try {
 			return new SteinerTree(exec).build(g);
 		} catch (Exception e) {
@@ -47,9 +48,13 @@ public class SteinerTree {
 		// need a ThreadPoolExecutor, and newFixedThreadPool just returns
 		// an ExecutorService
 		var exec = new ThreadPoolExecutor(
-			n, n, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>()
+			n,
+			n,
+			0L,
+			TimeUnit.MILLISECONDS,
+			new LinkedBlockingQueue<>()
 		);
-		try (exec){
+		try (exec) {
 			return compute(exec, g);
 		} catch (Exception e) {
 			return Res.error("failed to calculate Steiner-Tree", e);
@@ -57,14 +62,18 @@ public class SteinerTree {
 	}
 
 	private Res<SpanningTree<Edge>> build(Graph g) {
-		if (g == null || g.vertexSet().isEmpty())
-			return Res.error("empty graph provided");
+		if (g == null || g.vertexSet().isEmpty()) return Res.error(
+			"empty graph provided"
+		);
 
-		var terminals = g.vertexSet().stream()
+		var terminals = g
+			.vertexSet()
+			.stream()
 			.filter(n -> n instanceof BuildingNode)
 			.collect(Collectors.toSet());
-		if (terminals.isEmpty())
-			return Res.error("no building nodes found in graph");
+		if (terminals.isEmpty()) return Res.error(
+			"no building nodes found in graph"
+		);
 
 		if (terminals.size() == 1) {
 			var result = new Graph();
@@ -72,8 +81,10 @@ public class SteinerTree {
 			return Res.ok(mstOf(result));
 		}
 
-		var paths = new CHManyToManyShortestPaths<>(g, exec)
-			.getManyToManyPaths(terminals, terminals);
+		var paths = new CHManyToManyShortestPaths<>(g, exec).getManyToManyPaths(
+			terminals,
+			terminals
+		);
 		var closure = metricClosureOf(terminals, paths);
 		var closureTree = mstOf(closure);
 		var subGraph = subGraphOf(closureTree, paths);
@@ -85,7 +96,8 @@ public class SteinerTree {
 	}
 
 	private Graph metricClosureOf(
-		Set<Node> terminals, ManyToManyShortestPaths<Node, Edge> paths
+		Set<Node> terminals,
+		ManyToManyShortestPaths<Node, Edge> paths
 	) {
 		long maxId = 0;
 		for (var n : terminals) {
@@ -96,13 +108,15 @@ public class SteinerTree {
 		var closure = new Graph();
 		for (var i : terminals) {
 			for (var j : terminals) {
-				if (i.equals(j))
-					continue;
+				if (i.equals(j)) continue;
 				var path = paths.getPath(i, j);
-				if (path == null)
-					continue;
+				if (path == null) continue;
 				var edge = new Edge(
-					ids.incrementAndGet(), i, j, null, path.getWeight()
+					ids.incrementAndGet(),
+					i,
+					j,
+					null,
+					path.getWeight()
 				);
 				closure.add(edge);
 			}
@@ -111,15 +125,15 @@ public class SteinerTree {
 	}
 
 	private Graph subGraphOf(
-		SpanningTree<Edge> closureTree, ManyToManyShortestPaths<Node, Edge> paths
+		SpanningTree<Edge> closureTree,
+		ManyToManyShortestPaths<Node, Edge> paths
 	) {
 		var g = new Graph();
 		for (var e : closureTree.getEdges()) {
 			var i = e.source();
 			var j = e.target();
 			var path = paths.getPath(i, j);
-			if (path == null)
-				continue;
+			if (path == null) continue;
 			for (var edge : path.getEdgeList()) {
 				g.add(edge);
 			}

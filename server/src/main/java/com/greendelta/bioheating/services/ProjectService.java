@@ -23,16 +23,16 @@ public class ProjectService {
 	}
 
 	public List<Project> getProjects(User user) {
-		if (user == null)
-			return List.of();
-		return db.getAll(Project.class).stream()
+		if (user == null) return List.of();
+		return db
+			.getAll(Project.class)
+			.stream()
 			.filter(p -> Objects.equals(p.user(), user))
 			.toList();
 	}
 
 	public Optional<Project> getProject(User user, long id) {
-		if (user == null)
-			return Optional.empty();
+		if (user == null) return Optional.empty();
 		var p = db.getForId(Project.class, id);
 		return p != null && Objects.equals(user, p.user())
 			? Optional.of(p)
@@ -40,20 +40,18 @@ public class ProjectService {
 	}
 
 	public Res<Project> addMap(Project project, File gml) {
-		if (project == null || gml == null)
-			return Res.error("no project or gml file provided");
+		if (project == null || gml == null) return Res.error(
+			"no project or gml file provided"
+		);
 		try {
-			return new CityGmlImport(db, project, gml)
-				.withOsmImport(true)
-				.call();
+			return new CityGmlImport(db, project, gml).withOsmImport(true).call();
 		} catch (Exception e) {
 			return Res.error("project creation failed", e);
 		}
 	}
 
 	public Res<Void> delete(Project project) {
-		if (project == null)
-			return Res.error("no project given");
+		if (project == null) return Res.error("no project given");
 		try {
 			db.delete(project);
 			return Res.ok();
@@ -63,8 +61,7 @@ public class ProjectService {
 	}
 
 	public Res<Project> updateProject(Project project) {
-		if (project == null)
-			return Res.error("project is null");
+		if (project == null) return Res.error("project is null");
 		try {
 			db.update(project);
 			return Res.ok(project);

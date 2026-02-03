@@ -7,8 +7,6 @@ import java.util.function.Function;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
-
-import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
 
@@ -31,7 +29,7 @@ public class MapSync {
 	}
 
 	public static void updateFromClient(GeoMap map, ClientMap clientMap) {
-		if ( map != null && clientMap != null) {
+		if (map != null && clientMap != null) {
 			new MapSync(map, clientMap).sync();
 		}
 	}
@@ -39,10 +37,8 @@ public class MapSync {
 	private void sync() {
 		for (var f : clientMap.features()) {
 			var props = f.properties();
-			if (props == null)
-				continue;
-			if (!(props.get("id") instanceof Number idProp))
-				continue;
+			if (props == null) continue;
+			if (!(props.get("id") instanceof Number idProp)) continue;
 			long id = idProp.longValue();
 			var type = props.get("@type");
 			if ("building".equals(type)) {
@@ -55,8 +51,7 @@ public class MapSync {
 
 	private void syncBuilding(long id, Map<String, Object> props) {
 		var b = buildings.get(id);
-		if (b == null)
-			return;
+		if (b == null) return;
 
 		syncString(props, "name", b::name);
 		syncString(props, "roofTypeCode", b::roofTypeCode);
@@ -77,19 +72,20 @@ public class MapSync {
 		syncBool(props, "isHeated", b::isHeated);
 		syncBool(props, "isSupplyCenter", b::isSupplyCenter);
 		syncBool(props, "isIncluded", b::isIncluded);
-
 	}
 
 	private void syncStreet(long id, Map<String, Object> props) {
 		var s = streets.get(id);
-		if (s == null)
-			return;
+		if (s == null) return;
 		syncString(props, "name", s::name);
 		syncBool(props, "isExcluded", s::isExcluded);
 	}
 
 	private void syncString(
-		Map<String, Object> props, String key, Function<String, ?>setter) {
+		Map<String, Object> props,
+		String key,
+		Function<String, ?> setter
+	) {
 		var value = props.get(key);
 		if (value instanceof String s) {
 			setter.apply(s);
@@ -97,7 +93,10 @@ public class MapSync {
 	}
 
 	private void syncDouble(
-		Map<String, Object> props, String key, Function<Double, ?> setter) {
+		Map<String, Object> props,
+		String key,
+		Function<Double, ?> setter
+	) {
 		var value = props.get(key);
 		if (value instanceof Number num) {
 			setter.apply(num.doubleValue());
@@ -105,7 +104,10 @@ public class MapSync {
 	}
 
 	private void syncInt(
-		Map<String, Object> props, String key, Function<Integer, ?> setter) {
+		Map<String, Object> props,
+		String key,
+		Function<Integer, ?> setter
+	) {
 		var value = props.get(key);
 		if (value instanceof Number) {
 			setter.apply(((Number) value).intValue());
@@ -113,7 +115,10 @@ public class MapSync {
 	}
 
 	private void syncBool(
-		Map<String, Object> props, String key, Function<Boolean, ?> setter) {
+		Map<String, Object> props,
+		String key,
+		Function<Boolean, ?> setter
+	) {
 		var value = props.get(key);
 		if (value instanceof Boolean b) {
 			setter.apply(b);
@@ -121,7 +126,9 @@ public class MapSync {
 	}
 
 	private void syncBuildingType(
-		Map<String, Object> props, Function<BuildingType, ?> setter) {
+		Map<String, Object> props,
+		Function<BuildingType, ?> setter
+	) {
 		var value = props.get("type");
 		if (value instanceof String) {
 			try {
@@ -134,7 +141,9 @@ public class MapSync {
 	}
 
 	private void syncConstructionAge(
-		Map<String, Object> props, Function<ConstructionAge, ?> setter) {
+		Map<String, Object> props,
+		Function<ConstructionAge, ?> setter
+	) {
 		var value = props.get("constructionAge");
 		if (value instanceof String) {
 			try {
@@ -145,5 +154,4 @@ public class MapSync {
 			}
 		}
 	}
-
 }

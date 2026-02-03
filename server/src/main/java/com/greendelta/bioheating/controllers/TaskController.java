@@ -24,10 +24,12 @@ public class TaskController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getState(Authentication auth, @PathVariable String id) {
+	public ResponseEntity<?> getState(
+		Authentication auth,
+		@PathVariable String id
+	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
+		if (user == null) return Http.badRequest("not authenticated");
 
 		var state = tasks.getState(user, id);
 		return state.isPresent()
@@ -36,10 +38,12 @@ public class TaskController {
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> dropResult(Authentication auth, @PathVariable String id) {
+	public ResponseEntity<?> dropResult(
+		Authentication auth,
+		@PathVariable String id
+	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null)
-			return Http.badRequest("not authenticated");
+		if (user == null) return Http.badRequest("not authenticated");
 
 		boolean deleted = tasks.remove(user, id);
 		return deleted

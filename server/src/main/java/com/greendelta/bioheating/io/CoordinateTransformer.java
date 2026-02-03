@@ -13,7 +13,6 @@ import org.openlca.commons.Strings;
 
 import com.greendelta.bioheating.model.GeoMap;
 
-
 public class CoordinateTransformer {
 
 	private final CoordinateTransform fn;
@@ -23,8 +22,7 @@ public class CoordinateTransformer {
 	}
 
 	public static Res<CoordinateTransformer> toWgs84From(GeoMap map) {
-		if (map == null)
-			return Res.error("map is null");
+		if (map == null) return Res.error("map is null");
 		return Strings.isBlank(map.crs())
 			? Res.error("CRS of model is not defined")
 			: toWgs84From(map.crs());
@@ -45,21 +43,25 @@ public class CoordinateTransformer {
 	public static Res<CoordinateTransformer> of(CrsId sourceId, CrsId targetId) {
 		var factory = new CRSFactory();
 		var source = crsOf(sourceId, factory);
-		if (source.isError())
-			return source.wrapError("failed to create source CRS");
+		if (source.isError()) return source.wrapError(
+			"failed to create source CRS"
+		);
 		var target = crsOf(targetId, factory);
-		if (target.isError())
-			return target.wrapError("failed to create target CRS");
-		var transform = new CoordinateTransformFactory()
-			.createTransform(source.value(), target.value());
+		if (target.isError()) return target.wrapError(
+			"failed to create target CRS"
+		);
+		var transform = new CoordinateTransformFactory().createTransform(
+			source.value(),
+			target.value()
+		);
 		return Res.ok(new CoordinateTransformer(transform));
 	}
 
 	private static Res<CoordinateReferenceSystem> crsOf(
-		CrsId id, CRSFactory factory
+		CrsId id,
+		CRSFactory factory
 	) {
-		if (id == null)
-			return Res.error("CRS ID is null");
+		if (id == null) return Res.error("CRS ID is null");
 		try {
 			var crs = factory.createFromName(id.value());
 			return Res.ok(crs);
@@ -70,8 +72,7 @@ public class CoordinateTransformer {
 
 	public Res<Coordinate[]> transform(Coordinate[] origin) {
 		var res = project(origin);
-		if (res.isError())
-			return res.castError();
+		if (res.isError()) return res.castError();
 		var pcs = res.value();
 		var cs = new Coordinate[pcs.length];
 		for (int i = 0; i < pcs.length; i++) {
@@ -82,8 +83,9 @@ public class CoordinateTransformer {
 	}
 
 	private Res<ProjCoordinate[]> project(Coordinate[] cs) {
-		if (cs == null || cs.length == 0)
-			return Res.error("no coordinates provided");
+		if (cs == null || cs.length == 0) return Res.error(
+			"no coordinates provided"
+		);
 		try {
 			var pcs = new ProjCoordinate[cs.length];
 			for (int i = 0; i < cs.length; i++) {

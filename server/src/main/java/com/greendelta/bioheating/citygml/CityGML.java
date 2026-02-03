@@ -17,12 +17,13 @@ import org.xmlobjects.gml.model.deprecated.StringOrRef;
 
 class CityGML {
 
-	private CityGML() {
-	}
+	private CityGML() {}
 
 	static Res<CityModel> readModel(File file) {
-		try (var stream = new FileInputStream(file);
-				 var buffer = new BufferedInputStream(stream)) {
+		try (
+			var stream = new FileInputStream(file);
+			var buffer = new BufferedInputStream(stream)
+		) {
 			return readModel(buffer);
 		} catch (Exception e) {
 			return Res.error("failed to read CityModel from " + file.getName(), e);
@@ -30,8 +31,7 @@ class CityGML {
 	}
 
 	static Res<CityModel> readModel(Reader reader) {
-		if (reader == null)
-			return Res.error("Reader is null");
+		if (reader == null) return Res.error("Reader is null");
 		try {
 			var cityGMLReader = CityGMLContext.newInstance()
 				.createCityGMLInputFactory()
@@ -43,8 +43,7 @@ class CityGML {
 	}
 
 	static Res<CityModel> readModel(InputStream stream) {
-		if (stream == null)
-			return Res.error("input stream is null");
+		if (stream == null) return Res.error("input stream is null");
 		try {
 			var reader = CityGMLContext.newInstance()
 				.createCityGMLInputFactory()
@@ -58,11 +57,11 @@ class CityGML {
 	private static Res<CityModel> findModel(CityGMLReader reader)
 		throws CityGMLReadException {
 		try (reader) {
-			if (!reader.hasNext())
-				return Res.error("no CityModel found");
+			if (!reader.hasNext()) return Res.error("no CityModel found");
 			var next = reader.next();
-			if (!(next instanceof CityModel model))
-				return Res.error("no CityModel found");
+			if (!(next instanceof CityModel model)) return Res.error(
+				"no CityModel found"
+			);
 			return Res.ok(model);
 		}
 	}
@@ -78,8 +77,6 @@ class CityGML {
 	}
 
 	static String stringOf(StringOrRef s) {
-		return s != null
-			? s.getValue()
-			: null;
+		return s != null ? s.getValue() : null;
 	}
 }

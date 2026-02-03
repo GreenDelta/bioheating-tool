@@ -8,12 +8,13 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class CoordinateConverter implements AttributeConverter<Coordinate[], byte[]> {
+public class CoordinateConverter
+	implements AttributeConverter<Coordinate[], byte[]>
+{
 
 	@Override
 	public byte[] convertToDatabaseColumn(Coordinate[] cs) {
-		if (cs == null || cs.length == 0)
-			return null;
+		if (cs == null || cs.length == 0) return null;
 		int n = cs.length * 3 * Double.BYTES;
 		var buffer = ByteBuffer.allocate(n);
 		for (var c : cs) {
@@ -26,8 +27,7 @@ public class CoordinateConverter implements AttributeConverter<Coordinate[], byt
 
 	@Override
 	public Coordinate[] convertToEntityAttribute(byte[] bytes) {
-		if (bytes == null || bytes.length == 0)
-			return new Coordinate[0];
+		if (bytes == null || bytes.length == 0) return new Coordinate[0];
 
 		var buffer = ByteBuffer.wrap(bytes);
 		int n = bytes.length / (3 * Double.BYTES);

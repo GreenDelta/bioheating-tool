@@ -11,7 +11,8 @@ public class OsmClientExample {
 				48.82975561604209, // south
 				11.486790292463866, // west
 				48.832196854541195, // north
-				11.491462553643487); // east
+				11.491462553643487
+			); // east
 			var streets = client.queryStreets(bounds);
 			if (streets.isError()) {
 				System.out.println("ERROR: " + streets.error());

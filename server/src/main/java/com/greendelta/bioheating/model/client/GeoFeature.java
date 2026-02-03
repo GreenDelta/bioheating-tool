@@ -10,15 +10,18 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Street;
 
 public record GeoFeature(
-	String type, Geometry geometry, Map<String, Object> properties
+	String type,
+	Geometry geometry,
+	Map<String, Object> properties
 ) {
-
 	static Res<GeoFeature> of(Building b, CoordinateTransformer wgs84) {
-		if (b == null || wgs84 == null)
-			return Res.error("no building or coordinate transformer");
+		if (b == null || wgs84 == null) return Res.error(
+			"no building or coordinate transformer"
+		);
 		var cs = wgs84.transform(b.coordinates());
-		if (cs.isError())
-			return cs.wrapError("failed to project coordinates of building: " + b);
+		if (cs.isError()) return cs.wrapError(
+			"failed to project coordinates of building: " + b
+		);
 		var polygon = Geometry.polygonOf(cs.value());
 		var props = new HashMap<String, Object>();
 		props.put("@type", "building");
@@ -47,11 +50,13 @@ public record GeoFeature(
 	}
 
 	static Res<GeoFeature> of(Street s, CoordinateTransformer wgs84) {
-		if (s == null || wgs84 == null)
-			return Res.error("no street or coordinate transformer");
+		if (s == null || wgs84 == null) return Res.error(
+			"no street or coordinate transformer"
+		);
 		var cs = wgs84.transform(s.coordinates());
-		if (cs.isError())
-			return cs.wrapError("failed to project coordinates of street: " + s);
+		if (cs.isError()) return cs.wrapError(
+			"failed to project coordinates of street: " + s
+		);
 		var line = Geometry.lineOf(cs.value());
 		var props = new HashMap<String, Object>();
 		props.put("@type", "street");

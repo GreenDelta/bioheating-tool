@@ -12,7 +12,6 @@ import org.openlca.commons.Res;
 import com.greendelta.bioheating.graph.Node.StreetNode;
 
 record StreetNet(List<Edge> edges, STRtree index) {
-
 	static Res<StreetNet> create(GraphConfig config) {
 		try {
 			var net = new Builder(config).build();
@@ -43,20 +42,17 @@ record StreetNet(List<Edge> edges, STRtree index) {
 
 		private void createEdges() {
 			for (var s : config.streets()) {
-				if (s.isExcluded())
-					continue;
+				if (s.isExcluded()) continue;
 
 				var cs = s.coordinates();
-				if (cs == null || cs.length < 2)
-					continue;
+				if (cs == null || cs.length < 2) continue;
 				for (int i = 1; i < cs.length; i++) {
 					var start = cs[i - 1];
 					var end = cs[i];
 
 					var source = nodeOf(start);
 					var target = nodeOf(end);
-					if (source.equals(target))
-						continue;
+					if (source.equals(target)) continue;
 
 					var line = config.lineOf(start, end);
 					var edge = config.edgeOf(source, target, line);
@@ -74,8 +70,9 @@ record StreetNet(List<Edge> edges, STRtree index) {
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dy = -1; dy <= 1; dy++) {
 					var existing = nodes.get(gridKey(x + dx, y + dy));
-					if (existing != null && config.isClose(coo, existing))
-						return existing;
+					if (
+						existing != null && config.isClose(coo, existing)
+					) return existing;
 				}
 			}
 
@@ -93,8 +90,7 @@ record StreetNet(List<Edge> edges, STRtree index) {
 		}
 
 		private void ensureConnected() {
-			if (edges.isEmpty() || allNodes.size() < 2)
-				return;
+			if (edges.isEmpty() || allNodes.size() < 2) return;
 
 			// add all connected node sets
 			var uf = new UnionFind();
@@ -109,12 +105,9 @@ record StreetNet(List<Edge> edges, STRtree index) {
 			var components = new HashMap<Long, List<StreetNode>>();
 			for (var n : allNodes) {
 				var root = uf.find(n.id());
-				components
-					.computeIfAbsent(root, _k -> new ArrayList<>())
-					.add(n);
+				components.computeIfAbsent(root, _k -> new ArrayList<>()).add(n);
 			}
-			if (components.size() <= 1)
-				return;
+			if (components.size() <= 1) return;
 
 			// select the largest component as the main component
 			Long mainRoot = null;
@@ -126,20 +119,19 @@ record StreetNet(List<Edge> edges, STRtree index) {
 					mainRoot = entry.getKey();
 				}
 			}
-			if (mainRoot == null)
-				return;
+			if (mainRoot == null) return;
 
 			// connect the components
 			var mainNodes = components.remove(mainRoot);
 			for (var otherNodes : components.values()) {
 				var pair = closestPair(mainNodes, otherNodes);
-				if (pair == null)
-					continue;
+				if (pair == null) continue;
 				var mainNode = pair[0];
 				var otherNode = pair[1];
 				var line = config.lineOf(
 					mainNode.center().getCoordinate(),
-					otherNode.center().getCoordinate());
+					otherNode.center().getCoordinate()
+				);
 				var connector = config.edgeOf(mainNode, otherNode, line);
 				edges.add(connector);
 				index.insert(connector.envelope(), connector);
@@ -148,12 +140,11 @@ record StreetNet(List<Edge> edges, STRtree index) {
 		}
 
 		private StreetNode[] closestPair(
-			List<StreetNode> mainNodes, List<StreetNode> otherNodes
+			List<StreetNode> mainNodes,
+			List<StreetNode> otherNodes
 		) {
-			if (mainNodes == null || mainNodes.isEmpty())
-				return null;
-			if (otherNodes == null || otherNodes.isEmpty())
-				return null;
+			if (mainNodes == null || mainNodes.isEmpty()) return null;
+			if (otherNodes == null || otherNodes.isEmpty()) return null;
 
 			StreetNode bestMain = null;
 			StreetNode bestOther = null;
@@ -168,9 +159,7 @@ record StreetNet(List<Edge> edges, STRtree index) {
 					}
 				}
 			}
-			return bestMain != null
-				? new StreetNode[]{bestMain, bestOther}
-				: null;
+			return bestMain != null ? new StreetNode[] { bestMain, bestOther } : null;
 		}
 
 		private static class UnionFind {
@@ -200,8 +189,7 @@ record StreetNet(List<Edge> edges, STRtree index) {
 			void union(long a, long b) {
 				long rootA = find(a);
 				long rootB = find(b);
-				if (rootA == rootB)
-					return;
+				if (rootA == rootB) return;
 
 				int rankA = rank.getOrDefault(rootA, 0);
 				int rankB = rank.getOrDefault(rootB, 0);

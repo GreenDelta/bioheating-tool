@@ -8,7 +8,6 @@ import java.util.List;
 /// @param innerDiameter the inner diameter of the pipe in millimeters (mm)
 /// @param rgb           the RGB hex color code for visualization (e.g., "#ff0000")
 public record Pipe(double innerDiameter, String rgb) {
-
 	/// Calculates the U-Value (heat transfer coefficient) of the pipe.
 	///
 	/// The U-Value is calculated using a linear regression formula:
@@ -39,25 +38,15 @@ public record Pipe(double innerDiameter, String rgb) {
 	}
 
 	private static String colorFor(double diameter) {
-		if (diameter < 20)
-			return "#E1BEE7";
-		if (diameter < 30)
-			return "#CE93D8";
-		if (diameter < 40)
-			return "#BA68C8";
-		if (diameter < 50)
-			return "#AB47BC";
-		if (diameter < 75)
-			return "#8E24AA";
-		if (diameter < 100)
-			return "#7B1FA2";
-		if (diameter < 125)
-			return "#6A1B9A";
-		if (diameter < 150)
-			return "#4A148C";
-		if (diameter < 175)
-			return "#311B92";
+		if (diameter < 20) return "#E1BEE7";
+		if (diameter < 30) return "#CE93D8";
+		if (diameter < 40) return "#BA68C8";
+		if (diameter < 50) return "#AB47BC";
+		if (diameter < 75) return "#8E24AA";
+		if (diameter < 100) return "#7B1FA2";
+		if (diameter < 125) return "#6A1B9A";
+		if (diameter < 150) return "#4A148C";
+		if (diameter < 175) return "#311B92";
 		return "#1A237E";
 	}
-
 }

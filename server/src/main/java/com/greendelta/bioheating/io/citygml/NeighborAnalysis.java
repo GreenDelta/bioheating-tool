@@ -23,8 +23,7 @@ class NeighborAnalysis {
 	}
 
 	private Res<Void> exec() {
-		if (shapes == null)
-			return Res.error("No buildings found in CityGML model");
+		if (shapes == null) return Res.error("No buildings found in CityGML model");
 		log.info("run neighbor analysis of {} buildings", shapes.size());
 		try {
 			var index = buildIndex();
@@ -51,14 +50,15 @@ class NeighborAnalysis {
 			var q = d.envelope().copy();
 			q.expandBy(treshold);
 			for (var candidate : index.query(q)) {
-				if (d == candidate)
-					continue;
-				if (!(candidate instanceof BuildingShape other)
-					|| d.neighbors().contains(other.id()))
-					continue;
+				if (d == candidate) continue;
+				if (
+					!(candidate instanceof BuildingShape other) ||
+					d.neighbors().contains(other.id())
+				) continue;
 				double distance = new DistanceOp(
-					d.gml().groundSurface(), other.gml().groundSurface())
-						.distance();
+					d.gml().groundSurface(),
+					other.gml().groundSurface()
+				).distance();
 				if (distance <= treshold) {
 					d.neighbors().add(other.id());
 					other.neighbors().add(d.id());
