@@ -50,7 +50,7 @@ class BuildingProcessor {
 		var gml = shape.gml();
 
 		var func = functionTypes.get(gml.function());
-		var isHeated = func != null ? func.isHeated() : gml.address() != null;
+		var isHeated = gml.address() != null || (func != null && func.isHeated());
 		var roofType = roofTypes.get(gml.roofType());
 		var type = isHeated ? typeOf(shape) : BuildingType.OTHER;
 		int storeys = storeysOf(gml, type);
