@@ -1,0 +1,33 @@
+package com.greendelta.bioheating.io.sophena;
+
+public enum SophenaBuildingType {
+
+	SINGLE_FAMILY_HOUSE,
+
+	MULTI_FAMILY_HOUSE,
+
+	BLOCK_OF_FLATS,
+
+	TERRACE_HOUSE,
+
+	TOWER_BLOCK,
+
+	SCHOOL,
+
+	KINDERGARDEN,
+
+	OFFICE_BUILDING,
+
+	HOSPITAL,
+
+	NURSING_HOME,
+
+	RESTAURANT,
+
+	HOTEL,
+
+	FERMENTER,
+
+	OTHER
+
+}
