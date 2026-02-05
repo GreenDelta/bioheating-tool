@@ -109,7 +109,7 @@ const SelectionPanel = ({ ctx }: Props) => {
 	}
 	const f = selection[0];
 	return isBuilding(f) ? (
-		<BuildingPanel feature={f} onChange={onChange} />
+		<BuildingPanel feature={f} map={ctx.project.map} onChange={onChange} />
 	) : (
 		<StreetPanel feature={f} onChange={onChange} />
 	);

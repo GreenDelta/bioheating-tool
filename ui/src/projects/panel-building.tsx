@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { GeoFeature, BuildingType, ConstructionAge, constructionAgeToString } from "../model";
+import {
+	GeoFeature,
+	GeoMap,
+	BuildingType,
+	ConstructionAge,
+	constructionAgeToString,
+	isBuilding,
+} from "../model";
 import { BuildingData, BuildingProps } from "./panel-data";
 import { StringField, NumberField, CheckboxField, SelectField } from "./fields";
 
 interface Props {
 	feature: GeoFeature;
+	map: GeoMap;
 	onChange: () => void;
 }
 
@@ -31,13 +39,34 @@ function networkStatusToProps(status: NetworkStatus): BuildingProps {
 	}
 }
 
-export const BuildingPanel = ({ feature, onChange }: Props) => {
+/// If the feature `next` was set as new supply center, we need to reset
+/// a possible other feature that was set as supply center before.
+function unsetSupplyCenter(next: GeoFeature, map: GeoMap) {
+	if (!map?.features) return;
+	for (const f of map.features) {
+		if (f === next) continue;
+		if (!isBuilding(f)) continue;
+		const props = f.properties;
+		if (props?.isSupplyCenter) {
+			props.isSupplyCenter = false;
+			if (props.isHeated) {
+				props.isIncluded = true;
+			}
+		}
+	}
+}
+
+export const BuildingPanel = ({ feature, map, onChange }: Props) => {
 	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
 	useEffect(() => {
 		setData(BuildingData.of(feature));
 	}, [feature]);
 
 	const put = (change: BuildingProps) => {
+		if (change.isSupplyCenter === true) {
+			unsetSupplyCenter(feature, map);
+		}
+
 		const next = data.copyWith(change);
 		next.applyOn(feature);
 		setData(next);
@@ -126,9 +155,18 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					value={data.type}
 					options={[
 						{ value: BuildingType.HIGH_RISE, label: "High Rise" },
-						{ value: BuildingType.MULTI_FAMILY_SMALL, label: "Multi Family Small" },
-						{ value: BuildingType.MULTI_FAMILY_MEDIUM, label: "Multi Family Medium" },
-						{ value: BuildingType.MULTI_FAMILY_LARGE, label: "Multi Family Large" },
+						{
+							value: BuildingType.MULTI_FAMILY_SMALL,
+							label: "Multi Family Small",
+						},
+						{
+							value: BuildingType.MULTI_FAMILY_MEDIUM,
+							label: "Multi Family Medium",
+						},
+						{
+							value: BuildingType.MULTI_FAMILY_LARGE,
+							label: "Multi Family Large",
+						},
 						{ value: BuildingType.BUILDING_PART, label: "Building Part" },
 						{ value: BuildingType.SINGLE_FAMILY, label: "Single Family" },
 						{ value: BuildingType.END_TERRACE, label: "End Terrace" },
@@ -143,13 +181,34 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					label="Construction Age"
 					value={data.constructionAge}
 					options={[
-						{ value: ConstructionAge.UNKNOWN, label: constructionAgeToString(ConstructionAge.UNKNOWN) },
-						{ value: ConstructionAge.AGE_1900_1919, label: constructionAgeToString(ConstructionAge.AGE_1900_1919) },
-						{ value: ConstructionAge.AGE_1919_1948, label: constructionAgeToString(ConstructionAge.AGE_1919_1948) },
-						{ value: ConstructionAge.AGE_1949_1978, label: constructionAgeToString(ConstructionAge.AGE_1949_1978) },
-						{ value: ConstructionAge.AGE_1979_1995, label: constructionAgeToString(ConstructionAge.AGE_1979_1995) },
-						{ value: ConstructionAge.AGE_1995_2009, label: constructionAgeToString(ConstructionAge.AGE_1995_2009) },
-						{ value: ConstructionAge.AGE_2010_2030, label: constructionAgeToString(ConstructionAge.AGE_2010_2030) },
+						{
+							value: ConstructionAge.UNKNOWN,
+							label: constructionAgeToString(ConstructionAge.UNKNOWN),
+						},
+						{
+							value: ConstructionAge.AGE_1900_1919,
+							label: constructionAgeToString(ConstructionAge.AGE_1900_1919),
+						},
+						{
+							value: ConstructionAge.AGE_1919_1948,
+							label: constructionAgeToString(ConstructionAge.AGE_1919_1948),
+						},
+						{
+							value: ConstructionAge.AGE_1949_1978,
+							label: constructionAgeToString(ConstructionAge.AGE_1949_1978),
+						},
+						{
+							value: ConstructionAge.AGE_1979_1995,
+							label: constructionAgeToString(ConstructionAge.AGE_1979_1995),
+						},
+						{
+							value: ConstructionAge.AGE_1995_2009,
+							label: constructionAgeToString(ConstructionAge.AGE_1995_2009),
+						},
+						{
+							value: ConstructionAge.AGE_2010_2030,
+							label: constructionAgeToString(ConstructionAge.AGE_2010_2030),
+						},
 					]}
 					onChange={value => put({ constructionAge: value })}
 				/>
@@ -186,7 +245,6 @@ export const BuildingPanel = ({ feature, onChange }: Props) => {
 					value={data.streetNumber}
 					onChange={value => put({ streetNumber: value })}
 				/>
-
 			</div>
 		</div>
 	);
