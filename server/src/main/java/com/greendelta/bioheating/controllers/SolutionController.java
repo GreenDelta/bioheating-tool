@@ -4,7 +4,7 @@ import com.greendelta.bioheating.graph.Graph;
 import com.greendelta.bioheating.graph.MinTreeSolution;
 import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.SteinerTree;
-import com.greendelta.bioheating.io.SophenaExport;
+import com.greendelta.bioheating.io.sophena.SophenaExport;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.Solution;

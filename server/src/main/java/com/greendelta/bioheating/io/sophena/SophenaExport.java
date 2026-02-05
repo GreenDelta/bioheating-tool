@@ -1,4 +1,4 @@
-package com.greendelta.bioheating.io;
+package com.greendelta.bioheating.io.sophena;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.NetworkTree.Junction;
 import com.greendelta.bioheating.graph.NetworkTree.Segment;
+import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Solution;
 import java.io.File;
@@ -15,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -28,7 +30,6 @@ public class SophenaExport {
 	private final GeometryFactory geometries = new GeometryFactory();
 	private final CoordinateTransformer wgs84;
 	private final List<SophenaBuildingState> buildingStates;
-
 
 	private SophenaExport(Solution solution, CoordinateTransformer wgs84) {
 		this.solution = solution;
@@ -95,23 +96,24 @@ public class SophenaExport {
 	private ObjectNode consumerOf(Building b) {
 		if (b == null || !b.isHeated() || !b.isIncluded()) return null;
 
-		// TODO: use the real calculated load hours
-		// TODO: find & use the best building state
 		var state = buildingStateOf(b);
+		var loadHours =
+			b.peakLoad() > 0 ? b.heatDemand() / b.peakLoad() : state.loadHours();
+
 		var obj = json
 			.objectNode()
 			.put("id", consumerIdOf(b))
 			.put("name", b.name())
 			.put("waterFraction", 12.0)
-			.put("loadHours", 1921)
+			.put("loadHours", loadHours)
 			.put("heatingLimit", 14.0);
 		obj.set("location", locationOf(b));
 
 		// building state
 		var stateObj = json
 			.objectNode()
-			.put("id", "4e1a2929-e59a-4b1a-bb3c-dec917eb9849")
-			.put("name", "Standard 1979-1994");
+			.put("id", state.id())
+			.put("name", state.name());
 		obj.set("buildingState", stateObj);
 
 		var fuelObj = json
@@ -215,25 +217,45 @@ public class SophenaExport {
 
 	private SophenaBuildingState buildingStateOf(Building b) {
 		var type = buildingTypeOf(b);
-		double loadHours = b.peakLoad() > 0
-			? b.heatDemand() / b.peakLoad()
-			: 0;
-		if (loadHours <= 0) {
-			// TODO: return the default state of that type
+		double loadHours = b.peakLoad() > 0 ? b.heatDemand() / b.peakLoad() : 0;
+
+		// best match for the given type and load hours
+		if (loadHours > 0) {
+			var best = SophenaBuildingState.bestMatch(
+				buildingStates,
+				type,
+				loadHours
+			);
+			if (best != null) return best;
 		}
-		// TODO: select the state with the closest loadHours
+		var state = SophenaBuildingState.defaultOf(buildingStates, type);
+		return state != null
+			? state
+			: new SophenaBuildingState(
+					"4e1a2929-e59a-4b1a-bb3c-dec917eb9849",
+					"Standard 1979-1994",
+					SophenaBuildingType.SINGLE_FAMILY_HOUSE,
+					1921,
+					true
+				);
 	}
 
 	private SophenaBuildingType buildingTypeOf(Building b) {
-		// first try a direct mapping
-		var type = switch (b.type) {
-			// TODO
-			case null, default -> null;
-		}
-		if (type != null) return type;
+		if (b == null || b.type() == null) return SophenaBuildingType.OTHER;
 
-		// check other building attributes
-		// TODO: see the BuildingProcessor
+		// Map the internal BuildingType to SophenaBuildingType
+		// Based on mapping logic similar to BuildingProcessor
+		return switch (b.type()) {
+			case SINGLE_FAMILY -> SophenaBuildingType.SINGLE_FAMILY_HOUSE;
+			case END_TERRACE, MID_TERRACE -> SophenaBuildingType.TERRACE_HOUSE;
+			case
+				MULTI_FAMILY_SMALL,
+				MULTI_FAMILY_MEDIUM -> SophenaBuildingType.MULTI_FAMILY_HOUSE;
+			case
+				MULTI_FAMILY_LARGE,
+				HOUSE_GROUP -> SophenaBuildingType.BLOCK_OF_FLATS;
+			case HIGH_RISE -> SophenaBuildingType.TOWER_BLOCK;
+			case BUILDING_PART, OTHER -> SophenaBuildingType.OTHER;
+		};
 	}
-
 }

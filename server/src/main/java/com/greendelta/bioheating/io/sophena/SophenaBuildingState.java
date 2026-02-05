@@ -13,6 +13,38 @@ public record SophenaBuildingState(
 	double loadHours,
 	boolean isDefault
 ) {
+	public static SophenaBuildingState defaultOf(
+		List<SophenaBuildingState> states,
+		SophenaBuildingType type
+	) {
+		if (states == null || type == null) return null;
+		for (var state : states) {
+			if (state.isDefault() && state.type() == type) {
+				return state;
+			}
+		}
+		return null;
+	}
+
+	public static SophenaBuildingState bestMatch(
+		List<SophenaBuildingState> states,
+		SophenaBuildingType type,
+		double loadHours
+	) {
+		if (states == null || type == null) return null;
+		SophenaBuildingState best = null;
+		double minDiff = Double.MAX_VALUE;
+		for (var state : states) {
+			if (state.type() != type) continue;
+			double diff = Math.abs(state.loadHours() - loadHours);
+			if (diff < minDiff) {
+				minDiff = diff;
+				best = state;
+			}
+		}
+		return best;
+	}
+
 	public static List<SophenaBuildingState> getAll() {
 		var stream = SophenaBuildingState.class.getResourceAsStream(
 			"building_states.csv"
