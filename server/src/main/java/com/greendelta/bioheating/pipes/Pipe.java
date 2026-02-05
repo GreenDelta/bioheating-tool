@@ -22,9 +22,15 @@ public record Pipe(double innerDiameter, String rgb) {
 	static List<Pipe> getAll() {
 		var pipes = new ArrayList<Pipe>();
 		double di = 8;
-		while (di < 300) {
+		while (di < 2000) {
 			double inc;
-			if (di >= 100) {
+			if (di >= 600) {
+				inc = 80;
+			} else if (di >= 400) {
+				inc = 40;
+			} else if (di >= 240) {
+				inc = 20;
+			} else if (di >= 100) {
 				inc = 10;
 			} else if (di >= 40) {
 				inc = 5;

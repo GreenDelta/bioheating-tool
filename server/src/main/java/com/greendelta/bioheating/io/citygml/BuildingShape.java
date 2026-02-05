@@ -43,22 +43,18 @@ record BuildingShape(
 		return gml.id();
 	}
 
-	int neighborCount() {
-		return neighbors.size();
-	}
-
 	double height() {
 		return gml.height();
 	}
 
 	@Override
-	public final int hashCode() {
+	public int hashCode() {
 		var id = gml.id();
 		return id != null ? id.hashCode() : gml.hashCode();
 	}
 
 	@Override
-	public final boolean equals(Object obj) {
+	public boolean equals(Object obj) {
 		if (this == obj) return true;
 		return (
 			obj instanceof BuildingShape other &&

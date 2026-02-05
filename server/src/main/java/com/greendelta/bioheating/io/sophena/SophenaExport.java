@@ -241,10 +241,9 @@ public class SophenaExport {
 	}
 
 	private SophenaBuildingType buildingTypeOf(Building b) {
-		if (b == null || b.type() == null) return SophenaBuildingType.OTHER;
-
-		// Map the internal BuildingType to SophenaBuildingType
-		// Based on mapping logic similar to BuildingProcessor
+		if (b == null || b.type() == null) {
+			return SophenaBuildingType.OTHER;
+		}
 		return switch (b.type()) {
 			case SINGLE_FAMILY -> SophenaBuildingType.SINGLE_FAMILY_HOUSE;
 			case END_TERRACE, MID_TERRACE -> SophenaBuildingType.TERRACE_HOUSE;

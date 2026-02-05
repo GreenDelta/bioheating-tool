@@ -8,6 +8,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
@@ -32,7 +33,7 @@ public class OsmClient implements AutoCloseable {
 
 	public Res<List<OsmStreet>> queryStreets(OsmBounds bounds) {
 		try {
-			var query = String.format(
+			var query = String.format(Locale.US,
 				"[out:json];way[highway](%f,%f,%f,%f);out geom;",
 				bounds.south(),
 				bounds.west(),
