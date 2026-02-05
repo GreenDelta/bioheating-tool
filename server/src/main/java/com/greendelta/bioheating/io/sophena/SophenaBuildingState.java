@@ -9,7 +9,7 @@ import org.apache.commons.csv.CSVFormat;
 public record SophenaBuildingState(
 	String id,
 	String name,
-	SophenaBuildingType buildingType,
+	SophenaBuildingType type,
 	double loadHours,
 	boolean isDefault
 ) {
@@ -40,13 +40,13 @@ public record SophenaBuildingState(
 				var loadHours = Double.parseDouble(row.get(6));
 				var isDefault = Boolean.parseBoolean(row.get(7));
 
-				var buildingType = SophenaBuildingType.OTHER;
+				var type = SophenaBuildingType.OTHER;
 				try {
-					buildingType = SophenaBuildingType.valueOf(typeStr);
+					type = SophenaBuildingType.valueOf(typeStr);
 				} catch (Exception ignored) {}
 
 				list.add(
-					new SophenaBuildingState(id, name, buildingType, loadHours, isDefault)
+					new SophenaBuildingState(id, name, type, loadHours, isDefault)
 				);
 			}
 			return list;

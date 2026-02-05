@@ -27,10 +27,13 @@ public class SophenaExport {
 	private final JsonNodeFactory json = JsonNodeFactory.instance;
 	private final GeometryFactory geometries = new GeometryFactory();
 	private final CoordinateTransformer wgs84;
+	private final List<SophenaBuildingState> buildingStates;
+
 
 	private SophenaExport(Solution solution, CoordinateTransformer wgs84) {
 		this.solution = solution;
 		this.wgs84 = wgs84;
+		this.buildingStates = SophenaBuildingState.getAll();
 	}
 
 	public static Res<Void> write(Solution solution, File file) {
@@ -92,6 +95,9 @@ public class SophenaExport {
 	private ObjectNode consumerOf(Building b) {
 		if (b == null || !b.isHeated() || !b.isIncluded()) return null;
 
+		// TODO: use the real calculated load hours
+		// TODO: find & use the best building state
+		var state = buildingStateOf(b);
 		var obj = json
 			.objectNode()
 			.put("id", consumerIdOf(b))
@@ -206,4 +212,28 @@ public class SophenaExport {
 		}
 		return node;
 	}
+
+	private SophenaBuildingState buildingStateOf(Building b) {
+		var type = buildingTypeOf(b);
+		double loadHours = b.peakLoad() > 0
+			? b.heatDemand() / b.peakLoad()
+			: 0;
+		if (loadHours <= 0) {
+			// TODO: return the default state of that type
+		}
+		// TODO: select the state with the closest loadHours
+	}
+
+	private SophenaBuildingType buildingTypeOf(Building b) {
+		// first try a direct mapping
+		var type = switch (b.type) {
+			// TODO
+			case null, default -> null;
+		}
+		if (type != null) return type;
+
+		// check other building attributes
+		// TODO: see the BuildingProcessor
+	}
+
 }
