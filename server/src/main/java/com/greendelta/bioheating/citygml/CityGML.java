@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.List;
+
 import org.citygml4j.core.model.core.CityModel;
 import org.citygml4j.xml.CityGMLContext;
 import org.citygml4j.xml.reader.CityGMLReadException;
@@ -16,9 +17,13 @@ import org.xmlobjects.gml.model.deprecated.StringOrRef;
 
 class CityGML {
 
-	private CityGML() {}
+	private CityGML() {
+	}
 
 	static Res<CityModel> readModel(File file) {
+		if (file == null || !file.exists()) {
+			return Res.error("File does not exist: " + file);
+		}
 		try (
 			var stream = new FileInputStream(file);
 			var buffer = new BufferedInputStream(stream)

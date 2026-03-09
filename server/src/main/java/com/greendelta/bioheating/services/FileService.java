@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
+
 import org.openlca.commons.Res;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,19 +35,27 @@ public class FileService {
 	/// Uploads the file, calls the given function on that file, and deletes the
 	/// file afterward.
 	public <T> Res<T> useUpload(MultipartFile f, Function<File, Res<T>> fn) {
-		return useUploads(f == null ? null : new MultipartFile[]{f}, files -> {
-			if (files == null || files.isEmpty()) return Res.error("no upload file provided");
+		if (f == null || fn == null) {
+			return Res.error("No upload file or file handler provided");
+		}
+		return useUploads(new MultipartFile[]{f}, files -> {
+			if (files == null || files.isEmpty()) {
+				return Res.error("Upload of file failed");
+			}
 			return fn.apply(files.getFirst());
 		});
 	}
 
 	/// Uploads the files, calls the given function on those files, and deletes
 	/// the files afterward.
-	public <T> Res<T> useUploads(MultipartFile[] uploads, Function<List<File>, Res<T>> fn) {
-		if (uploads == null || uploads.length == 0) return Res.error("no upload files provided");
-		if (fn == null) return Res.error("no handler function for files provided");
+	public <T> Res<T> useUploads(
+		MultipartFile[] uploads, Function<List<File>, Res<T>> fn
+	) {
+		if (uploads == null || uploads.length == 0 || fn == null) {
+			return Res.error("No upload files or file handler  provided");
+		}
 
-		var files = new java.util.ArrayList<File>();
+		var files = new ArrayList<File>();
 		try {
 			for (var f : uploads) {
 				if (f == null || f.isEmpty()) continue;
@@ -55,10 +65,55 @@ public class FileService {
 				}
 				files.add(path.toFile());
 			}
-			if (files.isEmpty()) return Res.error("no non-empty upload files provided");
 			return fn.apply(files);
 		} catch (Exception e) {
-			return Res.error("failed upload files", e);
+			return Res.error("Failed upload files", e);
+		} finally {
+			for (var file : files) {
+				drop(file.toPath());
+			}
+		}
+	}
+
+	/// Saves the uploaded files synchronously to the work directory. This must
+	/// be called during an HTTP request (before the request completes) to
+	/// preserve the file content for possible async processing. Returns the saved
+	/// files which must be deleted by the caller when done.
+	public Res<List<File>> saveUploads(MultipartFile[] uploads) {
+		if (uploads == null || uploads.length == 0) {
+			return Res.error("No upload files provided");
+		}
+		var files = new ArrayList<File>();
+		try {
+			for (var f : uploads) {
+				if (f == null || f.isEmpty()) continue;
+				var path = workDir.resolve(UUID.randomUUID().toString());
+				try (var stream = f.getInputStream()) {
+					Files.copy(stream, path);
+				}
+				files.add(path.toFile());
+			}
+			return Res.ok(files);
+		} catch (Exception e) {
+			// cleanup on failure
+			for (var file : files) {
+				drop(file.toPath());
+			}
+			return Res.error("Failed to save upload files", e);
+		}
+	}
+
+	/// Calls the given function on the provided files and deletes them afterward.
+	public <T> Res<T> useFiles(
+		List<File> files, Function<List<File>, Res<T>> fn
+	) {
+		if (files == null || files.isEmpty() || fn == null) {
+			return Res.error("No files or file handler provided");
+		}
+		try {
+			return fn.apply(files);
+		} catch (Exception e) {
+			return Res.error("Failed to process files", e);
 		} finally {
 			for (var file : files) {
 				drop(file.toPath());

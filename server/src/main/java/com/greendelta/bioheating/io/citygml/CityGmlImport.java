@@ -1,17 +1,19 @@
 package com.greendelta.bioheating.io.citygml;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
+
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import org.openlca.commons.Res;
-import org.openlca.commons.Strings;
 
 public class CityGmlImport implements Callable<Res<Project>> {
 
@@ -33,37 +35,44 @@ public class CityGmlImport implements Callable<Res<Project>> {
 
 	@Override
 	public Res<Project> call() {
-		if (project == null) return Res.error("project cannot be null");
-		if (files == null || files.isEmpty()) return Res.error(
-			"no CityGML files provided"
-		);
-
-		// parse all CityGML models and initialize the map
-		var allShapes = new ArrayList<BuildingShape>();
-		GeoMap map = null;
-		for (var file : files) {
-			if (file == null || !file.exists()) return Res.error(
-				"file does not exist: " + file
-			);
-			var res = GmlModel.readFrom(file);
-			if (res.isError()) return res.castError();
-			var model = res.value();
-			var mapRes = initMap(model);
-			if (mapRes.isError()) return mapRes.castError();
-			map = mapRes.value();
-			allShapes.addAll(BuildingShape.allOf(model.buildings()));
+		if (project == null) {
+			return Res.error("Project cannot be null");
+		}
+		if (files == null || files.isEmpty()) {
+			return Res.error("No CityGML files provided");
 		}
 
-		if (allShapes.isEmpty()) return Res.error(
-			"No valid buildings found in CityGML files"
-		);
+		// parse all CityGML models and initialize the map
+		var shapes = new ArrayList<BuildingShape>();
+		GeoMap map = null;
+		for (var file : files) {
+			var res = GmlModel.readFrom(file);
+			if (res.isError()) {
+				return res.castError();
+			}
+			var model = res.value();
+			shapes.addAll(BuildingShape.allOf(model.buildings()));
+
+			// we check the CRS of each file
+			var mapRes = initMap(model);
+			if (mapRes.isError()) {
+				return mapRes.castError();
+			}
+			if (map == null) {
+				map = mapRes.value();
+			}
+		}
+
+		if (shapes.isEmpty() || map == null) {
+			return Res.error("No valid buildings found in CityGML files");
+		}
 
 		// process the building data
-		var naRes = NeighborAnalysis.run(allShapes);
-		if (naRes.isError()) return naRes.wrapError(
-			"Failed to run neighbor analysis of buildings"
-		);
-		var buildingRes = BuildingProcessor.map(allShapes);
+		var naRes = NeighborAnalysis.run(shapes);
+		if (naRes.isError()) {
+			return naRes.wrapError("Failed to run neighbor analysis of buildings");
+		}
+		var buildingRes = BuildingProcessor.map(shapes);
 		if (buildingRes.isError()) return buildingRes.wrapError(
 			"Failed to map building data"
 		);
@@ -118,11 +127,11 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			return Strings.equalsIgnoreCase(crsId, map.crs())
 				? Res.ok(map)
 				: Res.error(
-						"different CSR of model and current project map: " +
-							map.crs() +
-							" vs. " +
-							crsId
-					);
+				"different CSR of model and current project map: " +
+					map.crs() +
+					" vs. " +
+					crsId
+			);
 		}
 
 		map = new GeoMap().crs(crsId);

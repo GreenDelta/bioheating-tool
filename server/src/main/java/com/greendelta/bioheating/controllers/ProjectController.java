@@ -1,16 +1,8 @@
 package com.greendelta.bioheating.controllers;
 
-import com.greendelta.bioheating.model.ClimateRegion;
-import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.model.client.ClientProject;
-import com.greendelta.bioheating.services.FileService;
-import com.greendelta.bioheating.services.ProjectService;
-import com.greendelta.bioheating.services.TaskService;
-import com.greendelta.bioheating.services.TaskService.Task.NewTask;
-import com.greendelta.bioheating.services.UserService;
 import java.util.Arrays;
 import java.util.function.Function;
+
 import org.openlca.commons.Strings;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,6 +15,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.greendelta.bioheating.model.ClimateRegion;
+import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.client.ClientProject;
+import com.greendelta.bioheating.services.FileService;
+import com.greendelta.bioheating.services.ProjectService;
+import com.greendelta.bioheating.services.TaskService;
+import com.greendelta.bioheating.services.TaskService.Task.NewTask;
+import com.greendelta.bioheating.services.UserService;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -79,30 +81,44 @@ public class ProjectController {
 		@RequestParam("name") String name,
 		@RequestParam("climateRegionId") int climateRegionId,
 		@RequestParam(value = "description", required = false) String description,
-		@RequestParam("file") MultipartFile[] files
+		@RequestParam("file") MultipartFile[] uploads
 	) {
+
 		// check input data
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
-		if (Strings.isBlank(name)) return Http.badRequest(
-			"a project name is required"
-		);
-		if (files == null || files.length == 0 || Arrays.stream(files).allMatch(MultipartFile::isEmpty)) {
-			return Http.badRequest("at least one CityGML file is required");
+		if (user == null) {
+			return Http.badRequest("Not authenticated");
+		}
+		if (Strings.isBlank(name)) {
+			return Http.badRequest("A project name is required");
+		}
+		if (uploads == null
+			|| uploads.length == 0
+			|| Arrays.stream(uploads).allMatch(MultipartFile::isEmpty)) {
+			return Http.badRequest("At least one CityGML file is required");
+		}
+		var region = db.getForId(ClimateRegion.class, climateRegionId);
+		if (region == null) {
+			return Http.badRequest(
+				"No climate region found for ID=" + climateRegionId);
 		}
 
-		var region = db.getForId(ClimateRegion.class, climateRegionId);
-		if (region == null) return Http.badRequest(
-			"no climate region found for ID=" + climateRegionId
-		);
+		// save uploads synchronously before the request completes, otherwise
+		// the MultipartFile content becomes unavailable in async tasks
+		var gml = files.saveUploads(uploads);
+		if (gml.isError()) {
+			return Http.badRequest("Failed to save uploaded files: " + gml.error());
+		}
 
+		// create the project and start the asynchronous import task
 		var project = new Project()
 			.name(name)
 			.description(description)
 			.climateRegion(region)
 			.user(user);
 		var task = NewTask.of(user, () ->
-			this.files.useUploads(files, gmls -> projects.addMap(project, gmls))
+			files.useFiles(gml.value(),
+				gmlFiles -> projects.addMap(project, gmlFiles))
 		);
 		tasks.schedule(task);
 		return Http.ok(task.toState());
