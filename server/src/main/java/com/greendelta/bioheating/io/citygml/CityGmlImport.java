@@ -7,6 +7,8 @@ import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
@@ -15,13 +17,13 @@ public class CityGmlImport implements Callable<Res<Project>> {
 
 	private final Database db;
 	private final Project project;
-	private final File file;
+	private final List<File> files;
 	private boolean withOsmImport = false;
 
-	public CityGmlImport(Database db, Project project, File file) {
+	public CityGmlImport(Database db, Project project, List<File> files) {
 		this.db = db;
 		this.project = project;
-		this.file = file;
+		this.files = files;
 	}
 
 	public CityGmlImport withOsmImport(boolean b) {
@@ -32,26 +34,36 @@ public class CityGmlImport implements Callable<Res<Project>> {
 	@Override
 	public Res<Project> call() {
 		if (project == null) return Res.error("project cannot be null");
-		if (file == null || !file.exists()) return Res.error("file does not exist");
+		if (files == null || files.isEmpty()) return Res.error(
+			"no CityGML files provided"
+		);
 
-		// parse the CityGML model and initialize the map
-		var res = GmlModel.readFrom(file);
-		if (res.isError()) return res.castError();
-		var model = res.value();
-		var mapRes = initMap(model);
-		if (mapRes.isError()) return mapRes.castError();
-		var map = mapRes.value();
+		// parse all CityGML models and initialize the map
+		var allShapes = new ArrayList<BuildingShape>();
+		GeoMap map = null;
+		for (var file : files) {
+			if (file == null || !file.exists()) return Res.error(
+				"file does not exist: " + file
+			);
+			var res = GmlModel.readFrom(file);
+			if (res.isError()) return res.castError();
+			var model = res.value();
+			var mapRes = initMap(model);
+			if (mapRes.isError()) return mapRes.castError();
+			map = mapRes.value();
+			allShapes.addAll(BuildingShape.allOf(model.buildings()));
+		}
+
+		if (allShapes.isEmpty()) return Res.error(
+			"No valid buildings found in CityGML files"
+		);
 
 		// process the building data
-		var shapes = BuildingShape.allOf(model.buildings());
-		if (shapes.isEmpty()) return Res.error(
-			"No valid buildings found in CityGML model"
-		);
-		var naRes = NeighborAnalysis.run(shapes);
+		var naRes = NeighborAnalysis.run(allShapes);
 		if (naRes.isError()) return naRes.wrapError(
 			"Failed to run neighbor analysis of buildings"
 		);
-		var buildingRes = BuildingProcessor.map(shapes);
+		var buildingRes = BuildingProcessor.map(allShapes);
 		if (buildingRes.isError()) return buildingRes.wrapError(
 			"Failed to map building data"
 		);

@@ -37,12 +37,13 @@ public class ProjectService {
 			: Optional.empty();
 	}
 
-	public Res<Project> addMap(Project project, File gml) {
-		if (project == null || gml == null) return Res.error(
-			"no project or gml file provided"
-		);
+	public Res<Project> addMap(Project project, List<File> gmlFiles) {
+		if (project == null || gmlFiles == null || gmlFiles.isEmpty())
+			return Res.error("no project or gml files provided");
 		try {
-			return new CityGmlImport(db, project, gml).withOsmImport(true).call();
+			return new CityGmlImport(db, project, gmlFiles)
+				.withOsmImport(true)
+				.call();
 		} catch (Exception e) {
 			return Res.error("project creation failed", e);
 		}

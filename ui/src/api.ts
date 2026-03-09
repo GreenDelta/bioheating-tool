@@ -14,7 +14,7 @@ export class Res<T> {
 	private constructor(
 		private readonly _val?: T,
 		private readonly _err?: string,
-	) {}
+	) { }
 
 	static ok<T>(val: T): Res<T> {
 		return new Res(val, undefined);
@@ -201,7 +201,7 @@ interface NewProjectData {
 	climateRegionId: number;
 	name: string;
 	description?: string;
-	file: File;
+	files: File[];
 }
 
 export async function createProject(
@@ -211,7 +211,9 @@ export async function createProject(
 		const data = new FormData();
 		data.append("climateRegionId", d.climateRegionId.toString());
 		data.append("name", d.name);
-		data.append("file", d.file);
+		for (const file of d.files) {
+			data.append("file", file);
+		}
 		if (d.description) {
 			data.append("description", d.description);
 		}

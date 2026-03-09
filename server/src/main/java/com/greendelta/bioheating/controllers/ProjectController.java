@@ -9,6 +9,7 @@ import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
 import com.greendelta.bioheating.services.UserService;
+import java.util.Arrays;
 import java.util.function.Function;
 import org.openlca.commons.Strings;
 import org.springframework.http.ResponseEntity;
@@ -78,7 +79,7 @@ public class ProjectController {
 		@RequestParam("name") String name,
 		@RequestParam("climateRegionId") int climateRegionId,
 		@RequestParam(value = "description", required = false) String description,
-		@RequestParam("file") MultipartFile file
+		@RequestParam("file") MultipartFile[] files
 	) {
 		// check input data
 		var user = users.getCurrentUser(auth).orElse(null);
@@ -86,7 +87,9 @@ public class ProjectController {
 		if (Strings.isBlank(name)) return Http.badRequest(
 			"a project name is required"
 		);
-		if (file.isEmpty()) return Http.badRequest("a CityGML file is required");
+		if (files == null || files.length == 0 || Arrays.stream(files).allMatch(MultipartFile::isEmpty)) {
+			return Http.badRequest("at least one CityGML file is required");
+		}
 
 		var region = db.getForId(ClimateRegion.class, climateRegionId);
 		if (region == null) return Http.badRequest(
@@ -99,7 +102,7 @@ public class ProjectController {
 			.climateRegion(region)
 			.user(user);
 		var task = NewTask.of(user, () ->
-			files.useUpload(file, gml -> projects.addMap(project, gml))
+			this.files.useUploads(files, gmls -> projects.addMap(project, gmls))
 		);
 		tasks.schedule(task);
 		return Http.ok(task.toState());

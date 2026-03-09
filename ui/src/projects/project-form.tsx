@@ -13,7 +13,7 @@ interface FormData {
 	name: string;
 	description?: string;
 	region: ClimateRegion;
-	file?: File | null;
+	files: File[];
 }
 
 interface FormContext {
@@ -41,13 +41,19 @@ function useFormContext(): FormContext {
 	const [data, setData] = useState<FormData>({
 		name: "New project",
 		region: regions[0],
+		files: [],
 	});
 
 	const update = (diff: Partial<FormData>) => {
 		const next = { ...data, ...diff };
 		setData(next);
 		setError(null);
-		setComplete(!!next.name && next.name.trim().length > 0 && !!next.file);
+		setComplete(
+			!!next.name &&
+			next.name.trim().length > 0 &&
+			next.files &&
+			next.files.length > 0,
+		);
 	};
 
 	const onOk = async () => {
@@ -58,7 +64,7 @@ function useFormContext(): FormContext {
 		const res = await api.createProject({
 			climateRegionId: data.region.id,
 			name: data.name!,
-			file: data.file!,
+			files: data.files,
 			description: data.description,
 		});
 		setLoading(false);
@@ -139,20 +145,30 @@ export const ProjectForm = () => {
 					<RegionCombo ctx={ctx} />
 
 					<div className="mb-3">
-						<label className="form-label">CityGML</label>
+						<label className="form-label">CityGML files</label>
 						<input
 							type="file"
 							className="form-control"
 							accept=".gml,.xml"
+							multiple
 							onChange={e => {
-								const file = e.target.files?.[0] || null;
-								ctx.update({ file });
+								const files = e.target.files ? Array.from(e.target.files) : [];
+								ctx.update({ files });
 							}}
 						/>
-						{ctx.data.file && (
+						{ctx.data.files && ctx.data.files.length > 0 && (
 							<div className="form-text">
-								Selected: {ctx.data.file.name} (
-								{(ctx.data.file.size / 1024 ** 2).toFixed(1)} MB)
+								{ctx.data.files.length} file(s) selected (
+								{(
+									ctx.data.files.reduce((sum, f) => sum + f.size, 0) /
+									1024 ** 2
+								).toFixed(1)}{" "}
+								MB)
+								<ul className="mt-1 mb-0 ps-3">
+									{ctx.data.files.map((f, i) => (
+										<li key={i}>{f.name}</li>
+									))}
+								</ul>
 							</div>
 						)}
 					</div>
@@ -243,7 +259,7 @@ const CreationTaskPanel = ({ ctx }: Props) => {
 					<div className="mt-4">
 						<TaskPanel
 							taskId={ctx.taskId!}
-							message={`Creating project "${ctx.data.name}" and processing uploaded file...`}
+							message={`Creating project "${ctx.data.name}" and processing uploaded files...`}
 							getTargetUrl={ctx.getTaskTargetUrl}
 						/>
 					</div>
