@@ -10,8 +10,15 @@ interface MapProps {
 
 export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 	const divRef = useRef<HTMLDivElement>(null);
-	const mapRef = useRef<L.Map | null>(null);
-	const layerRef = useRef<L.GeoJSON | null>(null);
+	const { selection, handleSelect } = useFeatureSelection(onSelect);
+	const { mapRef, layerRef } = useLeafletMap(divRef, data, selection);
+	useMapInteractions(mapRef, layerRef, handleSelect);
+	useFeatureStyling(layerRef, selection);
+	return <div ref={divRef} style={{ width: "100%", height: 750 }} />;
+};
+
+
+function useFeatureSelection(onSelect: (fs: GeoFeature[]) => void) {
 	const [selection, setSelection] = useState<Set<any>>(new Set());
 
 	const handleSelect = useCallback((features: GeoFeature[]) => {
@@ -42,6 +49,18 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 			onSelect(features);
 		}
 	}, [selection, onSelect]);
+
+	return { selection, handleSelect };
+}
+
+
+function useLeafletMap(
+	divRef: React.RefObject<HTMLDivElement | null>,
+	data: GeoMap,
+	selection: Set<any>,
+) {
+	const mapRef = useRef<L.Map | null>(null);
+	const layerRef = useRef<L.GeoJSON | null>(null);
 
 	useEffect(() => {
 		const div = divRef.current;
@@ -77,7 +96,15 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 		};
 	}, []);
 
-	// Separate effect for updating event handlers
+	return { mapRef, layerRef };
+}
+
+
+function useMapInteractions(
+	mapRef: React.RefObject<L.Map | null>,
+	layerRef: React.RefObject<L.GeoJSON | null>,
+	handleSelect: (features: GeoFeature[]) => void,
+) {
 	useEffect(() => {
 		if (layerRef.current && mapRef.current) {
 			// Remove existing event handlers
@@ -114,16 +141,19 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 			});
 		}
 	}, [handleSelect]);
+}
 
-	// Update feature styles when selection changes
+
+function useFeatureStyling(
+	layerRef: React.RefObject<L.GeoJSON | null>,
+	selection: Set<any>,
+) {
 	useEffect(() => {
 		if (layerRef.current) {
 			layerRef.current.setStyle(feature => styleOf(feature, selection));
 		}
 	}, [selection]);
-
-	return <div ref={divRef} style={{ width: "100%", height: 750 }} />;
-};
+}
 
 function styleOf(feature: any, ids: Set<any>) {
 	const f = feature as GeoFeature;
@@ -143,23 +173,13 @@ function styleOf(feature: any, ids: Set<any>) {
 
 function colorOf(f: GeoFeature): string {
 	const props = f.properties || {};
-
-	// building
 	if (isBuilding(f)) {
-		if (props.isSupplyCenter) {
-			return "#ff9800";
-		}
-		if (!props.isHeated) {
-			return "#607d8b";
-		}
+		if (props.isSupplyCenter) return "#ff9800";
+		if (!props.isHeated) return "#607d8b";
 		return props.isIncluded ? "#ec407a" : "#f8bbd0";
 	}
-
 	// street
-	if (props.isExcluded) {
-		return "#607d8b";
-	}
-	return "#1976d2";
+	return props.isExcluded ? "#607d8b" : "#1976d2";
 }
 
 function addTileLayer(map: L.Map) {
