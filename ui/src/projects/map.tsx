@@ -386,10 +386,10 @@ function styleOf(feature: any, ids: Set<any>) {
 	const id = f.properties?.id;
 	const isSelected = id && ids.has(id);
 	const color = isSelected ? "#fff59d" : colorOf(f);
-	const weight = isBuilding(f) ? 2 : 4;
+	const weight = isSelected ? 3 : 2;
 	return {
 		fillColor: color,
-		weight: isSelected ? weight + 1 : weight,
+		weight,
 		opacity: 1,
 		color: color,
 		dashArray: "",
