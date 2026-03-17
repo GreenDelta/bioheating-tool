@@ -8,20 +8,27 @@ import "leaflet-lasso";
 interface MapProps {
 	data: GeoMap;
 	onSelect: (fs: GeoFeature[]) => void;
+	onChange: () => void;
 }
 
-export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
+export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 	const divRef = useRef<HTMLDivElement>(null);
 	const isDrawingRef = useRef(false);
 	const { selection, handleSelect } = useFeatureSelection(onSelect);
 	const { mapRef, layerRef } = useLeafletMap(divRef, data, selection);
-	const deleteSelection = useDeleteSelection(data, layerRef, selection, handleSelect);
+	const deleteSelection = useDeleteSelection(
+		data,
+		layerRef,
+		selection,
+		handleSelect,
+		onChange,
+	);
 	const selectedBuildingCount = data.features.filter(feature =>
 		isBuilding(feature) && selection.has(feature.properties?.id)
 	).length;
 	useMapInteractions(mapRef, layerRef, handleSelect, isDrawingRef);
 	useFeatureStyling(layerRef, selection);
-	usePolygonDrawing(mapRef, layerRef, data, handleSelect, isDrawingRef);
+	usePolygonDrawing(mapRef, layerRef, data, handleSelect, isDrawingRef, onChange);
 	return (
 		<div style={{ position: "relative", width: "100%", height: 750 }}>
 			<div ref={divRef} style={{ width: "100%", height: "100%" }} />
@@ -214,6 +221,7 @@ function useDeleteSelection(
 	layerRef: React.RefObject<L.GeoJSON | null>,
 	selection: Set<any>,
 	handleSelect: (features: GeoFeature[]) => void,
+	onChange: () => void,
 ) {
 	return useCallback(() => {
 		const ids = new Set(
@@ -247,8 +255,9 @@ function useDeleteSelection(
 			}
 		}
 
+		onChange();
 		handleSelect([]);
-	}, [data, layerRef, selection, handleSelect]);
+	}, [data, layerRef, selection, handleSelect, onChange]);
 }
 
 function usePolygonDrawing(
@@ -257,6 +266,7 @@ function usePolygonDrawing(
 	data: GeoMap,
 	handleSelect: (features: GeoFeature[]) => void,
 	isDrawingRef: React.RefObject<boolean>,
+	onChange: () => void,
 ) {
 	useEffect(() => {
 		const map = mapRef.current;
@@ -303,6 +313,7 @@ function usePolygonDrawing(
 			const feature = createBuilding(created.layer, data);
 			data.features.push(feature);
 			layer.addData(feature);
+			onChange();
 			handleSelect([feature]);
 		};
 
@@ -318,7 +329,7 @@ function usePolygonDrawing(
 			map.removeControl(drawControl);
 			map.removeLayer(drawnItems);
 		};
-	}, [mapRef, layerRef, data, handleSelect, isDrawingRef]);
+	}, [mapRef, layerRef, data, handleSelect, isDrawingRef, onChange]);
 }
 
 function createBuilding(layer: L.Polygon, data: GeoMap): GeoFeature {

@@ -81,7 +81,11 @@ export const ProjectEditor = () => {
 			<div className="container-fluid">
 				<div className="row">
 					<div className="col-md-8">
-						<Map data={ctx.project.map} onSelect={ctx.setSelection} />
+						<Map
+							data={ctx.project.map}
+							onSelect={ctx.setSelection}
+							onChange={() => ctx.setDirty(true)}
+						/>
 					</div>
 					<div className="col-md-4">
 						<SelectionPanel ctx={ctx} />
