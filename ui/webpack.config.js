@@ -30,6 +30,11 @@ module.exports = {
 					to: "./",
 				},
 				{ from: "node_modules/leaflet/dist/leaflet.css", to: "./" },
+				{ from: "node_modules/leaflet-draw/dist/leaflet.draw.css", to: "./" },
+				{
+					from: "node_modules/leaflet-draw/dist/images",
+					to: "./images",
+				},
 				{ from: "src/index.html", to: "./" },
 				{ from: "img/", to: "./img" },
 			],

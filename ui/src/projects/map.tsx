@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as L from "leaflet";
 import { GeoFeature, GeoMap, isBuilding } from "../model";
+import "leaflet-draw";
 import "leaflet-lasso";
 
 interface MapProps {
@@ -14,6 +15,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 	const { mapRef, layerRef } = useLeafletMap(divRef, data, selection);
 	useMapInteractions(mapRef, layerRef, handleSelect);
 	useFeatureStyling(layerRef, selection);
+	usePolygonDrawing(mapRef);
 	return <div ref={divRef} style={{ width: "100%", height: 750 }} />;
 };
 
@@ -153,6 +155,51 @@ function useFeatureStyling(
 			layerRef.current.setStyle(feature => styleOf(feature, selection));
 		}
 	}, [selection]);
+}
+
+function usePolygonDrawing(mapRef: React.RefObject<L.Map | null>) {
+	useEffect(() => {
+		const map = mapRef.current;
+		if (!map) {
+			return;
+		}
+
+		const drawnItems = new L.FeatureGroup();
+		map.addLayer(drawnItems);
+
+		const drawControl = new L.Control.Draw({
+			edit: {
+				featureGroup: drawnItems,
+				edit: false,
+				remove: false,
+			},
+			draw: {
+				polygon: {},
+				polyline: false,
+				rectangle: false,
+				circle: false,
+				marker: false,
+				circlemarker: false,
+			},
+		});
+		map.addControl(drawControl);
+
+		const onCreated: L.LeafletEventHandlerFn = evt => {
+			const created = evt as L.DrawEvents.Created;
+			if (!created.layer) {
+				return;
+			}
+			drawnItems.addLayer(created.layer);
+		};
+
+		map.on(L.Draw.Event.CREATED, onCreated);
+
+		return () => {
+			map.off(L.Draw.Event.CREATED, onCreated);
+			map.removeControl(drawControl);
+			map.removeLayer(drawnItems);
+		};
+	}, [mapRef]);
 }
 
 function styleOf(feature: any, ids: Set<any>) {

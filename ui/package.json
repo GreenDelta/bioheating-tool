@@ -11,8 +11,10 @@
 	"author": "",
 	"license": "MPL-2.0",
 	"dependencies": {
+		"@types/leaflet-draw": "^1.0.13",
 		"bootstrap": "^5.3.3",
 		"leaflet": "^1.9.4",
+		"leaflet-draw": "^1.0.4",
 		"leaflet-lasso": "^2.2.13",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
