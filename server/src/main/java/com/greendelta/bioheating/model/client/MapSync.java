@@ -1,21 +1,30 @@
 package com.greendelta.bioheating.model.client;
 
+import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
+import com.greendelta.bioheating.model.client.Geometry.GeoPolygon;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
+import org.locationtech.jts.geom.Coordinate;
 
 public class MapSync {
 
+	private final GeoMap map;
 	private final Map<Long, Building> buildings;
 	private final Map<Long, Street> streets;
 	private final ClientMap clientMap;
 
 	private MapSync(GeoMap map, ClientMap clientMap) {
+		this.map = map;
 		this.clientMap = clientMap;
 		buildings = new HashMap<>(map.buildings().size());
 		for (var b : map.buildings()) {
@@ -34,6 +43,7 @@ public class MapSync {
 	}
 
 	private void sync() {
+		var retainedBuildings = new HashSet<Long>();
 		for (var f : clientMap.features()) {
 			var props = f.properties();
 			if (props == null) continue;
@@ -41,16 +51,29 @@ public class MapSync {
 			long id = idProp.longValue();
 			var type = props.get("@type");
 			if ("building".equals(type)) {
-				syncBuilding(id, props);
+				syncBuilding(id, f, props, retainedBuildings);
 			} else if ("street".equals(type)) {
 				syncStreet(id, props);
 			}
 		}
+		map.buildings().removeIf(b -> !retainedBuildings.contains(b.id()));
 	}
 
-	private void syncBuilding(long id, Map<String, Object> props) {
+	private void syncBuilding(
+		long id,
+		GeoFeature feature,
+		Map<String, Object> props,
+		Set<Long> retainedBuildings
+	) {
 		var b = buildings.get(id);
-		if (b == null) return;
+		if (b == null) {
+			if (id > 0) return;
+			b = createBuilding(feature, props);
+			if (b == null) return;
+			map.buildings().add(b);
+			buildings.put(b.id(), b);
+		}
+		retainedBuildings.add(b.id());
 
 		syncString(props, "name", b::name);
 		syncString(props, "roofTypeCode", b::roofTypeCode);
@@ -68,6 +91,7 @@ public class MapSync {
 		syncString(props, "street", b::street);
 		syncString(props, "streetNumber", b::streetNumber);
 		syncDouble(props, "heatDemand", b::heatDemand);
+		syncDouble(props, "peakLoad", b::peakLoad);
 		syncBool(props, "isHeated", b::isHeated);
 		syncBool(props, "isSupplyCenter", b::isSupplyCenter);
 		syncBool(props, "isIncluded", b::isIncluded);
@@ -152,5 +176,70 @@ public class MapSync {
 				// ignore, use default
 			}
 		}
+	}
+
+	private Building createBuilding(GeoFeature feature, Map<String, Object> props) {
+		if (feature == null || !(feature.geometry() instanceof GeoPolygon polygon)) {
+			return null;
+		}
+		var coordinates = coordinatesOf(polygon);
+		if (coordinates == null || coordinates.length == 0) {
+			return null;
+		}
+		var b = new Building().coordinates(coordinates);
+		var cityId = props.get("id");
+		if (cityId != null) {
+			b.cityId("client:" + cityId);
+		}
+		return b;
+	}
+
+	private Coordinate[] coordinatesOf(GeoPolygon polygon) {
+		if (polygon == null || polygon.coordinates() == null) {
+			return null;
+		}
+		List<List<Double>> ring = null;
+		for (var candidate : polygon.coordinates()) {
+			if (candidate != null && !candidate.isEmpty()) {
+				ring = candidate;
+				break;
+			}
+		}
+		if (ring == null || ring.isEmpty()) {
+			return null;
+		}
+
+		var wgs84ToMap = CoordinateTransformer.fromWgs84To(map.crs()).orElse(null);
+		if (wgs84ToMap == null) {
+			return null;
+		}
+
+		var wgs84 = new Coordinate[ring.size()];
+		for (int i = 0; i < ring.size(); i++) {
+			var point = ring.get(i);
+			if (point == null || point.size() < 2) {
+				return null;
+			}
+			wgs84[i] = new Coordinate(point.get(0), point.get(1));
+		}
+
+		var transformed = wgs84ToMap.transform(wgs84);
+		return transformed.isError() ? null : closeRing(transformed.value());
+	}
+
+	private Coordinate[] closeRing(Coordinate[] coordinates) {
+		if (coordinates == null || coordinates.length == 0) {
+			return coordinates;
+		}
+		var first = coordinates[0];
+		var last = coordinates[coordinates.length - 1];
+		if (Objects.equals(first, last)
+			|| (first.x == last.x && first.y == last.y && first.z == last.z)) {
+			return coordinates;
+		}
+		var closed = new Coordinate[coordinates.length + 1];
+		System.arraycopy(coordinates, 0, closed, 0, coordinates.length);
+		closed[closed.length - 1] = new Coordinate(first.x, first.y, first.z);
+		return closed;
 	}
 }
