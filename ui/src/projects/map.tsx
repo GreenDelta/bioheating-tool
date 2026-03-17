@@ -11,11 +11,12 @@ interface MapProps {
 
 export const Map: React.FC<MapProps> = ({ data, onSelect }) => {
 	const divRef = useRef<HTMLDivElement>(null);
+	const isDrawingRef = useRef(false);
 	const { selection, handleSelect } = useFeatureSelection(onSelect);
 	const { mapRef, layerRef } = useLeafletMap(divRef, data, selection);
-	useMapInteractions(mapRef, layerRef, handleSelect);
+	useMapInteractions(mapRef, layerRef, handleSelect, isDrawingRef);
 	useFeatureStyling(layerRef, selection);
-	usePolygonDrawing(mapRef);
+	usePolygonDrawing(mapRef, layerRef, data, handleSelect, isDrawingRef);
 	return <div ref={divRef} style={{ width: "100%", height: 750 }} />;
 };
 
@@ -30,27 +31,33 @@ function useFeatureSelection(onSelect: (fs: GeoFeature[]) => void) {
 			onSelect([]);
 			return;
 		}
-
-		let someNew = false;
 		for (const f of features) {
 			const id = f.properties?.id;
 			if (!id) {
 				continue;
 			}
 			nextIds.add(id);
-			if (!selection.has(id)) {
-				someNew = true;
-			}
 		}
 
-		if (!someNew) {
-			setSelection(new Set());
+		let shouldClear = false;
+		setSelection(current => {
+			let someNew = false;
+			for (const id of nextIds) {
+				if (!current.has(id)) {
+					someNew = true;
+					break;
+				}
+			}
+			shouldClear = !someNew;
+			return shouldClear ? new Set() : nextIds;
+		});
+
+		if (shouldClear) {
 			onSelect([]);
 		} else {
-			setSelection(nextIds);
 			onSelect(features);
 		}
-	}, [selection, onSelect]);
+	}, [onSelect]);
 
 	return { selection, handleSelect };
 }
@@ -106,6 +113,7 @@ function useMapInteractions(
 	mapRef: React.RefObject<L.Map | null>,
 	layerRef: React.RefObject<L.GeoJSON | null>,
 	handleSelect: (features: GeoFeature[]) => void,
+	isDrawingRef: React.RefObject<boolean>,
 ) {
 	useEffect(() => {
 		if (layerRef.current && mapRef.current) {
@@ -116,6 +124,9 @@ function useMapInteractions(
 
 			// Add click handler on map to clear selection when clicking empty space
 			mapRef.current.on("click", () => {
+				if (isDrawingRef.current) {
+					return;
+				}
 				handleSelect([]);
 			});
 
@@ -142,7 +153,7 @@ function useMapInteractions(
 				handleSelect(features);
 			});
 		}
-	}, [handleSelect]);
+	}, [handleSelect, isDrawingRef]);
 }
 
 
@@ -157,10 +168,17 @@ function useFeatureStyling(
 	}, [selection]);
 }
 
-function usePolygonDrawing(mapRef: React.RefObject<L.Map | null>) {
+function usePolygonDrawing(
+	mapRef: React.RefObject<L.Map | null>,
+	layerRef: React.RefObject<L.GeoJSON | null>,
+	data: GeoMap,
+	handleSelect: (features: GeoFeature[]) => void,
+	isDrawingRef: React.RefObject<boolean>,
+) {
 	useEffect(() => {
 		const map = mapRef.current;
-		if (!map) {
+		const layer = layerRef.current;
+		if (!map || !layer) {
 			return;
 		}
 
@@ -184,22 +202,89 @@ function usePolygonDrawing(mapRef: React.RefObject<L.Map | null>) {
 		});
 		map.addControl(drawControl);
 
-		const onCreated: L.LeafletEventHandlerFn = evt => {
-			const created = evt as L.DrawEvents.Created;
-			if (!created.layer) {
-				return;
-			}
-			drawnItems.addLayer(created.layer);
+		const onDrawStart: L.LeafletEventHandlerFn = () => {
+			isDrawingRef.current = true;
 		};
 
+		const onDrawStop: L.LeafletEventHandlerFn = () => {
+			isDrawingRef.current = false;
+		};
+
+		const onCreated: L.LeafletEventHandlerFn = evt => {
+			isDrawingRef.current = false;
+			const created = evt as L.DrawEvents.Created;
+			if (!created.layer || !(created.layer instanceof L.Polygon)) {
+				return;
+			}
+
+			const feature = createBuilding(created.layer, data);
+			data.features.push(feature);
+			layer.addData(feature);
+			handleSelect([feature]);
+		};
+
+		map.on(L.Draw.Event.DRAWSTART, onDrawStart);
+		map.on(L.Draw.Event.DRAWSTOP, onDrawStop);
 		map.on(L.Draw.Event.CREATED, onCreated);
 
 		return () => {
+			isDrawingRef.current = false;
+			map.off(L.Draw.Event.DRAWSTART, onDrawStart);
+			map.off(L.Draw.Event.DRAWSTOP, onDrawStop);
 			map.off(L.Draw.Event.CREATED, onCreated);
 			map.removeControl(drawControl);
 			map.removeLayer(drawnItems);
 		};
-	}, [mapRef]);
+	}, [mapRef, layerRef, data, handleSelect, isDrawingRef]);
+}
+
+function createBuilding(layer: L.Polygon, data: GeoMap): GeoFeature {
+	const nextId = nextBuildingId(data);
+	const geoJson = layer.toGeoJSON() as GeoFeature;
+	const coordinates = geoJson.geometry.type === "Polygon"
+		? geoJson.geometry.coordinates
+		: [];
+	return {
+		type: "Feature",
+		geometry: {
+			type: "Polygon",
+			coordinates,
+		},
+		properties: {
+			"@type": "building",
+			id: nextId,
+			name: `New building ${Math.abs(nextId)}`,
+			height: 10,
+			storeys: 1,
+			groundArea: polygonAreaOf(layer),
+			isHeated: true,
+			isSupplyCenter: false,
+			isIncluded: false,
+			type: "OTHER",
+			constructionAge: "UNKNOWN",
+		},
+	};
+}
+
+/// To distinguish newly created buildings from already existing buildings, they
+/// get a negative ID.
+function nextBuildingId(data: GeoMap): number {
+	let nextId = -1;
+	for (const feature of data.features || []) {
+		const id = feature.properties?.id;
+		if (typeof id === "number") {
+			nextId = Math.min(nextId, id - 1);
+		}
+	}
+	return nextId;
+}
+
+function polygonAreaOf(layer: L.Polygon): number {
+	const latLngs = layer.getLatLngs();
+	const ring = Array.isArray(latLngs[0]) ? latLngs[0] : latLngs;
+	return typeof (L as any).GeometryUtil?.geodesicArea === "function"
+		? (L as any).GeometryUtil.geodesicArea(ring)
+		: 0;
 }
 
 function styleOf(feature: any, ids: Set<any>) {
