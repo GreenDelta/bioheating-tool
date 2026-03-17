@@ -84,18 +84,9 @@ public class ProjectController {
 		@RequestParam("file") MultipartFile[] uploads
 	) {
 
-		// check input data
 		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null) {
 			return Http.badRequest("Not authenticated");
-		}
-		if (Strings.isBlank(name)) {
-			return Http.badRequest("A project name is required");
-		}
-		if (uploads == null
-			|| uploads.length == 0
-			|| Arrays.stream(uploads).allMatch(MultipartFile::isEmpty)) {
-			return Http.badRequest("At least one CityGML file is required");
 		}
 		var region = db.getForId(ClimateRegion.class, climateRegionId);
 		if (region == null) {
@@ -103,21 +94,24 @@ public class ProjectController {
 				"No climate region found for ID=" + climateRegionId);
 		}
 
-		// save uploads synchronously before the request completes, otherwise
-		// the MultipartFile content becomes unavailable in async tasks
-		var gml = files.saveUploads(uploads);
-		if (gml.isError()) {
-			return Http.badRequest("Failed to save uploaded files: " + gml.error());
+		// upload geo-data
+		var geoFiles = files.saveUploads(uploads);
+		if (geoFiles.isError()) {
+			return Http.badRequest(
+				"Failed to save uploaded files: " + geoFiles.error());
+		}
+		if (geoFiles.value().isEmpty()) {
+			return Http.badRequest(	"No valid files provided");
 		}
 
-		// create the project and start the asynchronous import task
+		// create the project and start the import task
 		var project = new Project()
 			.name(name)
 			.description(description)
 			.climateRegion(region)
 			.user(user);
 		var task = NewTask.of(user, () ->
-			files.useFiles(gml.value(),
+			files.useFiles(geoFiles.value(),
 				gmlFiles -> projects.addMap(project, gmlFiles))
 		);
 		tasks.schedule(task);

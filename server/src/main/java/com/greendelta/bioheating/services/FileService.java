@@ -1,5 +1,11 @@
 package com.greendelta.bioheating.services;
 
+import org.openlca.commons.Res;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,12 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
-
-import org.openlca.commons.Res;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import java.util.zip.ZipInputStream;
 
 @Service
 public class FileService {
@@ -32,70 +33,35 @@ public class FileService {
 		}
 	}
 
-	/// Uploads the file, calls the given function on that file, and deletes the
-	/// file afterward.
-	public <T> Res<T> useUpload(MultipartFile f, Function<File, Res<T>> fn) {
-		if (f == null || fn == null) {
-			return Res.error("No upload file or file handler provided");
-		}
-		return useUploads(new MultipartFile[]{f}, files -> {
-			if (files == null || files.isEmpty()) {
-				return Res.error("Upload of file failed");
-			}
-			return fn.apply(files.getFirst());
-		});
-	}
-
-	/// Uploads the files, calls the given function on those files, and deletes
-	/// the files afterward.
-	public <T> Res<T> useUploads(
-		MultipartFile[] uploads, Function<List<File>, Res<T>> fn
-	) {
-		if (uploads == null || uploads.length == 0 || fn == null) {
-			return Res.error("No upload files or file handler  provided");
-		}
-
-		var files = new ArrayList<File>();
-		try {
-			for (var f : uploads) {
-				if (f == null || f.isEmpty()) continue;
-				var path = workDir.resolve(UUID.randomUUID().toString());
-				try (var stream = f.getInputStream()) {
-					Files.copy(stream, path);
-				}
-				files.add(path.toFile());
-			}
-			return fn.apply(files);
-		} catch (Exception e) {
-			return Res.error("Failed upload files", e);
-		} finally {
-			for (var file : files) {
-				drop(file.toPath());
-			}
-		}
-	}
-
-	/// Saves the uploaded files synchronously to the work directory. This must
-	/// be called during an HTTP request (before the request completes) to
-	/// preserve the file content for possible async processing. Returns the saved
-	/// files which must be deleted by the caller when done.
+	/// Saves the uploaded files in the work directory. Note that multi-part files
+	/// are deleted when a request finishes, so this needs to be done within the
+	/// respective request thread.
 	public Res<List<File>> saveUploads(MultipartFile[] uploads) {
-		if (uploads == null || uploads.length == 0) {
+		if (uploads == null) {
 			return Res.error("No upload files provided");
 		}
+
 		var files = new ArrayList<File>();
 		try {
-			for (var f : uploads) {
-				if (f == null || f.isEmpty()) continue;
-				var path = workDir.resolve(UUID.randomUUID().toString());
-				try (var stream = f.getInputStream()) {
-					Files.copy(stream, path);
+
+			for (var u : uploads) {
+				if (u == null || u.isEmpty()) continue;
+
+				if ("zip".equals(extensionOf(u.getOriginalFilename()))) {
+					extractZip(u, files);
+					continue;
 				}
-				files.add(path.toFile());
+
+				try (var stream = u.getInputStream()) {
+					var ext = extensionOf(u.getOriginalFilename());
+					var path = workDir.resolve(UUID.randomUUID() + "." + ext);
+					Files.copy(stream, path);
+					files.add(path.toFile());
+				}
 			}
+
 			return Res.ok(files);
 		} catch (Exception e) {
-			// cleanup on failure
 			for (var file : files) {
 				drop(file.toPath());
 			}
@@ -142,4 +108,31 @@ public class FileService {
 			);
 		}
 	}
+
+	private void extractZip(
+		MultipartFile upload, List<File> files) throws IOException {
+		try (var stream = upload.getInputStream();
+				 var zip = new ZipInputStream(stream)) {
+			for (var e = zip.getNextEntry(); e != null; e = zip.getNextEntry()) {
+				try {
+					if (e.isDirectory()) continue;
+					var ext = extensionOf(e.getName());
+					var path = workDir.resolve(UUID.randomUUID() + "." + ext);
+					Files.copy(zip, path);
+					files.add(path.toFile());
+				} finally {
+					zip.closeEntry();
+				}
+			}
+		}
+	}
+
+	private String extensionOf(String fileName) {
+		if (fileName == null) return "";
+		var parts = fileName.toLowerCase().split("\\.");
+		return parts.length > 1
+			? parts[parts.length - 1].strip()
+			: "";
+	}
+
 }

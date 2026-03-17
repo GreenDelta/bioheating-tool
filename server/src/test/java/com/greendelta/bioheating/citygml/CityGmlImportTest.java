@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,7 +42,7 @@ public class CityGmlImportTest {
 	public void testImport() {
 		var region = db.insert(new ClimateRegion().number(13));
 		var project = new Project().name("test project").climateRegion(region);
-		project = new CityGmlImport(db, project, file)
+		project = new CityGmlImport(db, project, List.of(file))
 			.withOsmImport(WITH_OSM)
 			.call()
 			.orElseThrow();
