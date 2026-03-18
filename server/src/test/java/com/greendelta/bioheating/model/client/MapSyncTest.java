@@ -48,7 +48,6 @@ public class MapSyncTest {
 		assertEquals(1, map.buildings().size());
 		var created = map.buildings().getFirst();
 		assertEquals("Drawn building", created.name());
-		assertEquals("client:-1", created.cityId());
 		assertEquals(12.5, created.height(), 1e-6);
 		assertEquals(3, created.storeys());
 		assertEquals(85.0, created.groundArea(), 1e-6);
