@@ -12,6 +12,7 @@ public record GeoFeature(
 	Geometry geometry,
 	Map<String, Object> properties
 ) {
+
 	static Res<GeoFeature> of(Building b, CoordinateTransformer wgs84) {
 		if (b == null || wgs84 == null) return Res.error(
 			"no building or coordinate transformer"

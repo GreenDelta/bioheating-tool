@@ -7,6 +7,7 @@ import com.greendelta.bioheating.model.ConstructionAge;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
 import com.greendelta.bioheating.model.client.Geometry.GeoPolygon;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,14 +15,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+
 import org.locationtech.jts.geom.Coordinate;
 
+/// Updates the map with the data that were sent from the client.
 public class MapSync {
 
 	private final GeoMap map;
 	private final Map<Long, Building> buildings;
 	private final Map<Long, Street> streets;
 	private final ClientMap clientMap;
+
+	/// Contains the IDs of buildings that were updated or newly created.
+	/// Buildings with IDs not in this set are removed from the map.
+	private final Set<Long> retainedBuildings = new HashSet<>();
 
 	private MapSync(GeoMap map, ClientMap clientMap) {
 		this.map = map;
@@ -43,7 +50,6 @@ public class MapSync {
 	}
 
 	private void sync() {
-		var retainedBuildings = new HashSet<Long>();
 		for (var f : clientMap.features()) {
 			var props = f.properties();
 			if (props == null) continue;
@@ -51,7 +57,7 @@ public class MapSync {
 			long id = idProp.longValue();
 			var type = props.get("@type");
 			if ("building".equals(type)) {
-				syncBuilding(id, f, props, retainedBuildings);
+				syncBuilding(id, f, props);
 			} else if ("street".equals(type)) {
 				syncStreet(id, props);
 			}
@@ -60,10 +66,7 @@ public class MapSync {
 	}
 
 	private void syncBuilding(
-		long id,
-		GeoFeature feature,
-		Map<String, Object> props,
-		Set<Long> retainedBuildings
+		long id, GeoFeature feature, Map<String, Object> props
 	) {
 		var b = buildings.get(id);
 		if (b == null) {
@@ -178,8 +181,11 @@ public class MapSync {
 		}
 	}
 
-	private Building createBuilding(GeoFeature feature, Map<String, Object> props) {
-		if (feature == null || !(feature.geometry() instanceof GeoPolygon polygon)) {
+	private Building createBuilding(
+		GeoFeature feature, Map<String, Object> props
+	) {
+		if (feature == null
+			|| !(feature.geometry() instanceof GeoPolygon polygon)) {
 			return null;
 		}
 		var coordinates = coordinatesOf(polygon);
@@ -205,7 +211,7 @@ public class MapSync {
 				break;
 			}
 		}
-		if (ring == null || ring.isEmpty()) {
+		if (ring == null) {
 			return null;
 		}
 
