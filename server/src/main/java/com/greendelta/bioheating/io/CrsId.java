@@ -1,11 +1,15 @@
 package com.greendelta.bioheating.io;
 
 import java.util.OptionalInt;
+
+import org.locationtech.proj4j.CRSFactory;
+import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 
 public record CrsId(int code, String value) {
+
 	/// [EPSG:4326](https://epsg.io/4326), this is the standard CRS in GeoJSON.
-	/// Also, Open-Street-Map data are provided in this CRS.
+	/// Also, OpenStreetMap data are provided in this CRS.
 	public static CrsId wgs84() {
 		return new CrsId(4326, "EPSG:4326");
 	}
@@ -20,6 +24,26 @@ public record CrsId(int code, String value) {
 	/// for CityGML data in Germany.
 	public static CrsId utm33() {
 		return new CrsId(25833, "EPSG:25833");
+	}
+
+	public static Res<CrsId> utmFromWGS84(double longitude, double latitude) {
+		if (longitude < -180
+			|| longitude > 180
+			|| latitude < -90
+			|| latitude > 90) {
+			return Res.error("Invalid WGS84 coordinates provided");
+		}
+		int zone = (int) Math.floor((longitude + 180) / 6) + 1;
+		int code = 25800 + zone;
+		var id = of(code);
+		try {
+			var crs = new CRSFactory().createFromName(id.value);
+			return crs != null
+				? Res.ok(id)
+				: Res.error("Unknown CRS: " + id.value);
+		} catch (Exception e) {
+			return Res.error("Failed to lookup CRS: " + id.value, e);
+		}
 	}
 
 	public static CrsId of(int code) {

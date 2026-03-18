@@ -36,4 +36,27 @@ public class CrsIdTest {
 		assertEquals(CrsId.utm32(), CrsId.parse("ETRS89_UTM32"));
 		assertEquals("unknown:123", CrsId.parse("unknown:123").value());
 	}
+
+	@Test
+	public void testUtmFromWGS84() {
+		double lon = 13.3777;
+		double lat = 52.5162;
+		var utm = CrsId.utmFromWGS84(lon, lat).orElseThrow();
+		var wgs84 = CrsId.wgs84();
+
+		var projected = CoordinateTransformer
+			.of(wgs84, utm)
+			.orElseThrow()
+			.project(lon, lat)
+			.orElseThrow();
+
+		var origin = CoordinateTransformer
+			.of(utm, wgs84)
+			.orElseThrow()
+			.project(projected.x, projected.y)
+			.orElseThrow();
+
+		assertEquals(lon, origin.x, 1e-4);
+		assertEquals(lat, origin.y, 1e-4);
+	}
 }
