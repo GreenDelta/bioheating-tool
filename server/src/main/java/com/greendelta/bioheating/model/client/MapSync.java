@@ -83,16 +83,19 @@ public class MapSync {
 		syncString(props, "roofTypeLabel", b::roofTypeLabel);
 		syncString(props, "functionCode", b::functionCode);
 		syncString(props, "functionLabel", b::functionLabel);
+
 		syncBuildingType(props, b::type);
 		syncConstructionAge(props, b::constructionAge);
 		syncDouble(props, "height", b::height);
 		syncInt(props, "storeys", b::storeys);
 		syncDouble(props, "groundArea", b::groundArea);
+
 		syncString(props, "country", b::country);
 		syncString(props, "locality", b::locality);
 		syncString(props, "postalCode", b::postalCode);
 		syncString(props, "street", b::street);
 		syncString(props, "streetNumber", b::streetNumber);
+
 		syncDouble(props, "heatDemand", b::heatDemand);
 		syncDouble(props, "peakLoad", b::peakLoad);
 		syncBool(props, "isHeated", b::isHeated);

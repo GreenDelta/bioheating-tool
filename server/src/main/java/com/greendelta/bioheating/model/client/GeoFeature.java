@@ -3,8 +3,10 @@ package com.greendelta.bioheating.model.client;
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Street;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import org.openlca.commons.Res;
 
 public record GeoFeature(
@@ -64,4 +66,22 @@ public record GeoFeature(
 		props.put("isExcluded", s.isExcluded());
 		return Res.ok(new GeoFeature("Feature", line, props));
 	}
+
+	public boolean isBuilding() {
+		return properties != null
+			&& "building".equals(properties.get("@type"));
+	}
+
+	public boolean isStreet() {
+		return properties != null
+			&& "street".equals(properties.get("@type"));
+	}
+
+	public long id() {
+		if (properties == null) return 0;
+		return properties.get("id") instanceof Number num
+			? num.longValue()
+			: 0;
+	}
+
 }
