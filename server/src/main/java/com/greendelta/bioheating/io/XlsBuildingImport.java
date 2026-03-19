@@ -2,7 +2,6 @@ package com.greendelta.bioheating.io;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
-import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import java.io.File;
@@ -22,20 +21,17 @@ import org.openlca.commons.Strings;
 
 public class XlsBuildingImport implements Callable<Res<Project>> {
 
-	private final Database db;
 	private final Project project;
 	private final File file;
 	private final DataFormatter cells = new DataFormatter();
 	private final GeometryFactory geometries = new GeometryFactory();
 
-	public XlsBuildingImport(Database db, Project project, File file) {
-		this.db = db;
+	public XlsBuildingImport(Project project, File file) {
 		this.project = project;
 		this.file = file;
 	}
 
 	public Res<Project> call() {
-		if (db == null) return Res.error("database is null");
 		if (project == null) return Res.error("project is null");
 		if (file == null) return Res.error("Excel file is null");
 
@@ -92,8 +88,7 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 			return Res.error("No valid buildings could be imported");
 		}
 
-		var next = project.id() == 0 ? db.insert(project) : db.update(project);
-		return Res.ok(next);
+		return Res.ok(project);
 	}
 
 	private Res<List<RowData>> readRows() {

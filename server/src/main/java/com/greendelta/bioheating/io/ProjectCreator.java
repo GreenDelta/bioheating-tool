@@ -6,20 +6,20 @@ import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.Callable;
 import org.openlca.commons.Res;
+import org.openlca.commons.Strings;
 
 public class ProjectCreator {
 
 	private final Database db;
 	private final Project project;
-	private final List<File> cityGmlFiles;
+	private final List<File> files;
 	private boolean withOsmImport = true;
 
-	public ProjectCreator(Database db, Project project, List<File> cityGmlFiles) {
+	public ProjectCreator(Database db, Project project, List<File> files) {
 		this.db = db;
 		this.project = project;
-		this.cityGmlFiles = cityGmlFiles;
+		this.files = files;
 	}
 
 	public ProjectCreator withOsmImport(boolean withOsmImport) {
@@ -31,8 +31,8 @@ public class ProjectCreator {
 		var init = initProject();
 		if (init.isError()) return init.castError();
 
-		var cityGml = importCityGmlFiles();
-		if (cityGml.isError()) return cityGml.castError();
+		var imports = importFiles();
+		if (imports.isError()) return imports.castError();
 
 		if (withOsmImport) {
 			var osm = importOsm();
@@ -48,14 +48,44 @@ public class ProjectCreator {
 		return Res.ok(project);
 	}
 
-	public Res<Project> importCityGmlFiles() {
-		if (cityGmlFiles == null || cityGmlFiles.isEmpty()) {
-			return Res.error("No CityGML files provided");
+	public Res<Project> importFiles() {
+		if (files == null || files.isEmpty()) {
+			return Res.error("No import files provided");
+		}
+
+		int imported = 0;
+		for (var file : files) {
+			if (file == null) continue;
+			var res = isXlsx(file)
+				? importExcelFile(file)
+				: importCityGmlFile(file);
+			if (res.isError()) return res;
+			imported++;
+		}
+		return imported > 0
+			? Res.ok(project)
+			: Res.error("No import files provided");
+	}
+
+	public Res<Project> importCityGmlFile(File file) {
+		if (file == null) {
+			return Res.error("No CityGML file provided");
 		}
 		try {
-			return new CityGmlImport(project, cityGmlFiles).call();
+			return new CityGmlImport(project, List.of(file)).call();
 		} catch (Exception e) {
 			return Res.error("project creation failed during CityGML import", e);
+		}
+	}
+
+	public Res<Project> importExcelFile(File file) {
+		if (file == null) {
+			return Res.error("No Excel file provided");
+		}
+		try {
+			return new XlsBuildingImport(project, file).call();
+		} catch (Exception e) {
+			return Res.error("project creation failed during Excel import", e);
 		}
 	}
 
@@ -76,5 +106,11 @@ public class ProjectCreator {
 		} catch (Exception e) {
 			return Res.error("failed to save project", e);
 		}
+	}
+
+	private boolean isXlsx(File file) {
+		return file != null
+			&& file.getName() != null
+			&& file.getName().toLowerCase().endsWith(".xlsx");
 	}
 }

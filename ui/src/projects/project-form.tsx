@@ -145,11 +145,11 @@ export const ProjectForm = () => {
 					<RegionCombo ctx={ctx} />
 
 					<div className="mb-3">
-						<label className="form-label">CityGML or ZIP files</label>
+						<label className="form-label">CityGML, Excel, or ZIP files</label>
 						<input
 							type="file"
 							className="form-control"
-							accept=".gml,.xml,.zip"
+							accept=".gml,.xml,.xlsx,.zip"
 							multiple
 							onChange={e => {
 								const files = e.target.files ? Array.from(e.target.files) : [];
@@ -157,8 +157,8 @@ export const ProjectForm = () => {
 							}}
 						/>
 						<div className="form-text">
-							Upload one or more CityGML files directly, or ZIP archives that
-							contain CityGML files.
+							Upload one or more CityGML or Excel files directly, or ZIP archives that
+							contain any mix of those files.
 						</div>
 						{ctx.data.files && ctx.data.files.length > 0 && (
 							<div className="form-text">
