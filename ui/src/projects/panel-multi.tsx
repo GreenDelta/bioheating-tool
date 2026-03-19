@@ -1,33 +1,60 @@
 import React, { useState } from "react";
 import { GeoFeature, isBuilding } from "../model";
+import * as api from "../api";
+import { DownloadIcon } from "../components/icons";
 import { NumberField, CheckboxField } from "./fields";
 import { BuildingData } from "./panel-data";
 
 interface Props {
+	projectId: number;
 	features: GeoFeature[];
 	onChange: () => void;
 }
 
-export const MultiPanel: React.FC<Props> = ({ features, onChange }) => {
+export const MultiPanel: React.FC<Props> = ({ projectId, features, onChange }) => {
 	return (
 		<div className="card">
 			<div className="card-body">
-				<BuildingSection features={features} onChange={onChange} />
+				<BuildingSection
+					projectId={projectId}
+					features={features}
+					onChange={onChange}
+				/>
 			</div>
 		</div>
 	);
 };
 
-const BuildingSection = ({ features, onChange }: Props) => {
+const BuildingSection = ({ projectId, features, onChange }: Props) => {
 	const buildings = features.filter(isBuilding);
 	if (!buildings || buildings.length === 0) return <></>;
 
 	const [isIncluded, setIsIncluded] = useState(commonIsIncluded(buildings));
+	const [isExporting, setIsExporting] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 	const stats = buildingStatsOf(buildings);
 	const onUpdate = (checked: boolean) => {
 		putIsIncluded(buildings, checked);
 		setIsIncluded(checked);
 		onChange();
+	};
+	const onExport = async () => {
+		if (isExporting) {
+			return;
+		}
+		const ids = buildingIdsOf(buildings);
+		if (ids.length === 0) {
+			setError("No selected buildings can be exported.");
+			return;
+		}
+
+		setIsExporting(true);
+		setError(null);
+		const res = await api.exportProjectBuildingsXls(projectId, ids);
+		if (!res.isOk) {
+			setError(res.error);
+		}
+		setIsExporting(false);
 	};
 
 	return (
@@ -35,6 +62,11 @@ const BuildingSection = ({ features, onChange }: Props) => {
 			<h6 className="text-muted">
 				{buildings.length} Buildings, {stats.heatedCount} heated
 			</h6>
+			{error && (
+				<div className="alert alert-danger py-2" role="alert">
+					{error}
+				</div>
+			)}
 			<NumberField
 				label="Total heat demand [kWh/a]"
 				readOnly
@@ -45,9 +77,30 @@ const BuildingSection = ({ features, onChange }: Props) => {
 				checked={isIncluded}
 				onChange={onUpdate}
 			/>
+			<div className="d-grid mt-3">
+				<button
+					type="button"
+					className="btn btn-outline-secondary"
+					onClick={onExport}
+					disabled={isExporting}>
+					<DownloadIcon />
+					{isExporting ? " Exporting..." : " Export Excel"}
+				</button>
+			</div>
 		</div>
 	);
 };
+
+function buildingIdsOf(features: GeoFeature[]): number[] {
+	const ids: number[] = [];
+	for (const feature of features) {
+		const id = feature.properties?.id;
+		if (typeof id === "number") {
+			ids.push(id);
+		}
+	}
+	return ids;
+}
 
 function putIsIncluded(features: GeoFeature[], value: boolean) {
 	for (const f of features) {

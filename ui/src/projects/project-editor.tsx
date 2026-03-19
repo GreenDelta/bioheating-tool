@@ -109,7 +109,13 @@ const SelectionPanel = ({ ctx }: Props) => {
 		return <OverviewPanel project={ctx.project} />;
 	}
 	if (selection.length > 1) {
-		return <MultiPanel features={selection} onChange={onChange} />;
+		return (
+			<MultiPanel
+				projectId={ctx.project.id}
+				features={selection}
+				onChange={onChange}
+			/>
+		);
 	}
 	const f = selection[0];
 	return isBuilding(f) ? (

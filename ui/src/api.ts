@@ -366,6 +366,38 @@ export async function getSolutionXls(
 	}
 }
 
+export async function exportProjectBuildingsXls(
+	projectId: number,
+	buildingIds: number[],
+): Promise<Res<boolean>> {
+	try {
+		const r = await fetch(`/api/export/buildings-xls/${projectId}`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(buildingIds),
+		});
+		if (r.status !== 200) {
+			const msg = await r.text();
+			return Res.err(
+				`failed to export buildings: ${r.status} | ${msg}`,
+			);
+		}
+
+		const blob = await r.blob();
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = fileNameOf(r, `project-${projectId}-buildings.xlsx`);
+		a.click();
+		window.URL.revokeObjectURL(url);
+		return Res.ok(true);
+	} catch (error) {
+		return Res.err(`failed to export buildings: ${error}`);
+	}
+}
+
 function fileNameOf(resp: Response, defaultName?: string): string {
 	const header = resp.headers.get("content-disposition");
 	if (header) {

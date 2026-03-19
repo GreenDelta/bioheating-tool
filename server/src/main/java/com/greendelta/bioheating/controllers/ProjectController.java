@@ -1,9 +1,14 @@
 package com.greendelta.bioheating.controllers;
 
-import java.util.Arrays;
-import java.util.function.Function;
-
-import org.openlca.commons.Strings;
+import com.greendelta.bioheating.model.ClimateRegion;
+import com.greendelta.bioheating.model.Database;
+import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.client.ClientProject;
+import com.greendelta.bioheating.services.FileService;
+import com.greendelta.bioheating.services.ProjectService;
+import com.greendelta.bioheating.services.TaskService;
+import com.greendelta.bioheating.services.TaskService.Task.NewTask;
+import com.greendelta.bioheating.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,15 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.greendelta.bioheating.model.ClimateRegion;
-import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.model.client.ClientProject;
-import com.greendelta.bioheating.services.FileService;
-import com.greendelta.bioheating.services.ProjectService;
-import com.greendelta.bioheating.services.TaskService;
-import com.greendelta.bioheating.services.TaskService.Task.NewTask;
-import com.greendelta.bioheating.services.UserService;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api/projects")
