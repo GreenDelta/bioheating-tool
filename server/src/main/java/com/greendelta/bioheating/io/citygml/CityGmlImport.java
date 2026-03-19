@@ -10,27 +10,18 @@ import org.openlca.commons.Strings;
 
 import com.greendelta.bioheating.citygml.GmlModel;
 import com.greendelta.bioheating.io.CrsId;
-import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
 
 public class CityGmlImport implements Callable<Res<Project>> {
 
-	private final Database db;
 	private final Project project;
 	private final List<File> files;
-	private boolean withOsmImport = false;
 
-	public CityGmlImport(Database db, Project project, List<File> files) {
-		this.db = db;
+	public CityGmlImport(Project project, List<File> files) {
 		this.project = project;
 		this.files = files;
-	}
-
-	public CityGmlImport withOsmImport(boolean b) {
-		this.withOsmImport = b;
-		return this;
 	}
 
 	@Override
@@ -105,13 +96,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			building.peakLoad(0.0004963 * heatDemand + 21.84);
 		}
 
-		if (withOsmImport) {
-			var err = OsmStreetFetch.into(map);
-			if (err.isError()) return err.wrapError("OSM import failed");
-		}
-
-		var next = project.id() == 0 ? db.insert(project) : db.update(project);
-		return Res.ok(next);
+		return Res.ok(project);
 	}
 
 	private Res<GeoMap> initMap(GmlModel model) {

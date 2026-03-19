@@ -275,7 +275,20 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 		String streetNumber
 	) {
 		static RowData empty() {
-			return new RowData(null, null, null, null, null, null, null, null, null, null, null, null);
+			return new RowData(
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null
+			);
 		}
 
 		boolean isValid() {

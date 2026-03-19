@@ -9,7 +9,7 @@ import org.openlca.commons.Res;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class OsmStreetFetch {
+public class OsmStreetFetch {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final GeoMap map;

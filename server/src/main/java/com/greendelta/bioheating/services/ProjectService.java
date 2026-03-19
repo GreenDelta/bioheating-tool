@@ -1,10 +1,8 @@
 package com.greendelta.bioheating.services;
 
-import com.greendelta.bioheating.io.citygml.CityGmlImport;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
-import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,18 +33,6 @@ public class ProjectService {
 		return p != null && Objects.equals(user, p.user())
 			? Optional.of(p)
 			: Optional.empty();
-	}
-
-	public Res<Project> addMap(Project project, List<File> gmlFiles) {
-		if (project == null || gmlFiles == null || gmlFiles.isEmpty())
-			return Res.error("no project or gml files provided");
-		try {
-			return new CityGmlImport(db, project, gmlFiles)
-				.withOsmImport(true)
-				.call();
-		} catch (Exception e) {
-			return Res.error("project creation failed", e);
-		}
 	}
 
 	public Res<Void> delete(Project project) {

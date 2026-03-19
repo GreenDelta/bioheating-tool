@@ -1,5 +1,6 @@
 package com.greendelta.bioheating.controllers;
 
+import com.greendelta.bioheating.io.ProjectCreator;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
@@ -109,7 +110,7 @@ public class ProjectController {
 			.user(user);
 		var task = NewTask.of(user, () ->
 			files.useFiles(geoFiles.value(),
-				gmlFiles -> projects.addMap(project, gmlFiles))
+				gmlFiles -> new ProjectCreator(db, project, gmlFiles).call())
 		);
 		tasks.schedule(task);
 		return Http.ok(task.toState());
