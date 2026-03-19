@@ -77,15 +77,18 @@ const BuildingSection = ({ projectId, features, onChange }: Props) => {
 				checked={isIncluded}
 				onChange={onUpdate}
 			/>
-			<div className="d-grid mt-3">
-				<button
-					type="button"
-					className="btn btn-outline-secondary"
-					onClick={onExport}
-					disabled={isExporting}>
-					<DownloadIcon />
-					{isExporting ? " Exporting..." : " Export Excel"}
-				</button>
+			<div className="row mt-3">
+				<div className="col-sm-5"></div>
+				<div className="col-sm-7 d-grid">
+					<button
+						type="button"
+						className="btn btn-outline-primary"
+						onClick={onExport}
+						disabled={isExporting}>
+						<DownloadIcon />
+						{isExporting ? " Exporting..." : " Export Excel"}
+					</button>
+				</div>
 			</div>
 		</div>
 	);

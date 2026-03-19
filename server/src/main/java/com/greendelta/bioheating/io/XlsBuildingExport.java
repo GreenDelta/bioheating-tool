@@ -48,6 +48,7 @@ public class XlsBuildingExport {
 		try (Workbook workbook = new XSSFWorkbook()) {
 			Sheet sheet = workbook.createSheet("Buildings");
 			int rowIndex = 0;
+			writeHeader(sheet.createRow(rowIndex++));
 			for (var b : project.map().buildings()) {
 				if (shouldSkip(b)) continue;
 				var row = sheet.createRow(rowIndex++);
@@ -61,6 +62,21 @@ public class XlsBuildingExport {
 		} catch (Exception e) {
 			return Res.error("Failed to export building data", e);
 		}
+	}
+
+	private void writeHeader(Row row) {
+		putString(row, 0, "id");
+		putString(row, 1, "name");
+		putString(row, 2, "longitude");
+		putString(row, 3, "latitude");
+		putString(row, 4, "heat demand");
+		putString(row, 5, "peak load");
+		putString(row, 6, "is included");
+		putString(row, 7, "building type");
+		putString(row, 8, "city");
+		putString(row, 9, "postal code");
+		putString(row, 10, "street");
+		putString(row, 11, "number");
 	}
 
 	private void append(Row row, Building building, CoordinateTransformer wgs84) {
