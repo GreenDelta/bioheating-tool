@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 class NeighborAnalysis {
 
 	private final double treshold = 0.15;
-	private Logger log = LoggerFactory.getLogger(getClass());
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final List<BuildingShape> shapes;
 
 	private NeighborAnalysis(List<BuildingShape> shapes) {

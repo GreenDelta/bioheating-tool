@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
+		"clean": "rimraf --glob \"../server/static/*\"",
 		"dev": "npx webpack watch",
 		"build": "npx webpack",
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -26,9 +27,10 @@
 		"@types/react-dom": "^19.1.5",
 		"@typescript-eslint/eslint-plugin": "^8.33.0",
 		"@typescript-eslint/parser": "^8.33.0",
-		"copy-webpack-plugin": "^13.0.0",
+		"copy-webpack-plugin": "^14.0.0",
 		"eslint": "^9.27.0",
 		"prettier": "^3.6.2",
+		"rimraf": "^6.1.3",
 		"ts-loader": "^9.5.2",
 		"typescript": "^5.8.3",
 		"webpack": "^5.99.9",
