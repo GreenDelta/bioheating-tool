@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 
 public class CityGmlImportTest {
 
-	private static final boolean WITH_OSM = false;
 	private final Database db = Tests.db();
 	private File file;
 
@@ -42,8 +41,7 @@ public class CityGmlImportTest {
 	public void testImport() {
 		var region = db.insert(new ClimateRegion().number(13));
 		var project = new Project().name("test project").climateRegion(region);
-		project = new CityGmlImport(db, project, List.of(file))
-			.withOsmImport(WITH_OSM)
+		project = new CityGmlImport(project, List.of(file))
 			.call()
 			.orElseThrow();
 
@@ -73,11 +71,6 @@ public class CityGmlImportTest {
 
 		// check heat demand prediction is calculated
 		assertTrue(building.heatDemand() > 0);
-
-		if (WITH_OSM) {
-			assertFalse(map.streets().isEmpty());
-		}
-
 		db.delete(project);
 		db.delete(region);
 	}
