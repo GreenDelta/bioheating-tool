@@ -14,6 +14,8 @@ interface MapProps {
 export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 	const divRef = useRef<HTMLDivElement>(null);
 	const isDrawingRef = useRef(false);
+	const isLassoingRef = useRef(false);
+	const suppressNextMapClickRef = useRef(false);
 	const { selection, handleSelect } = useFeatureSelection(onSelect);
 	const { mapRef, layerRef } = useLeafletMap(divRef, data, selection);
 	const deleteSelection = useDeleteSelection(
@@ -26,7 +28,14 @@ export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 	const selectedBuildingCount = data.features.filter(feature =>
 		isBuilding(feature) && selection.has(feature.properties?.id)
 	).length;
-	useMapInteractions(mapRef, layerRef, handleSelect, isDrawingRef);
+	useMapInteractions(
+		mapRef,
+		layerRef,
+		handleSelect,
+		isDrawingRef,
+		isLassoingRef,
+		suppressNextMapClickRef,
+	);
 	useFeatureStyling(layerRef, selection);
 	usePolygonDrawing(mapRef, layerRef, data, handleSelect, isDrawingRef, onChange);
 	return (
@@ -162,17 +171,33 @@ function useMapInteractions(
 	layerRef: React.RefObject<L.GeoJSON | null>,
 	handleSelect: (features: GeoFeature[]) => void,
 	isDrawingRef: React.RefObject<boolean>,
+	isLassoingRef: React.RefObject<boolean>,
+	suppressNextMapClickRef: React.RefObject<boolean>,
 ) {
 	useEffect(() => {
 		if (layerRef.current && mapRef.current) {
 			// Remove existing event handlers
 			layerRef.current.off("click");
+			mapRef.current.off("lasso.enabled");
+			mapRef.current.off("lasso.disabled");
 			mapRef.current.off("lasso.finished");
 			mapRef.current.off("click");
 
+			mapRef.current.on("lasso.enabled", () => {
+				isLassoingRef.current = true;
+			});
+
+			mapRef.current.on("lasso.disabled", () => {
+				isLassoingRef.current = false;
+			});
+
 			// Add click handler on map to clear selection when clicking empty space
 			mapRef.current.on("click", () => {
-				if (isDrawingRef.current) {
+				if (isDrawingRef.current || isLassoingRef.current) {
+					return;
+				}
+				if (suppressNextMapClickRef.current) {
+					suppressNextMapClickRef.current = false;
 					return;
 				}
 				handleSelect([]);
@@ -188,7 +213,11 @@ function useMapInteractions(
 			});
 
 			mapRef.current.on("lasso.finished", (evt: any) => {
+				suppressNextMapClickRef.current = true;
 				if (!evt.layers) {
+					window.setTimeout(() => {
+						suppressNextMapClickRef.current = false;
+					}, 0);
 					return;
 				}
 				const features: GeoFeature[] = [];
@@ -199,9 +228,12 @@ function useMapInteractions(
 					}
 				});
 				handleSelect(features);
+				window.setTimeout(() => {
+					suppressNextMapClickRef.current = false;
+				}, 0);
 			});
 		}
-	}, [handleSelect, isDrawingRef]);
+	}, [handleSelect, isDrawingRef, isLassoingRef, suppressNextMapClickRef]);
 }
 
 
