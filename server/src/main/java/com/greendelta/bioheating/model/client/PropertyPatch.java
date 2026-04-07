@@ -44,6 +44,11 @@ record PropertyPatch(Map<String, Object> properties) {
 		setBool("isHeated", b::isHeated);
 		setBool("isSupplyCenter", b::isSupplyCenter);
 		setBool("isIncluded", b::isIncluded);
+
+		if (b.isSupplyCenter()) {
+			b.isHeated(false);
+			b.isIncluded(false);
+		}
 	}
 
 	void applyOn(Street s) {
@@ -71,7 +76,7 @@ record PropertyPatch(Map<String, Object> properties) {
 		}
 	}
 
-	private void setBool(String key, Function<Boolean, ?> setter) {
+	private void setBool(String key, Function<Boolean, ?>setter) {
 		if (properties.get(key) instanceof Boolean b) {
 			setter.apply(b);
 		}

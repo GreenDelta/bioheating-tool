@@ -106,7 +106,8 @@ public class SophenaExport {
 			.put("name", b.name())
 			.put("waterFraction", 12.0)
 			.put("loadHours", loadHours)
-			.put("heatingLimit", 14.0);
+			.put("heatingLimit", 14.0)
+			.put("heatingLoad", b.peakLoad());
 		obj.set("location", locationOf(b));
 
 		// building state
