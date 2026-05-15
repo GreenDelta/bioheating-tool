@@ -28,7 +28,7 @@ public class TaskController {
 		@PathVariable String id
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
+		if (user == null) return Http.unauthorized();
 
 		var state = tasks.getState(user, id);
 		return state.isPresent()
@@ -42,7 +42,7 @@ public class TaskController {
 		@PathVariable String id
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
+		if (user == null) return Http.unauthorized();
 
 		boolean deleted = tasks.remove(user, id);
 		return deleted

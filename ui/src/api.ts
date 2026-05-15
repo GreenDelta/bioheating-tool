@@ -10,6 +10,23 @@ import {
 	Solution
 } from "./model";
 
+interface ApiFetchOptions extends RequestInit {
+	redirectOnUnauthorized?: boolean;
+}
+
+async function apiFetch(
+	input: RequestInfo | URL,
+	init?: ApiFetchOptions,
+): Promise<Response> {
+	const { redirectOnUnauthorized = true, ...requestInit } = init || {};
+	const response = await fetch(input, requestInit);
+	if (response.status === 401 && redirectOnUnauthorized) {
+		window.location.assign("/ui/login");
+		throw new Error("session expired");
+	}
+	return response;
+}
+
 export class Res<T> {
 	private constructor(
 		private readonly _val?: T,
@@ -32,7 +49,7 @@ export class Res<T> {
 	}
 
 	get isOk(): boolean {
-		return typeof this.value !== "undefined";
+		return !this.isErr;
 	}
 
 	get isErr(): boolean {
@@ -51,7 +68,7 @@ export async function postLogin(
 	credentials: Credentials,
 ): Promise<Res<boolean>> {
 	try {
-		const r = await fetch("/api/users/login", {
+		const r = await apiFetch("/api/users/login", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -70,7 +87,9 @@ export async function postLogin(
 
 export async function getCurrentUser(): Promise<Res<User>> {
 	try {
-		const r = await fetch("/api/users/current");
+		const r = await apiFetch("/api/users/current", {
+			redirectOnUnauthorized: false,
+		});
 		if (r.status === 200) {
 			const user = await r.json();
 			return Res.ok(user);
@@ -84,7 +103,7 @@ export async function getCurrentUser(): Promise<Res<User>> {
 
 export async function postLogout(): Promise<Res<boolean>> {
 	try {
-		const r = await fetch("/api/users/logout", {
+		const r = await apiFetch("/api/users/logout", {
 			method: "POST",
 		});
 		if (r.status === 200) {
@@ -99,7 +118,7 @@ export async function postLogout(): Promise<Res<boolean>> {
 
 export async function getUser(id: number): Promise<Res<User>> {
 	try {
-		const r = await fetch(`/api/users/${id}`);
+		const r = await apiFetch(`/api/users/${id}`);
 		if (r.status === 200) {
 			const user = await r.json();
 			return Res.ok(user);
@@ -113,7 +132,7 @@ export async function getUser(id: number): Promise<Res<User>> {
 
 export async function createUser(userData: UserData): Promise<Res<User>> {
 	try {
-		const r = await fetch("/api/users", {
+		const r = await apiFetch("/api/users", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -136,7 +155,7 @@ export async function updateUser(
 	userData: UserData,
 ): Promise<Res<User>> {
 	try {
-		const r = await fetch(`/api/users/${id}`, {
+		const r = await apiFetch(`/api/users/${id}`, {
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",
@@ -156,7 +175,7 @@ export async function updateUser(
 
 export async function getUsers(): Promise<Res<User[]>> {
 	try {
-		const r = await fetch("/api/users");
+		const r = await apiFetch("/api/users");
 		if (r.status === 200) {
 			const users = await r.json();
 			return Res.ok(users);
@@ -170,7 +189,7 @@ export async function getUsers(): Promise<Res<User[]>> {
 
 export async function deleteUser(id: number): Promise<Res<boolean>> {
 	try {
-		const r = await fetch(`/api/users/${id}`, {
+		const r = await apiFetch(`/api/users/${id}`, {
 			method: "DELETE",
 		});
 		if (r.status === 200) {
@@ -185,7 +204,7 @@ export async function deleteUser(id: number): Promise<Res<boolean>> {
 
 export async function getProjects(): Promise<Res<ProjectInfo[]>> {
 	try {
-		const r = await fetch("/api/projects");
+		const r = await apiFetch("/api/projects");
 		if (r.status === 200) {
 			const projects = await r.json();
 			return Res.ok(projects);
@@ -218,7 +237,7 @@ export async function createProject(
 			data.append("description", d.description);
 		}
 
-		const r = await fetch("/api/projects", {
+		const r = await apiFetch("/api/projects", {
 			method: "POST",
 			body: data,
 		});
@@ -236,7 +255,7 @@ export async function createProject(
 
 export async function getProject(id: number): Promise<Res<Project>> {
 	try {
-		const r = await fetch(`/api/projects/${id}`);
+		const r = await apiFetch(`/api/projects/${id}`);
 		if (r.status === 200) {
 			const project = await r.json();
 			return Res.ok(project);
@@ -253,7 +272,7 @@ export async function getProject(id: number): Promise<Res<Project>> {
 
 export async function deleteProject(id: number): Promise<Res<boolean>> {
 	try {
-		const r = await fetch(`/api/projects/${id}`, {
+		const r = await apiFetch(`/api/projects/${id}`, {
 			method: "DELETE",
 		});
 		if (r.status === 200) {
@@ -270,7 +289,7 @@ export async function updateProject(
 	project: Project,
 ): Promise<Res<ProjectInfo>> {
 	try {
-		const r = await fetch(`/api/projects/${project.id}`, {
+		const r = await apiFetch(`/api/projects/${project.id}`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -290,7 +309,7 @@ export async function updateProject(
 
 export async function getClimateRegions(): Promise<Res<ClimateRegion[]>> {
 	try {
-		const r = await fetch("/api/climate-regions");
+		const r = await apiFetch("/api/climate-regions");
 		if (r.status === 200) {
 			const regions = await r.json();
 			return Res.ok(regions);
@@ -304,7 +323,7 @@ export async function getClimateRegions(): Promise<Res<ClimateRegion[]>> {
 
 export async function getFuels(): Promise<Res<Fuel[]>> {
 	try {
-		const r = await fetch("/api/fuels");
+		const r = await apiFetch("/api/fuels");
 		if (r.status === 200) {
 			const fuels = await r.json();
 			return Res.ok(fuels);
@@ -320,7 +339,7 @@ export async function getSophenaPackage(
 	solutionId: number,
 ): Promise<Res<boolean>> {
 	try {
-		const r = await fetch(`/api/solutions/${solutionId}/sophena-package`);
+		const r = await apiFetch(`/api/solutions/${solutionId}/sophena-package`);
 		if (r.status !== 200) {
 			const msg = await r.text();
 			return Res.err(
@@ -345,7 +364,7 @@ export async function getSolutionXls(
 	solutionId: number,
 ): Promise<Res<boolean>> {
 	try {
-		const r = await fetch(`/api/solutions/${solutionId}/xls`);
+		const r = await apiFetch(`/api/solutions/${solutionId}/xls`);
 		if (r.status !== 200) {
 			const msg = await r.text();
 			return Res.err(
@@ -371,7 +390,7 @@ export async function exportProjectBuildingsXls(
 	buildingIds: number[],
 ): Promise<Res<boolean>> {
 	try {
-		const r = await fetch(`/api/export/buildings-xls/${projectId}`, {
+		const r = await apiFetch(`/api/export/buildings-xls/${projectId}`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -411,7 +430,7 @@ function fileNameOf(resp: Response, defaultName?: string): string {
 
 export async function getTaskState(id: string): Promise<Res<TaskState>> {
 	try {
-		const r = await fetch(`/api/tasks/${id}`);
+		const r = await apiFetch(`/api/tasks/${id}`);
 		if (r.status === 200) {
 			const state = await r.json();
 			return Res.ok(state);
@@ -428,7 +447,7 @@ export async function getTaskState(id: string): Promise<Res<TaskState>> {
 
 export async function dropTaskResult(id: string): Promise<Res<boolean>> {
 	try {
-		const r = await fetch(`/api/tasks/${id}`, {
+		const r = await apiFetch(`/api/tasks/${id}`, {
 			method: "DELETE",
 		});
 		if (r.status === 200) {
@@ -446,7 +465,7 @@ export async function dropTaskResult(id: string): Promise<Res<boolean>> {
 
 export async function getSolution(id: number): Promise<Res<Solution>> {
 	try {
-		const r = await fetch(`/api/solutions/${id}`);
+		const r = await apiFetch(`/api/solutions/${id}`);
 		if (r.status === 200) {
 			const solution: Solution = await r.json();
 			return Res.ok(solution);
@@ -463,7 +482,7 @@ export async function getSolution(id: number): Promise<Res<Solution>> {
 
 export async function calculateSolution(projectId: number): Promise<Res<TaskState>> {
 	try {
-		const r = await fetch(`/api/solutions/project/${projectId}`, {
+		const r = await apiFetch(`/api/solutions/project/${projectId}`, {
 			method: "POST",
 		});
 		if (r.status === 200) {

@@ -30,7 +30,7 @@ public class UserController {
 		var user = users.getCurrentUser(auth).orElse(null);
 		return user != null
 			? Http.ok(UserInfo.of(user))
-			: Http.badRequest("not authenticated");
+			: Http.unauthorized();
 	}
 
 	@GetMapping("/{id}")
@@ -104,7 +104,7 @@ public class UserController {
 
 		static UserRequest of(UserController self, Authentication auth, long id) {
 			var caller = self.users.getCurrentUser(auth).orElse(null);
-			if (caller == null) return error(Http.forbidden("Not authenticated"));
+			if (caller == null) return error(Http.unauthorized());
 
 			// fine for every user to get its own data;
 			// otherwise only allowed for admins

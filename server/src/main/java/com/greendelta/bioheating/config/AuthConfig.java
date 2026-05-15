@@ -1,6 +1,7 @@
 package com.greendelta.bioheating.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -41,6 +42,14 @@ public class AuthConfig {
 		http
 			.cors(conf -> conf.configurationSource(cors()))
 			.csrf(AbstractHttpConfigurer::disable)
+			.exceptionHandling(ex -> ex
+				.authenticationEntryPoint((req, resp, err) ->
+					resp.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+				)
+				.accessDeniedHandler((req, resp, err) ->
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN)
+				)
+			)
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
 			)

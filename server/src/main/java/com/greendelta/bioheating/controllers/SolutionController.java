@@ -151,7 +151,7 @@ public class SolutionController {
 	) {
 		return withProject(auth, id, project -> {
 			var user = users.getCurrentUser(auth).orElse(null);
-			if (user == null) return Http.badRequest("not authenticated");
+			if (user == null) return Http.unauthorized();
 
 			var task = NewTask.of(user, () -> {
 				var graph = Graph.buildFrom(project);
@@ -177,7 +177,7 @@ public class SolutionController {
 		Function<Project, ResponseEntity<?>> fn
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
+		if (user == null) return Http.unauthorized();
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
 			? Http.notFound("project not found: " + id)
@@ -190,7 +190,7 @@ public class SolutionController {
 		Function<Solution, ResponseEntity<?>> fn
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
+		if (user == null) return Http.unauthorized();
 		var solution = db.getForId(Solution.class, id);
 		if (solution == null) return Http.notFound("solution not found: " + id);
 		var project = solution.project();

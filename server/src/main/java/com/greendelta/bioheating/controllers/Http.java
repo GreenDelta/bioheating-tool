@@ -13,6 +13,12 @@ final class Http {
 		return ResponseEntity.badRequest().body(message);
 	}
 
+	static ResponseEntity<?> unauthorized() {
+		return ResponseEntity
+			.status(HttpStatus.UNAUTHORIZED)
+			.body("Not authenticated");
+	}
+
 	static ResponseEntity<?> serverError(String message) {
 		return ResponseEntity.internalServerError().body(message);
 	}

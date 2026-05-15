@@ -51,7 +51,7 @@ public class ProjectController {
 	@GetMapping
 	public ResponseEntity<?> getProjects(Authentication auth) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
+		if (user == null) return Http.unauthorized();
 		var data = projects
 			.getProjects(user)
 			.stream()
@@ -84,7 +84,7 @@ public class ProjectController {
 
 		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null) {
-			return Http.badRequest("Not authenticated");
+			return Http.unauthorized();
 		}
 		var region = db.getForId(ClimateRegion.class, climateRegionId);
 		if (region == null) {
@@ -150,7 +150,7 @@ public class ProjectController {
 		Function<Project, ResponseEntity<?>> fn
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
+		if (user == null) return Http.unauthorized();
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
 			? Http.notFound("project not found: " + id)

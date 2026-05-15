@@ -77,7 +77,7 @@ public class ExportController {
 		Function<Project, ResponseEntity<?>> fn
 	) {
 		var user = users.getCurrentUser(auth).orElse(null);
-		if (user == null) return Http.badRequest("not authenticated");
+		if (user == null) return Http.unauthorized();
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
 			? Http.notFound("project not found: " + id)
