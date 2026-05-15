@@ -14,6 +14,8 @@ interface ApiFetchOptions extends RequestInit {
 	redirectOnUnauthorized?: boolean;
 }
 
+/// We wrap the `fetch` calls here because we want to catch 401 errors and
+/// redirect to the login page in this case.
 async function apiFetch(
 	input: RequestInfo | URL,
 	init?: ApiFetchOptions,
