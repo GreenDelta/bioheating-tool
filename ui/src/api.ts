@@ -101,7 +101,20 @@ export class Res<T> {
 export async function postLogin(
 	credentials: Credentials,
 ): Promise<Res<boolean>> {
-	return sendRequest("/api/users/login", jsonRequest("POST", credentials));
+	try {
+		const response = await fetch(
+			"/api/users/login",
+			jsonRequest("POST", credentials),
+		);
+		if (response.status === 200) {
+			return Res.ok(true);
+		}
+		const err = await response.text();
+		return Res.err(err || `HTTP ${response.status}`);
+	} catch (error) {
+		const err = error instanceof Error ? error.message : String(error);
+		return Res.err(err);
+	}
 }
 
 export async function getCurrentUser(): Promise<Res<User>> {
