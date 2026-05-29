@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import * as api from "../api";
 import {
 	GeoFeature,
 	GeoMap,
@@ -11,6 +12,7 @@ import { BuildingData, BuildingProps } from "./panel-data";
 import { StringField, NumberField, CheckboxField, SelectField } from "./fields";
 
 interface Props {
+	projectId: number;
 	feature: GeoFeature;
 	map: GeoMap;
 	onChange: () => void;
@@ -56,21 +58,46 @@ function unsetSupplyCenter(next: GeoFeature, map: GeoMap) {
 	}
 }
 
-export const BuildingPanel = ({ feature, map, onChange }: Props) => {
+export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
+	const [isEstimating, setEstimating] = useState(false);
+	const [estimateError, setEstimateError] = useState<string | null>(null);
 	useEffect(() => {
 		setData(BuildingData.of(feature));
 	}, [feature]);
 
-	const put = (change: BuildingProps) => {
+	const applyChange = (base: BuildingData, change: BuildingProps) => {
 		if (change.isSupplyCenter === true) {
 			unsetSupplyCenter(feature, map);
 		}
 
-		const next = data.copyWith(change);
+		const next = base.copyWith(change);
 		next.applyOn(feature);
 		setData(next);
 		onChange();
+		setEstimateError(null);
+	};
+
+	const put = (change: BuildingProps) => {
+		applyChange(data, change);
+	};
+
+	const onEstimate = async () => {
+		if (!data.isHeated || isEstimating) {
+			return;
+		}
+		setEstimating(true);
+		setEstimateError(null);
+		const res = await api.estimateBuilding(projectId, feature);
+		if (res.isOk) {
+			applyChange(BuildingData.of(feature), {
+				heatDemand: res.value.heatDemand,
+				peakLoad: res.value.peakLoad,
+			});
+		} else {
+			setEstimateError(`Failed to estimate heat demand: ${res.error}`);
+		}
+		setEstimating(false);
 	};
 
 	return (
@@ -98,24 +125,6 @@ export const BuildingPanel = ({ feature, map, onChange }: Props) => {
 					checked={data.isHeated}
 					onChange={checked => put({ isHeated: checked })}
 				/>
-
-				{data.isHeated && (
-					<>
-						<NumberField
-							label="Heat demand (kWh)"
-							value={round2(data.heatDemand)}
-							step="0.1"
-							onChange={value => put({ heatDemand: value })}
-						/>
-
-						<NumberField
-							label="Peak load (kW)"
-							value={round2(data.peakLoad)}
-							step="0.1"
-							onChange={value => put({ peakLoad: value })}
-						/>
-					</>
-				)}
 
 				<NumberField
 					label="Height (m)"
@@ -212,6 +221,46 @@ export const BuildingPanel = ({ feature, map, onChange }: Props) => {
 					]}
 					onChange={value => put({ constructionAge: value })}
 				/>
+
+				{data.isHeated && (
+					<>
+						<NumberField
+							label="Heat demand (kWh)"
+							value={round2(data.heatDemand)}
+							step="0.1"
+							onChange={value => put({ heatDemand: value })}
+						/>
+
+						<NumberField
+							label="Peak load (kW)"
+							value={round2(data.peakLoad)}
+							step="0.1"
+							onChange={value => put({ peakLoad: value })}
+						/>
+					</>
+				)}
+
+				{estimateError && (
+					<div className="alert alert-danger py-2 mb-2" role="alert">
+						<small>{estimateError}</small>
+					</div>
+				)}
+
+				{data.isHeated && (
+					<div className="row mb-1">
+						<div className="col-sm-5" />
+						<div className="col-sm-7">
+							<button
+								className="btn btn-outline-primary"
+								onClick={onEstimate}
+								disabled={!data.isHeated || isEstimating}
+								title="Estimate heat demand and peak load"
+								style={{ width: "100%" }}>
+								{isEstimating ? " Estimating..." : " Estimate heat demand"}
+							</button>
+						</div>
+					</div>
+				)}
 
 				<hr />
 				<h6>Address Information</h6>

@@ -84,4 +84,8 @@ public record GeoFeature(
 			: 0;
 	}
 
+	public void applyOn(Building building) {
+		PropertyPatch.of(this).applyOn(building);
+	}
+
 }

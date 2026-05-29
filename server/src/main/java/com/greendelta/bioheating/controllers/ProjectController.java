@@ -1,9 +1,12 @@
 package com.greendelta.bioheating.controllers;
 
 import com.greendelta.bioheating.io.ProjectCreator;
+import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
+import com.greendelta.bioheating.model.client.GeoFeature;
+import com.greendelta.bioheating.predict.BuildingEstimator;
 import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
@@ -133,6 +136,40 @@ public class ProjectController {
 			return res.isError()
 				? Http.serverError("failed to save project: " + res.error())
 				: Http.ok(ProjectInfo.of(project));
+		});
+	}
+
+	@PostMapping("/{id}/estimate-building")
+	public ResponseEntity<?> estimateBuilding(
+		Authentication auth,
+		@PathVariable long id,
+		@RequestBody GeoFeature data
+	) {
+		return withProject(auth, id, project -> {
+			if (data == null || !data.isBuilding()) {
+				return Http.badRequest("building data missing or invalid");
+			}
+			if (project.climateRegion() == null) {
+				return Http.badRequest("project does not have a climate region");
+			}
+
+			var building = new Building();
+			data.applyOn(building);
+			if (!building.isHeated()) {
+				return Http.badRequest("building is not heated");
+			}
+
+			var estimator = BuildingEstimator.getDefault();
+			if (estimator.isError()) {
+				return Http.serverError(
+					"failed to load heat demand estimator: " + estimator.error()
+				);
+			}
+
+			var result = estimator.value().estimate(project.climateRegion(), building);
+			return result.isError()
+				? Http.serverError("failed to estimate building: " + result.error())
+				: Http.ok(result.value());
 		});
 	}
 

@@ -4,10 +4,16 @@ import {
 	UserData,
 	ProjectInfo,
 	Project,
+	GeoFeature,
 	Fuel,
 	TaskState,
 	Solution,
 } from "./model";
+
+export interface BuildingEstimate {
+	heatDemand: number;
+	peakLoad: number;
+}
 
 function jsonRequest(method: string, body: unknown): RequestInit {
 	const headers = new Headers();
@@ -187,6 +193,16 @@ export async function updateProject(
 	return getJson<ProjectInfo>(
 		`/api/projects/${project.id}`,
 		jsonRequest("POST", project),
+	);
+}
+
+export async function estimateBuilding(
+	projectId: number,
+	feature: GeoFeature,
+): Promise<Res<BuildingEstimate>> {
+	return getJson<BuildingEstimate>(
+		`/api/projects/${projectId}/estimate-building`,
+		jsonRequest("POST", feature),
 	);
 }
 
