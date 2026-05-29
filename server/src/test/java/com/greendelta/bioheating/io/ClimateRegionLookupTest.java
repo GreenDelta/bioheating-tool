@@ -11,7 +11,7 @@ public class ClimateRegionLookupTest {
 	public void testLookupContainsCoordinate() {
 		// Inside region 14 bounds (Freiburg / Feldberg area in south Germany)
 		Coordinate insideRegion14 = new Coordinate(8.30, 47.85);
-		int region = new ClimateRegionLookup().lookup(insideRegion14);
+		int region = ClimateRegionLookup.lookup(insideRegion14);
 		assertEquals(14, region);
 	}
 
@@ -19,7 +19,7 @@ public class ClimateRegionLookupTest {
 	public void testLookupNearestFallback() {
 		// A coordinate outside the data boundaries, but closest to region 12
 		Coordinate nearRegion12 = new Coordinate(8.25, 47.50);
-		int region = new ClimateRegionLookup().lookup(nearRegion12);
+		int region = ClimateRegionLookup.lookup(nearRegion12);
 		assertEquals(12, region);
 	}
 }
