@@ -8,6 +8,23 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.locationtech.jts.geom.Coordinate;
 
+/// A building in the project map.
+///
+/// The network model distinguishes between three related states:
+///
+/// - `isSupplyCenter` marks the building as the root of the heating network.
+/// - `isIncluded` marks the building as part of the selected network scope.
+/// - `isHeated` marks the building as a heat consumer with demand and peak load.
+///
+/// A building can be included without being heated, for example when it is part
+/// of the mapped context but should not contribute demand. Only buildings that
+/// are both included and heated are treated as demand buildings in the network
+/// design and related aggregations.
+///
+/// Supply centers are a special case: when `isSupplyCenter` is `true`, the
+/// building acts as the network root and is persisted with `isHeated = false`
+/// and `isIncluded = false`. It does not contribute heat demand or peak load,
+/// but it is still part of the network layout as the tree root.
 @Entity
 @Table(name = "tbl_buildings")
 public class Building extends BaseEntity {

@@ -31,7 +31,7 @@ function networkStatusOf(data: BuildingData): NetworkStatus {
 function networkStatusToProps(status: NetworkStatus): BuildingProps {
 	switch (status) {
 		case "supply":
-			return { isIncluded: true, isSupplyCenter: true };
+			return { isHeated: false, isIncluded: false, isSupplyCenter: true };
 		case "connected":
 			return { isIncluded: true, isSupplyCenter: false };
 		case "excluded":
