@@ -41,7 +41,7 @@ public class CityGmlImportTest {
 	public void testImport() {
 		var region = db.insert(new ClimateRegion().number(13));
 		var project = new Project().name("test project").climateRegion(region);
-		project = new CityGmlImport(project, List.of(file))
+		project = new CityGmlImport(db, project, List.of(file))
 			.call()
 			.orElseThrow();
 

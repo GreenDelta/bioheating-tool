@@ -74,19 +74,19 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		var buildings = buildingRes.value();
 		map.buildings().addAll(buildings);
 
+		// important to try to determine the climate region before the demand
+		// prediction
 		if (project.climateRegion() == null) {
-			var region = ClimateRegionLookup.lookup(db, project);
-			if (region.isError()) return region.wrapError(
-				"Failed to determine climate region"
-			);
+			var region = ClimateRegionLookup.lookup(db, map);
+			if (region.isError())
+				return region.wrapError("Failed to determine climate region");
 			project.climateRegion(region.value());
 		}
 
 		// predict the heat demands
 		var predictor = BoostPredictor.getDefault();
-		if (predictor.isError()) return predictor.wrapError(
-			"Failed to load the heat demand predictor"
-		);
+		if (predictor.isError())
+			return predictor.wrapError("Failed to load the heat demand predictor");
 		var predictions = predictor
 			.value()
 			.predictAll(project.climateRegion(), buildings);

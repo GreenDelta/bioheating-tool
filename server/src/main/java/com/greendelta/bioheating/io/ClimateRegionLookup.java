@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
-import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.GeoMap;
 
 public class ClimateRegionLookup {
 
@@ -23,30 +23,19 @@ public class ClimateRegionLookup {
 	private ClimateRegionLookup() {
 	}
 
-	public static Res<ClimateRegion> lookup(Database db, Project project) {
+	public static Res<ClimateRegion> lookup(Database db, GeoMap map) {
 		if (db == null)
 			return Res.error("No database provided");
-		if (project == null
-			|| project.map() == null
-			|| project.map().crs() == null
-			|| project.map().buildings().isEmpty()) {
-			return Res.error("Project has no valid building data");
+		if (map == null || map.crs() == null || map.buildings().isEmpty()) {
+			return Res.error("Map has no valid building data");
 		}
 
-		// find the first best coordinate
-		Coordinate cx = null;
-		for (var b : project.map().buildings()) {
-			var cs = b.coordinates();
-			if (cs != null && cs.length > 0) {
-				cx = cs[0];
-				break;
-			}
-		}
+		var cx = firstCoordinateOf(map);
 		if (cx == null)
-			return Res.error("No building with coordinates found in project");
+			return Res.error("No building with coordinates found in map");
 
 		// project the coordinate to WGS 84
-		var crs = project.map().crs();
+		var crs = map.crs();
 		var trans = CoordinateTransformer.toWgs84From(crs);
 		if (trans.isError()) {
 			return trans.wrapError("Failed to get WGS 84 transformer for CRS: " + crs);
@@ -69,6 +58,16 @@ public class ClimateRegionLookup {
 				return Res.ok(region);
 		}
 		return Res.error("No region found with region code: " + number);
+	}
+
+	private static Coordinate firstCoordinateOf(GeoMap map) {
+		for (var b : map.buildings()) {
+			var cs = b.coordinates();
+			if (cs != null && cs.length > 0) {
+				return cs[0];
+			}
+		}
+		return null;
 	}
 
 	public static int lookup(Coordinate cx) {

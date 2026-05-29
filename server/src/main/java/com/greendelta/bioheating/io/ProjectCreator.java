@@ -7,7 +7,6 @@ import com.greendelta.bioheating.model.Project;
 import java.io.File;
 import java.util.List;
 import org.openlca.commons.Res;
-import org.openlca.commons.Strings;
 
 public class ProjectCreator {
 
@@ -29,32 +28,37 @@ public class ProjectCreator {
 
 	public Res<Project> call() {
 		var init = initProject();
-		if (init.isError()) return init.castError();
+		if (init.isError())
+			return init;
 
 		var imports = importFiles();
-		if (imports.isError()) return imports.castError();
+		if (imports.isError())
+			return imports;
 
 		var region = determineClimateRegion();
-		if (region.isError()) return region.castError();
+		if (region.isError())
+			return region;
 
 		if (withOsmImport) {
 			var osm = importOsm();
-			if (osm.isError()) return osm.castError();
+			if (osm.isError())
+				return osm;
 		}
 
 		return saveProject();
 	}
 
-	public Res<Project> initProject() {
-		if (db == null) return Res.error("database is null");
-		if (project == null) return Res.error("project is null");
+	private Res<Project> initProject() {
+		if (db == null)
+			return Res.error("database is null");
+		if (project == null)
+			return Res.error("project is null");
 		return Res.ok(project);
 	}
 
-	public Res<Project> importFiles() {
-		if (files == null || files.isEmpty()) {
+	private Res<Project> importFiles() {
+		if (files == null || files.isEmpty())
 			return Res.error("No import files provided");
-		}
 
 		int imported = 0;
 		for (var file : files) {
@@ -70,7 +74,7 @@ public class ProjectCreator {
 			: Res.error("No import files provided");
 	}
 
-	public Res<Project> importCityGmlFile(File file) {
+	private Res<Project> importCityGmlFile(File file) {
 		if (file == null) {
 			return Res.error("No CityGML file provided");
 		}
@@ -81,7 +85,7 @@ public class ProjectCreator {
 		}
 	}
 
-	public Res<Project> importExcelFile(File file) {
+	private Res<Project> importExcelFile(File file) {
 		if (file == null) {
 			return Res.error("No Excel file provided");
 		}
@@ -92,7 +96,7 @@ public class ProjectCreator {
 		}
 	}
 
-	public Res<Project> importOsm() {
+	private Res<Project> importOsm() {
 		if (project == null || project.map() == null) {
 			return Res.error("project map is not initialized");
 		}
@@ -100,20 +104,24 @@ public class ProjectCreator {
 		return osm.isError() ? osm.castError() : Res.ok(project);
 	}
 
-	public Res<Project> determineClimateRegion() {
-		if (project == null) return Res.error("project is null");
-		if (project.climateRegion() != null) return Res.ok(project);
+	/// When CityGML data were provided, the climate region was already determined
+	/// in the CityGML import (before the heat demand prediction). Otherwise, we
+	/// determine the climate region here.
+	private Res<Project> determineClimateRegion() {
+		if (project == null)
+			return Res.error("project is null");
+		if (project.climateRegion() != null)
+			return Res.ok(project);
 
-		var lookup = ClimateRegionLookup.lookup(db, project);
+		var lookup = ClimateRegionLookup.lookup(db, project.map());
 		if (lookup.isError()) {
-			return lookup.wrapError("failed to determine climate region").castError();
+			return lookup.wrapError("failed to determine climate region");
 		}
-
 		project.climateRegion(lookup.value());
 		return Res.ok(project);
 	}
 
-	public Res<Project> saveProject() {
+	private Res<Project> saveProject() {
 		if (db == null) return Res.error("database is null");
 		if (project == null) return Res.error("project is null");
 		try {
@@ -125,8 +133,6 @@ public class ProjectCreator {
 	}
 
 	private boolean isXlsx(File file) {
-		return file != null
-			&& file.getName() != null
-			&& file.getName().toLowerCase().endsWith(".xlsx");
+		return file != null && file.getName().toLowerCase().endsWith(".xlsx");
 	}
 }
