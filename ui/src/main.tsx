@@ -106,6 +106,16 @@ function main() {
 							loader: loadSolution,
 						},
 						{
+							path: "account",
+							element: <UserForm />,
+							loader: async () => {
+								const res = await api.getCurrentUser();
+								return res.isErr
+									? errors.redirect("Failed to load user", res)
+									: res.value;
+							},
+						},
+						{
 							path: "users",
 							Component: UserList,
 							loader: async () => {

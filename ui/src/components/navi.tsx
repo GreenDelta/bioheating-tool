@@ -42,6 +42,9 @@ const MainLinks = ({ user, onLogout }: MenuProps) => {
 						Users
 					</Link>
 				) : null}
+				<Link className="nav-link" to="/ui/account">
+					Account
+				</Link>
 			</div>
 			<div className="navbar-nav">
 				<a

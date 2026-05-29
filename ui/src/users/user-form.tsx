@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useOutletContext, useLoaderData, useParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useLoaderData } from "react-router-dom";
 import * as api from "../api";
 import { User, UserData } from "../model";
 import { FluidBreadcrumbRow } from "../components/navi";
@@ -71,11 +71,12 @@ export const UserForm = () => {
 	const [currentUser] = useOutletContext<[User]>();
 	const existingUser = useLoaderData() as User | undefined;
 	const isEdit = !!existingUser;
+	const isSelfEdit = !!existingUser && existingUser.id === currentUser.id;
+	const isRestrictedSelfEdit = isSelfEdit && !currentUser.isAdmin;
 	const { data, update } = useFormData(existingUser);
 	const [loading, setLoading] = useState(false);
 
-	// only admins can currently create/edit users
-	if (!currentUser.isAdmin) {
+	if (!currentUser.isAdmin && !isRestrictedSelfEdit) {
 		return (
 			<div className="alert alert-danger">
 				<h4>Access Denied</h4>
@@ -95,8 +96,12 @@ export const UserForm = () => {
 		const userData: UserData = {
 			name: data.name!.trim(),
 			password: data.password!.trim(),
-			fullName: data.fullName!.trim(),
-			isAdmin: data.isAdmin,
+			fullName: isRestrictedSelfEdit
+				? existingUser.fullName
+				: data.fullName!.trim(),
+			isAdmin: isRestrictedSelfEdit
+				? existingUser.isAdmin
+				: data.isAdmin,
 		};
 
 		const res = isEdit
@@ -107,18 +112,23 @@ export const UserForm = () => {
 		if (res.isErr) {
 			update({ error: res.error });
 		} else {
-			navigate("/ui/users");
+			navigate(isRestrictedSelfEdit ? "/ui/account" : "/ui/users");
 		}
 	};
 
 	return (
 		<div className="container-fluid">
 			<FluidBreadcrumbRow
-				active={isEdit ? "Edit" : "New"}
-				path={[
-					["/", "Home"],
-					["/ui/users", "Users"],
-				]}
+				active={isRestrictedSelfEdit ? "Account" : isEdit ? "Edit" : "New"}
+				path={isRestrictedSelfEdit
+					? [
+						["/", "Home"],
+						["/ui/account", "Account"],
+					]
+					: [
+						["/", "Home"],
+						["/ui/users", "Users"],
+					]}
 			/>
 			<div className="row justify-content-center">
 				<div className="col-12 col-md-8 col-lg-6">
@@ -136,15 +146,17 @@ export const UserForm = () => {
 						<div className="form-text">This will be used for the login</div>
 					</div>
 
-					<div className="mb-3">
-						<label className="form-label">Full name</label>
-						<input
-							type="text"
-							className="form-control"
-							value={data.fullName || ""}
-							onChange={e => update({ fullName: e.target.value })}
-						/>
-					</div>
+					{!isRestrictedSelfEdit && (
+						<div className="mb-3">
+							<label className="form-label">Full name</label>
+							<input
+								type="text"
+								className="form-control"
+								value={data.fullName || ""}
+								onChange={e => update({ fullName: e.target.value })}
+							/>
+						</div>
+					)}
 
 					<div className="mb-3">
 						<label className="form-label">Password</label>
@@ -166,30 +178,32 @@ export const UserForm = () => {
 						/>
 					</div>
 
-					<div className="mb-3">
-						<div className="form-check">
-							<input
-								className="form-check-input"
-								type="checkbox"
-								checked={data.isAdmin}
-								onChange={e => update({ isAdmin: e.target.checked })}
-								id="adminCheck"
-							/>
-							<label className="form-check-label" htmlFor="adminCheck">
-								Administrator
-							</label>
+					{!isRestrictedSelfEdit && (
+						<div className="mb-3">
+							<div className="form-check">
+								<input
+									className="form-check-input"
+									type="checkbox"
+									checked={data.isAdmin}
+									onChange={e => update({ isAdmin: e.target.checked })}
+									id="adminCheck"
+								/>
+								<label className="form-check-label" htmlFor="adminCheck">
+									Administrator
+								</label>
+							</div>
+							<div className="form-text">
+								Administrators can manage users and have full access to the
+								system.
+							</div>
 						</div>
-						<div className="form-text">
-							Administrators can manage users and have full access to the
-							system.
-						</div>
-					</div>
+					)}
 
 					<div className="d-flex gap-2 justify-content-end">
 						<button
 							className="btn btn-outline-secondary"
 							disabled={loading}
-							onClick={() => navigate("/ui/users")}
+							onClick={() => navigate(isRestrictedSelfEdit ? "/ui/projects" : "/ui/users")}
 							style={{ width: 120 }}>
 							Cancel
 						</button>
