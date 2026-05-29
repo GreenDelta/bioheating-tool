@@ -96,9 +96,7 @@ export const UserForm = () => {
 		const userData: UserData = {
 			name: data.name!.trim(),
 			password: data.password!.trim(),
-			fullName: isRestrictedSelfEdit
-				? existingUser.fullName
-				: data.fullName!.trim(),
+			fullName: data.fullName!.trim(),
 			isAdmin: isRestrictedSelfEdit
 				? existingUser.isAdmin
 				: data.isAdmin,
@@ -112,7 +110,7 @@ export const UserForm = () => {
 		if (res.isErr) {
 			update({ error: res.error });
 		} else {
-			navigate(isRestrictedSelfEdit ? "/ui/account" : "/ui/users");
+			navigate(isRestrictedSelfEdit ? "/" : "/ui/users");
 		}
 	};
 
@@ -146,17 +144,15 @@ export const UserForm = () => {
 						<div className="form-text">This will be used for the login</div>
 					</div>
 
-					{!isRestrictedSelfEdit && (
-						<div className="mb-3">
-							<label className="form-label">Full name</label>
-							<input
-								type="text"
-								className="form-control"
-								value={data.fullName || ""}
-								onChange={e => update({ fullName: e.target.value })}
-							/>
-						</div>
-					)}
+					<div className="mb-3">
+						<label className="form-label">Full name</label>
+						<input
+							type="text"
+							className="form-control"
+							value={data.fullName || ""}
+							onChange={e => update({ fullName: e.target.value })}
+						/>
+					</div>
 
 					<div className="mb-3">
 						<label className="form-label">Password</label>
