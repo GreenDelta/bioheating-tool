@@ -99,13 +99,12 @@ public class CityGmlImport implements Callable<Res<Project>> {
 			var heatDemand = demands[i];
 			building.heatDemand(heatDemand);
 
-			/// Estimates the peak heating load of the building based on its annual
-			/// heat demand using a linear regression model (as in Thermos).
-			/// The formula is: `peakLoad = 0.0004963 * heatDemand + 21.84`
-			/// where `heatDemand` is in kWh/year and peakLoad is in kW.
+			// Estimates the peak heating load of the building based on its annual
+			// heat demand using a linear regression model. The `heatDemand` is
+			// given in kWh/year and peakLoad is then in kW.
 			/// Note: In a future version of the model, this field will also be
 			/// predicted by the machine learning model.
-			building.peakLoad(0.0004963 * heatDemand + 21.84);
+			building.peakLoad(0.000451213244244867 * heatDemand + 3.66786593448211);
 		}
 
 		return Res.ok(project);

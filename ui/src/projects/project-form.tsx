@@ -99,8 +99,8 @@ export const ProjectForm = () => {
 
 	return (
 		<div className="container-fluid">
-			<div className="row">
-				<div className="col-md-8">
+			<div className="row justify-content-center">
+				<div className="col-12 col-md-10 col-lg-8">
 					<BreadcrumbRow
 						active="New"
 						path={[
@@ -129,10 +129,6 @@ export const ProjectForm = () => {
 							onChange={e => ctx.update({ description: e.target.value })}
 							rows={2}
 						/>
-					</div>
-
-					<div className="alert alert-secondary" role="status">
-						The climate region is determined automatically from the uploaded data.
 					</div>
 
 					<div className="mb-3">
@@ -204,8 +200,8 @@ const ErrorRow = ({ ctx }: Props) => {
 const CreationTaskPanel = ({ ctx }: Props) => {
 	return (
 		<div className="container-fluid">
-			<div className="row">
-				<div className="col-md-8 offset-md-2">
+			<div className="row justify-content-center">
+				<div className="col-12 col-md-10 col-lg-8">
 					<BreadcrumbRow
 						active="Creating..."
 						path={[
