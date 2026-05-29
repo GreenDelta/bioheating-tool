@@ -14,11 +14,6 @@ interface ApiFetchOptions extends RequestInit {
 	redirectOnUnauthorized?: boolean;
 }
 
-interface RequestOptions {
-	expectedStatus?: number;
-	statusErrors?: Record<number, string>;
-}
-
 /// We wrap the `fetch` calls here because we want to catch 401 errors and
 /// redirect to the login page in this case.
 async function apiFetch(
@@ -49,16 +44,13 @@ async function request<T>(
 	input: RequestInfo | URL,
 	decode: (response: Response) => Promise<T>,
 	init?: ApiFetchOptions,
-	options?: RequestOptions,
 ): Promise<Res<T>> {
 	try {
 		const response = await apiFetch(input, init);
-		if (response.status === (options?.expectedStatus || 200)) {
+		if (response.status === 200) {
 			return Res.ok(await decode(response));
 		}
-
-		const knownError = options?.statusErrors?.[response.status];
-		return Res.err(knownError || (await errorFromResponse(action, response)));
+		return Res.err(await errorFromResponse(action, response));
 	} catch (error) {
 		const err = error instanceof Error ? error.message : String(error);
 		return Res.err(`${action}: ${err}`);
@@ -76,24 +68,16 @@ function getJson<T>(
 	action: string,
 	input: RequestInfo | URL,
 	init?: ApiFetchOptions,
-	options?: RequestOptions,
 ): Promise<Res<T>> {
-	return request(
-		action,
-		input,
-		response => response.json() as Promise<T>,
-		init,
-		options,
-	);
+	return request(action, input, response => response.json() as Promise<T>, init);
 }
 
 function sendRequest(
 	action: string,
 	input: RequestInfo | URL,
 	init?: ApiFetchOptions,
-	options?: RequestOptions,
 ): Promise<Res<boolean>> {
-	return request(action, input, async () => true, init, options);
+	return request(action, input, async () => true, init);
 }
 
 export class Res<T> {
@@ -219,16 +203,7 @@ export async function createProject(
 }
 
 export async function getProject(id: number): Promise<Res<Project>> {
-	return getJson<Project>(
-		"failed to get project",
-		`/api/projects/${id}`,
-		undefined,
-		{
-			statusErrors: {
-				404: "project not found",
-			},
-		},
-	);
+	return getJson<Project>("failed to get project", `/api/projects/${id}`);
 }
 
 export async function deleteProject(id: number): Promise<Res<boolean>> {
@@ -325,44 +300,17 @@ function fileNameOf(resp: Response, defaultName?: string): string {
 }
 
 export async function getTaskState(id: string): Promise<Res<TaskState>> {
-	return getJson<TaskState>(
-		`failed to get task state`,
-		`/api/tasks/${id}`,
-		undefined,
-		{
-			statusErrors: {
-				404: "task not found",
-			},
-		},
-	);
+	return getJson<TaskState>(`failed to get task state`, `/api/tasks/${id}`);
 }
 
 export async function dropTaskResult(id: string): Promise<Res<boolean>> {
-	return sendRequest(
-		`failed to delete task`,
-		`/api/tasks/${id}`,
-		{
-			method: "DELETE",
-		},
-		{
-			statusErrors: {
-				404: "task not found",
-			},
-		},
-	);
+	return sendRequest(`failed to delete task`, `/api/tasks/${id}`, {
+		method: "DELETE",
+	});
 }
 
 export async function getSolution(id: number): Promise<Res<Solution>> {
-	return getJson<Solution>(
-		`failed to get solution`,
-		`/api/solutions/${id}`,
-		undefined,
-		{
-			statusErrors: {
-				404: "solution not found",
-			},
-		},
-	);
+	return getJson<Solution>(`failed to get solution`, `/api/solutions/${id}`);
 }
 
 export async function calculateSolution(
