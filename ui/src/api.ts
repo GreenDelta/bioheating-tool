@@ -7,11 +7,16 @@ import {
 	ClimateRegion,
 	Fuel,
 	TaskState,
-	Solution
+	Solution,
 } from "./model";
 
 interface ApiFetchOptions extends RequestInit {
 	redirectOnUnauthorized?: boolean;
+}
+
+interface RequestOptions {
+	expectedStatus?: number;
+	statusErrors?: Record<number, string>;
 }
 
 /// We wrap the `fetch` calls here because we want to catch 401 errors and
@@ -29,11 +34,73 @@ async function apiFetch(
 	return response;
 }
 
+function jsonRequest(method: string, body: unknown): ApiFetchOptions {
+	const headers = new Headers();
+	headers.set("Content-Type", "application/json");
+	return {
+		method,
+		headers,
+		body: JSON.stringify(body),
+	};
+}
+
+async function request<T>(
+	action: string,
+	input: RequestInfo | URL,
+	decode: (response: Response) => Promise<T>,
+	init?: ApiFetchOptions,
+	options?: RequestOptions,
+): Promise<Res<T>> {
+	try {
+		const response = await apiFetch(input, init);
+		if (response.status === (options?.expectedStatus || 200)) {
+			return Res.ok(await decode(response));
+		}
+
+		const knownError = options?.statusErrors?.[response.status];
+		return Res.err(knownError || (await errorFromResponse(action, response)));
+	} catch (error) {
+		const err = error instanceof Error ? error.message : String(error);
+		return Res.err(`${action}: ${err}`);
+	}
+}
+
+async function errorFromResponse(
+	action: string,
+	response: Response,
+): Promise<string> {
+	return `${action}: ${response.status} | ${await response.text()}`;
+}
+
+function getJson<T>(
+	action: string,
+	input: RequestInfo | URL,
+	init?: ApiFetchOptions,
+	options?: RequestOptions,
+): Promise<Res<T>> {
+	return request(
+		action,
+		input,
+		response => response.json() as Promise<T>,
+		init,
+		options,
+	);
+}
+
+function sendRequest(
+	action: string,
+	input: RequestInfo | URL,
+	init?: ApiFetchOptions,
+	options?: RequestOptions,
+): Promise<Res<boolean>> {
+	return request(action, input, async () => true, init, options);
+}
+
 export class Res<T> {
 	private constructor(
 		private readonly _val?: T,
 		private readonly _err?: string,
-	) { }
+	) {}
 
 	static ok<T>(val: T): Res<T> {
 		return new Res(val, undefined);
@@ -69,153 +136,60 @@ export class Res<T> {
 export async function postLogin(
 	credentials: Credentials,
 ): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch("/api/users/login", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(credentials),
-		});
-		if (r.status === 200) {
-			return Res.ok(true);
-		}
-		const msg = await r.text();
-		return Res.err(`login failed: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`login failed: ${error}`);
-	}
+	return sendRequest(
+		"login failed",
+		"/api/users/login",
+		jsonRequest("POST", credentials),
+	);
 }
 
 export async function getCurrentUser(): Promise<Res<User>> {
-	try {
-		const r = await apiFetch("/api/users/current", {
-			redirectOnUnauthorized: false,
-		});
-		if (r.status === 200) {
-			const user = await r.json();
-			return Res.ok(user);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get current user: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get current user: ${error}`);
-	}
+	return getJson<User>("failed to get current user", "/api/users/current", {
+		redirectOnUnauthorized: false,
+	});
 }
 
 export async function postLogout(): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch("/api/users/logout", {
-			method: "POST",
-		});
-		if (r.status === 200) {
-			return Res.ok(true);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to logout: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to logout: ${error}`);
-	}
+	return sendRequest("failed to logout", "/api/users/logout", {
+		method: "POST",
+	});
 }
 
 export async function getUser(id: number): Promise<Res<User>> {
-	try {
-		const r = await apiFetch(`/api/users/${id}`);
-		if (r.status === 200) {
-			const user = await r.json();
-			return Res.ok(user);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get user: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get user: ${error}`);
-	}
+	return getJson<User>("failed to get user", `/api/users/${id}`);
 }
 
 export async function createUser(userData: UserData): Promise<Res<User>> {
-	try {
-		const r = await apiFetch("/api/users", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(userData),
-		});
-		if (r.status === 200) {
-			const user = await r.json();
-			return Res.ok(user);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to create user: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to create user: ${error}`);
-	}
+	return getJson<User>(
+		"failed to create user",
+		"/api/users",
+		jsonRequest("POST", userData),
+	);
 }
 
 export async function updateUser(
 	id: number,
 	userData: UserData,
 ): Promise<Res<User>> {
-	try {
-		const r = await apiFetch(`/api/users/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(userData),
-		});
-		if (r.status === 200) {
-			const user = await r.json();
-			return Res.ok(user);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to update user: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to update user: ${error}`);
-	}
+	return getJson<User>(
+		"failed to update user",
+		`/api/users/${id}`,
+		jsonRequest("PUT", userData),
+	);
 }
 
 export async function getUsers(): Promise<Res<User[]>> {
-	try {
-		const r = await apiFetch("/api/users");
-		if (r.status === 200) {
-			const users = await r.json();
-			return Res.ok(users);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get users: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get users: ${error}`);
-	}
+	return getJson<User[]>("failed to get users", "/api/users");
 }
 
 export async function deleteUser(id: number): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch(`/api/users/${id}`, {
-			method: "DELETE",
-		});
-		if (r.status === 200) {
-			return Res.ok(true);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to delete user: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to delete user: ${error}`);
-	}
+	return sendRequest("failed to delete user", `/api/users/${id}`, {
+		method: "DELETE",
+	});
 }
 
 export async function getProjects(): Promise<Res<ProjectInfo[]>> {
-	try {
-		const r = await apiFetch("/api/projects");
-		if (r.status === 200) {
-			const projects = await r.json();
-			return Res.ok(projects);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get projects: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get projects: ${error}`);
-	}
+	return getJson<ProjectInfo[]>("failed to get projects", "/api/projects");
 }
 
 interface NewProjectData {
@@ -228,195 +202,115 @@ interface NewProjectData {
 export async function createProject(
 	d: NewProjectData,
 ): Promise<Res<TaskState>> {
-	try {
-		const data = new FormData();
-		data.append("climateRegionId", d.climateRegionId.toString());
-		data.append("name", d.name);
-		for (const file of d.files) {
-			data.append("file", file);
-		}
-		if (d.description) {
-			data.append("description", d.description);
-		}
-
-		const r = await apiFetch("/api/projects", {
-			method: "POST",
-			body: data,
-		});
-
-		if (r.status === 200) {
-			const state = await r.json();
-			return Res.ok(state);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to create project: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to create project: ${error}`);
+	const data = new FormData();
+	data.append("climateRegionId", d.climateRegionId.toString());
+	data.append("name", d.name);
+	for (const file of d.files) {
+		data.append("file", file);
 	}
+	if (d.description) {
+		data.append("description", d.description);
+	}
+
+	return getJson<TaskState>("failed to create project", "/api/projects", {
+		method: "POST",
+		body: data,
+	});
 }
 
 export async function getProject(id: number): Promise<Res<Project>> {
-	try {
-		const r = await apiFetch(`/api/projects/${id}`);
-		if (r.status === 200) {
-			const project = await r.json();
-			return Res.ok(project);
-		}
-		if (r.status === 404) {
-			return Res.err("project not found");
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get project: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get project: ${error}`);
-	}
+	return getJson<Project>(
+		"failed to get project",
+		`/api/projects/${id}`,
+		undefined,
+		{
+			statusErrors: {
+				404: "project not found",
+			},
+		},
+	);
 }
 
 export async function deleteProject(id: number): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch(`/api/projects/${id}`, {
-			method: "DELETE",
-		});
-		if (r.status === 200) {
-			return Res.ok(true);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to delete project: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to delete project: ${error}`);
-	}
+	return sendRequest("failed to delete project", `/api/projects/${id}`, {
+		method: "DELETE",
+	});
 }
 
 export async function updateProject(
 	project: Project,
 ): Promise<Res<ProjectInfo>> {
-	try {
-		const r = await apiFetch(`/api/projects/${project.id}`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(project),
-		});
-		if (r.status === 200) {
-			const info = await r.json();
-			return Res.ok(info);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to update project: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to update project: ${error}`);
-	}
+	return getJson<ProjectInfo>(
+		"failed to update project",
+		`/api/projects/${project.id}`,
+		jsonRequest("POST", project),
+	);
 }
 
 export async function getClimateRegions(): Promise<Res<ClimateRegion[]>> {
-	try {
-		const r = await apiFetch("/api/climate-regions");
-		if (r.status === 200) {
-			const regions = await r.json();
-			return Res.ok(regions);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get climate regions: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get climate regions: ${error}`);
-	}
+	return getJson<ClimateRegion[]>(
+		"failed to get climate regions",
+		"/api/climate-regions",
+	);
 }
 
 export async function getFuels(): Promise<Res<Fuel[]>> {
-	try {
-		const r = await apiFetch("/api/fuels");
-		if (r.status === 200) {
-			const fuels = await r.json();
-			return Res.ok(fuels);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get fuels: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get fuels: ${error}`);
-	}
+	return getJson<Fuel[]>("failed to get fuels", "/api/fuels");
+}
+
+async function download(
+	action: string,
+	input: RequestInfo | URL,
+	defaultName: string,
+	init?: ApiFetchOptions,
+): Promise<Res<boolean>> {
+	return request(
+		action,
+		input,
+		async response => {
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = fileNameOf(response, defaultName);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			return true;
+		},
+		init,
+	);
 }
 
 export async function getSophenaPackage(
 	solutionId: number,
 ): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch(`/api/solutions/${solutionId}/sophena-package`);
-		if (r.status !== 200) {
-			const msg = await r.text();
-			return Res.err(
-				`failed to download Sophena package: ${r.status} | ${msg}`,
-			);
-		}
-
-		const blob = await r.blob();
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = fileNameOf(r);
-		a.click();
-		window.URL.revokeObjectURL(url);
-		return Res.ok(true);
-	} catch (error) {
-		return Res.err(`failed to download Sophena package: ${error}`);
-	}
+	return download(
+		"failed to download Sophena package",
+		`/api/solutions/${solutionId}/sophena-package`,
+		"project.sophena",
+	);
 }
 
 export async function getSolutionXls(
 	solutionId: number,
 ): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch(`/api/solutions/${solutionId}/xls`);
-		if (r.status !== 200) {
-			const msg = await r.text();
-			return Res.err(
-				`failed to download Excel file: ${r.status} | ${msg}`,
-			);
-		}
-
-		const blob = await r.blob();
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = fileNameOf(r, `pipe-plan-${solutionId}.xlsx`);
-		a.click();
-		window.URL.revokeObjectURL(url);
-		return Res.ok(true);
-	} catch (error) {
-		return Res.err(`failed to download Excel file: ${error}`);
-	}
+	return download(
+		"failed to download Excel file",
+		`/api/solutions/${solutionId}/xls`,
+		`pipe-plan-${solutionId}.xlsx`,
+	);
 }
 
 export async function exportProjectBuildingsXls(
 	projectId: number,
 	buildingIds: number[],
 ): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch(`/api/export/buildings-xls/${projectId}`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(buildingIds),
-		});
-		if (r.status !== 200) {
-			const msg = await r.text();
-			return Res.err(
-				`failed to export buildings: ${r.status} | ${msg}`,
-			);
-		}
-
-		const blob = await r.blob();
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = fileNameOf(r, `project-${projectId}-buildings.xlsx`);
-		a.click();
-		window.URL.revokeObjectURL(url);
-		return Res.ok(true);
-	} catch (error) {
-		return Res.err(`failed to export buildings: ${error}`);
-	}
+	return download(
+		"failed to export buildings",
+		`/api/export/buildings-xls/${projectId}`,
+		`project-${projectId}-buildings.xlsx`,
+		jsonRequest("POST", buildingIds),
+	);
 }
 
 function fileNameOf(resp: Response, defaultName?: string): string {
@@ -431,71 +325,54 @@ function fileNameOf(resp: Response, defaultName?: string): string {
 }
 
 export async function getTaskState(id: string): Promise<Res<TaskState>> {
-	try {
-		const r = await apiFetch(`/api/tasks/${id}`);
-		if (r.status === 200) {
-			const state = await r.json();
-			return Res.ok(state);
-		}
-		if (r.status === 404) {
-			return Res.err("task not found");
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get task state: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get task state: ${error}`);
-	}
+	return getJson<TaskState>(
+		`failed to get task state`,
+		`/api/tasks/${id}`,
+		undefined,
+		{
+			statusErrors: {
+				404: "task not found",
+			},
+		},
+	);
 }
 
 export async function dropTaskResult(id: string): Promise<Res<boolean>> {
-	try {
-		const r = await apiFetch(`/api/tasks/${id}`, {
+	return sendRequest(
+		`failed to delete task`,
+		`/api/tasks/${id}`,
+		{
 			method: "DELETE",
-		});
-		if (r.status === 200) {
-			return Res.ok(true);
-		}
-		if (r.status === 404) {
-			return Res.err("task not found");
-		}
-		const msg = await r.text();
-		return Res.err(`failed to delete task: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to delete task: ${error}`);
-	}
+		},
+		{
+			statusErrors: {
+				404: "task not found",
+			},
+		},
+	);
 }
 
 export async function getSolution(id: number): Promise<Res<Solution>> {
-	try {
-		const r = await apiFetch(`/api/solutions/${id}`);
-		if (r.status === 200) {
-			const solution: Solution = await r.json();
-			return Res.ok(solution);
-		}
-		if (r.status === 404) {
-			return Res.err("solution not found");
-		}
-		const msg = await r.text();
-		return Res.err(`failed to get solution: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to get solution: ${error}`);
-	}
+	return getJson<Solution>(
+		`failed to get solution`,
+		`/api/solutions/${id}`,
+		undefined,
+		{
+			statusErrors: {
+				404: "solution not found",
+			},
+		},
+	);
 }
 
-export async function calculateSolution(projectId: number): Promise<Res<TaskState>> {
-	try {
-		const r = await apiFetch(`/api/solutions/project/${projectId}`, {
-			method: "POST",
-		});
-		if (r.status === 200) {
-			const task: TaskState = await r.json();
-			return Res.ok(task);
-		}
-		const msg = await r.text();
-		return Res.err(`failed to start calculation: ${r.status} | ${msg}`);
-	} catch (error) {
-		return Res.err(`failed to start calculation: ${error}`);
-	}
+export async function calculateSolution(
+	projectId: number,
+): Promise<Res<TaskState>> {
+	return getJson<TaskState>(
+		"failed to start calculation",
+		`/api/solutions/project/${projectId}`,
+		{ method: "POST" },
+	);
 }
 
 export function getSolutionImageUrl(id: number): string {
