@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.controllers;
 
 import com.greendelta.bioheating.io.ProjectCreator;
-import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
@@ -77,7 +76,6 @@ public class ProjectController {
 	public ResponseEntity<?> createProject(
 		Authentication auth,
 		@RequestParam("name") String name,
-		@RequestParam("climateRegionId") int climateRegionId,
 		@RequestParam(value = "description", required = false) String description,
 		@RequestParam("file") MultipartFile[] uploads
 	) {
@@ -85,11 +83,6 @@ public class ProjectController {
 		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null) {
 			return Http.unauthorized();
-		}
-		var region = db.getForId(ClimateRegion.class, climateRegionId);
-		if (region == null) {
-			return Http.badRequest(
-				"No climate region found for ID=" + climateRegionId);
 		}
 
 		// upload geo-data
@@ -106,7 +99,6 @@ public class ProjectController {
 		var project = new Project()
 			.name(name)
 			.description(description)
-			.climateRegion(region)
 			.user(user);
 		var task = NewTask.of(user, () ->
 			files.useFiles(geoFiles.value(),

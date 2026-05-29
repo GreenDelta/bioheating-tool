@@ -9,17 +9,21 @@ import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 
 import com.greendelta.bioheating.citygml.GmlModel;
+import com.greendelta.bioheating.io.ClimateRegionLookup;
 import com.greendelta.bioheating.io.CrsId;
+import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
 
 public class CityGmlImport implements Callable<Res<Project>> {
 
+	private final Database db;
 	private final Project project;
 	private final List<File> files;
 
-	public CityGmlImport(Project project, List<File> files) {
+	public CityGmlImport(Database db, Project project, List<File> files) {
+		this.db = db;
 		this.project = project;
 		this.files = files;
 	}
@@ -69,6 +73,14 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		);
 		var buildings = buildingRes.value();
 		map.buildings().addAll(buildings);
+
+		if (project.climateRegion() == null) {
+			var region = ClimateRegionLookup.lookup(db, project);
+			if (region.isError()) return region.wrapError(
+				"Failed to determine climate region"
+			);
+			project.climateRegion(region.value());
+		}
 
 		// predict the heat demands
 		var predictor = BoostPredictor.getDefault();

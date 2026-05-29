@@ -94,7 +94,6 @@ function main() {
 						{
 							path: "projects/new",
 							element: <ProjectForm />,
-							loader: loadProjectFormData,
 						},
 						{
 							path: "projects/:id",
@@ -143,17 +142,6 @@ function main() {
 			<RouterProvider router={router} />
 		</React.StrictMode>,
 	);
-}
-
-async function loadProjectFormData() {
-	const regRes = await api.getClimateRegions();
-	if (regRes.isErr || regRes.value.length === 0) {
-		return errors.redirect(
-			"Climate regions unavailable",
-			regRes.isErr ? regRes : "No climate regions returned from the server.",
-		);
-	}
-	return { regions: regRes.value };
 }
 
 async function loadProjectData({ params }: LoaderFunctionArgs) {

@@ -4,7 +4,6 @@ import {
 	UserData,
 	ProjectInfo,
 	Project,
-	ClimateRegion,
 	Fuel,
 	TaskState,
 	Solution,
@@ -149,7 +148,6 @@ export async function getProjects(): Promise<Res<ProjectInfo[]>> {
 }
 
 interface NewProjectData {
-	climateRegionId: number;
 	name: string;
 	description?: string;
 	files: File[];
@@ -159,7 +157,6 @@ export async function createProject(
 	d: NewProjectData,
 ): Promise<Res<TaskState>> {
 	const data = new FormData();
-	data.append("climateRegionId", d.climateRegionId.toString());
 	data.append("name", d.name);
 	for (const file of d.files) {
 		data.append("file", file);
@@ -191,10 +188,6 @@ export async function updateProject(
 		`/api/projects/${project.id}`,
 		jsonRequest("POST", project),
 	);
-}
-
-export async function getClimateRegions(): Promise<Res<ClimateRegion[]>> {
-	return getJson<ClimateRegion[]>("/api/climate-regions");
 }
 
 export async function getFuels(): Promise<Res<Fuel[]>> {

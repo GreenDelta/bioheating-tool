@@ -34,6 +34,9 @@ public class ProjectCreator {
 		var imports = importFiles();
 		if (imports.isError()) return imports.castError();
 
+		var region = determineClimateRegion();
+		if (region.isError()) return region.castError();
+
 		if (withOsmImport) {
 			var osm = importOsm();
 			if (osm.isError()) return osm.castError();
@@ -72,7 +75,7 @@ public class ProjectCreator {
 			return Res.error("No CityGML file provided");
 		}
 		try {
-			return new CityGmlImport(project, List.of(file)).call();
+			return new CityGmlImport(db, project, List.of(file)).call();
 		} catch (Exception e) {
 			return Res.error("project creation failed during CityGML import", e);
 		}
@@ -95,6 +98,19 @@ public class ProjectCreator {
 		}
 		var osm = OsmStreetFetch.into(project.map());
 		return osm.isError() ? osm.castError() : Res.ok(project);
+	}
+
+	public Res<Project> determineClimateRegion() {
+		if (project == null) return Res.error("project is null");
+		if (project.climateRegion() != null) return Res.ok(project);
+
+		var lookup = ClimateRegionLookup.lookup(db, project);
+		if (lookup.isError()) {
+			return lookup.wrapError("failed to determine climate region").castError();
+		}
+
+		project.climateRegion(lookup.value());
+		return Res.ok(project);
 	}
 
 	public Res<Project> saveProject() {

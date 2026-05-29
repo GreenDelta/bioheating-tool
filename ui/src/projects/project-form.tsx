@@ -1,23 +1,16 @@
 import React, { useState } from "react";
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import * as api from "../api";
-import { ClimateRegion } from "../model";
 import { BreadcrumbRow } from "../components/navi";
 import { TaskPanel } from "../components/tasks";
-
-interface FormInput {
-	regions: ClimateRegion[];
-}
 
 interface FormData {
 	name: string;
 	description?: string;
-	region: ClimateRegion;
 	files: File[];
 }
 
 interface FormContext {
-	regions: ClimateRegion[];
 	data: FormData;
 	error: string | null;
 	taskId: string | null;
@@ -33,14 +26,12 @@ type Props = { ctx: FormContext };
 
 function useFormContext(): FormContext {
 	const navigate = useNavigate();
-	const { regions }: FormInput = useLoaderData();
 	const [isLoading, setLoading] = useState(false);
 	const [isComplete, setComplete] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [taskId, setTaskId] = useState<string | null>(null);
 	const [data, setData] = useState<FormData>({
 		name: "New project",
-		region: regions[0],
 		files: [],
 	});
 
@@ -62,7 +53,6 @@ function useFormContext(): FormContext {
 		}
 		setLoading(true);
 		const res = await api.createProject({
-			climateRegionId: data.region.id,
 			name: data.name!,
 			files: data.files,
 			description: data.description,
@@ -89,7 +79,6 @@ function useFormContext(): FormContext {
 	};
 
 	return {
-		regions,
 		data,
 		error,
 		taskId,
@@ -111,7 +100,7 @@ export const ProjectForm = () => {
 	return (
 		<div className="container-fluid">
 			<div className="row">
-				<div className="col-md-7">
+				<div className="col-md-8">
 					<BreadcrumbRow
 						active="New"
 						path={[
@@ -142,7 +131,9 @@ export const ProjectForm = () => {
 						/>
 					</div>
 
-					<RegionCombo ctx={ctx} />
+					<div className="alert alert-secondary" role="status">
+						The climate region is determined automatically from the uploaded data.
+					</div>
 
 					<div className="mb-3">
 						<label className="form-label">CityGML, Excel, or ZIP files</label>
@@ -194,14 +185,6 @@ export const ProjectForm = () => {
 						</button>
 					</div>
 				</div>
-
-				<div className="col-md-5">
-					<img
-						src="/img/try-regions.png"
-						alt="TRY Regions"
-						className="img-fluid rounded shadow mb-3"
-					/>
-				</div>
 			</div>
 		</div>
 	);
@@ -214,34 +197,6 @@ const ErrorRow = ({ ctx }: Props) => {
 	return (
 		<div className="alert alert-danger" role="alert">
 			{ctx.error}
-		</div>
-	);
-};
-
-const RegionCombo = ({ ctx }: Props) => {
-	const options = ctx.regions.map(r => (
-		<option key={r.id} value={r.id}>
-			{r.number}. {r.name} ({r.stationName})
-		</option>
-	));
-
-	const onSelect = (sid: string) => {
-		const id = parseInt(sid);
-		const region = ctx.regions.find(r => r.id === id);
-		if (region) {
-			ctx.update({ region });
-		}
-	};
-
-	return (
-		<div className="mb-3">
-			<label className="form-label">Climate region</label>
-			<select
-				className="form-select"
-				value={ctx.data.region.id}
-				onChange={e => onSelect(e.target.value)}>
-				{options}
-			</select>
 		</div>
 	);
 };
