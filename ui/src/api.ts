@@ -10,26 +10,7 @@ import {
 	Solution,
 } from "./model";
 
-interface ApiFetchOptions extends RequestInit {
-	redirectOnUnauthorized?: boolean;
-}
-
-/// We wrap the `fetch` calls here because we want to catch 401 errors and
-/// redirect to the login page in this case.
-async function apiFetch(
-	input: RequestInfo | URL,
-	init?: ApiFetchOptions,
-): Promise<Response> {
-	const { redirectOnUnauthorized = true, ...requestInit } = init || {};
-	const response = await fetch(input, requestInit);
-	if (response.status === 401 && redirectOnUnauthorized) {
-		window.location.assign("/ui/login");
-		throw new Error("session expired");
-	}
-	return response;
-}
-
-function jsonRequest(method: string, body: unknown): ApiFetchOptions {
+function jsonRequest(method: string, body: unknown): RequestInit {
 	const headers = new Headers();
 	headers.set("Content-Type", "application/json");
 	return {
@@ -43,31 +24,28 @@ async function request<T>(
 	action: string,
 	input: RequestInfo | URL,
 	decode: (response: Response) => Promise<T>,
-	init?: ApiFetchOptions,
+	init?: RequestInit,
 ): Promise<Res<T>> {
 	try {
-		const response = await apiFetch(input, init);
+		const response = await fetch(input, init);
+		if (response.status === 401) {
+			window.location.assign("/ui/login");
+			throw new Error("session expired");
+		}
 		if (response.status === 200) {
 			return Res.ok(await decode(response));
 		}
-		return Res.err(await errorFromResponse(action, response));
+		return Res.err(`${action}: ${response.status} | ${await response.text()}`);
 	} catch (error) {
 		const err = error instanceof Error ? error.message : String(error);
 		return Res.err(`${action}: ${err}`);
 	}
 }
 
-async function errorFromResponse(
-	action: string,
-	response: Response,
-): Promise<string> {
-	return `${action}: ${response.status} | ${await response.text()}`;
-}
-
 function getJson<T>(
 	action: string,
 	input: RequestInfo | URL,
-	init?: ApiFetchOptions,
+	init?: RequestInit,
 ): Promise<Res<T>> {
 	return request(action, input, response => response.json() as Promise<T>, init);
 }
@@ -75,7 +53,7 @@ function getJson<T>(
 function sendRequest(
 	action: string,
 	input: RequestInfo | URL,
-	init?: ApiFetchOptions,
+	init?: RequestInit,
 ): Promise<Res<boolean>> {
 	return request(action, input, async () => true, init);
 }
@@ -128,9 +106,18 @@ export async function postLogin(
 }
 
 export async function getCurrentUser(): Promise<Res<User>> {
-	return getJson<User>("failed to get current user", "/api/users/current", {
-		redirectOnUnauthorized: false,
-	});
+	try {
+		const response = await fetch("/api/users/current");
+		if (response.status === 200) {
+			return Res.ok(await response.json());
+		}
+		return Res.err(
+			`failed to get current user: ${response.status} | ${await response.text()}`,
+		);
+	} catch (error) {
+		const err = error instanceof Error ? error.message : String(error);
+		return Res.err(`failed to get current user: ${err}`);
+	}
 }
 
 export async function postLogout(): Promise<Res<boolean>> {
@@ -237,7 +224,7 @@ async function download(
 	action: string,
 	input: RequestInfo | URL,
 	defaultName: string,
-	init?: ApiFetchOptions,
+	init?: RequestInit,
 ): Promise<Res<boolean>> {
 	return request(
 		action,
