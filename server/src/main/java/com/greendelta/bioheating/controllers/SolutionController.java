@@ -73,7 +73,7 @@ public class SolutionController {
 			var image = solution.image();
 			if (
 				image == null || image.length == 0
-			) return ResponseEntity.notFound().build();
+			) return Http.notFound("solution image not found: " + id);
 			return ResponseEntity.ok()
 				.contentType(MediaType.IMAGE_PNG)
 				.header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
