@@ -17,6 +17,7 @@ interface InputData {
 
 interface EditorContext {
 	project: Project;
+	updateProject: (change: Partial<Project>) => void;
 
 	selection: GeoFeature[];
 	setSelection: (features: GeoFeature[]) => void;
@@ -32,11 +33,18 @@ interface EditorContext {
 }
 
 function useEditorContext(): EditorContext {
-	const { project }: InputData = useLoaderData();
+	const { project: loadedProject }: InputData = useLoaderData();
+	const [project, setProject] = useState<Project>(loadedProject);
 	const [selection, setSelection] = useState<GeoFeature[]>([]);
 	const [isDirty, _setDirty] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [taskId, setTaskId] = useState<string | null>(null);
+
+	const updateProject = (change: Partial<Project>) => {
+		setProject(prev => ({ ...prev, ...change }));
+		_setDirty(true);
+		setError(null);
+	};
 
 	const setDirty = (b: boolean) => {
 		_setDirty(b);
@@ -45,6 +53,7 @@ function useEditorContext(): EditorContext {
 
 	return {
 		project,
+		updateProject,
 		selection,
 		setSelection,
 		isDirty,
@@ -106,7 +115,12 @@ const SelectionPanel = ({ ctx }: Props) => {
 	const onChange = () => ctx.setDirty(true);
 
 	if (!selection || selection.length === 0) {
-		return <OverviewPanel project={ctx.project} />;
+		return (
+			<OverviewPanel
+				project={ctx.project}
+				onChange={ctx.updateProject}
+			/>
+		);
 	}
 	if (selection.length > 1) {
 		return (

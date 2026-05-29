@@ -5,6 +5,7 @@ import { BuildingData } from "./panel-data";
 
 interface Props {
 	project: Project;
+	onChange: (change: Partial<Project>) => void;
 }
 
 function keyFiguresOf(project: Project) {
@@ -24,7 +25,7 @@ function keyFiguresOf(project: Project) {
 	return { buildingCount, totalDemand };
 }
 
-export const OverviewPanel = ({ project }: Props) => {
+export const OverviewPanel = ({ project, onChange }: Props) => {
 	const { buildingCount, totalDemand } = keyFiguresOf(project);
 
 	const formatHeatDemand = (value: number): string => {
@@ -42,31 +43,35 @@ export const OverviewPanel = ({ project }: Props) => {
 				<h5 className="card-title mb-0">Project overview</h5>
 			</div>
 			<div className="card-body">
-				<div className="row g-3">
+				<div className="d-flex flex-column gap-3">
 					<div className="col-12">
 						<label className="form-label fw-bold">Project name</label>
-						<p className="form-control-plaintext">{project.name}</p>
+						<input
+							type="text"
+							className="form-control"
+							value={project.name || ""}
+							onChange={e => onChange({ name: e.target.value })}
+						/>
 					</div>
 
-					{project.description && (
-						<div className="col-12">
-							<label className="form-label fw-bold">Description</label>
-							<p className="form-control-plaintext">{project.description}</p>
-						</div>
-					)}
-
-					{project.climateRegion && (
-						<div className="col-12">
-							<label className="form-label fw-bold">Climate region</label>
-							<p className="form-control-plaintext">
-								{project.climateRegion.number}. {project.climateRegion.name}
-								<br />
-								<small className="text-muted">
-									Station: {project.climateRegion.stationName}
-								</small>
-							</p>
+					<div className="col-12">
+						<label className="form-label fw-bold">Description</label>
+						<textarea
+							className="form-control"
+							value={project.description || ""}
+							onChange={e => onChange({ description: e.target.value })}
+							rows={3}
+						/>
 					</div>
-				)}
+
+					<div className="col-12">
+						<label className="form-label fw-bold">Climate region</label>
+						<p className="form-control-plaintext mb-0">
+							{project.climateRegion
+								? `${project.climateRegion.name}`
+								: "No climate region assigned"}
+						</p>
+					</div>
 
 				{project.solutionId && (
 						<div className="col-12">
