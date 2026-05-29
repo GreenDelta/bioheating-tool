@@ -119,9 +119,10 @@ public class ClimateRegionLookup {
 				int number = f.path("properties")
 					.path("climate_region")
 					.asInt(-1);
-				var geometry = geometryOf(f.path("geometry"));
-				if (number != -1 && geometry != null) {
-					areas.add(new RegionArea(number, geometry));
+				if (number == -1)
+					continue;
+				for (var p : polygonsOf(f.path("geometry"))) {
+					areas.add(new RegionArea(number, p));
 				}
 			}
 			return areas;
@@ -130,13 +131,14 @@ public class ClimateRegionLookup {
 		}
 	}
 
-	private Geometry geometryOf(JsonNode node) {
+	private List<Polygon> polygonsOf(JsonNode node) {
 		if (node == null || node.isMissingNode())
 			return null;
 		var type = node.path("type").asText();
 		var coords = node.path("coordinates");
 		if ("Polygon".equals(type)) {
-			return polygonOf(coords);
+			var p = polygonOf(coords);
+			return p != null ? List.of(p) : List.of();
 		} else if ("MultiPolygon".equals(type)) {
 			var polys = new ArrayList<Polygon>();
 			for (var polyCoords : coords) {
@@ -145,9 +147,9 @@ public class ClimateRegionLookup {
 					polys.add(p);
 				}
 			}
-			return factory.createMultiPolygon(polys.toArray(new Polygon[0]));
+			return polys;
 		}
-		return null;
+		return List.of();
 	}
 
 	private Polygon polygonOf(JsonNode coords) {
