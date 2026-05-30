@@ -9,17 +9,19 @@ class GeoImageTest {
 
 	@Test
 	void usesMaxWidthForWideEnvelopes() {
-		try (var image = new GeoImage(1024, new Envelope(0, 200, 0, 100))) {
-			assertEquals(1024, image.getImage().getWidth());
-			assertEquals(512, image.getImage().getHeight());
+		try (var image = GeoImage.of(1024, new Envelope(0, 200, 0, 100))) {
+			var img = image.getImage();
+			assertEquals(1024, img.getWidth());
+			assertEquals(512, img.getHeight());
 		}
 	}
 
 	@Test
 	void usesMaxHeightForTallEnvelopes() {
-		try (var image = new GeoImage(1024, new Envelope(0, 100, 0, 200))) {
-			assertEquals(512, image.getImage().getWidth());
-			assertEquals(1024, image.getImage().getHeight());
+		try (var image = GeoImage.of(1024, new Envelope(0, 100, 0, 200))) {
+			var img = image.getImage();
+			assertEquals(512, img.getWidth());
+			assertEquals(1024, img.getHeight());
 		}
 	}
 }

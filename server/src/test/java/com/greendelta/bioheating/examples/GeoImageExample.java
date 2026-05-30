@@ -21,7 +21,7 @@ public class GeoImageExample {
 				}
 			}
 
-			try (var img = new GeoImage(1024, 800, envelope)) {
+			try (var img = GeoImage.of(1024, envelope)) {
 				for (var street : project.map().streets()) {
 					img.drawLine(street.coordinates(), Color.DARK_GRAY);
 				}

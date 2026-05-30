@@ -121,7 +121,7 @@ public class PipePlanImage {
 	}
 
 	private Res<byte[]> render() {
-		try (var img = new GeoImage(1024, envelope)) {
+		try (var img = GeoImage.of(1024, envelope)) {
 			renderStreets(img);
 			renderPipes(img);
 			renderBuildings(img);

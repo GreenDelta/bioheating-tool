@@ -21,11 +21,7 @@ public class GeoImage implements AutoCloseable {
 	private final BufferedImage image;
 	private final Graphics2D g;
 
-	public GeoImage(int size, Envelope envelope) {
-		this(dimensionsOf(size, envelope)[0], dimensionsOf(size, envelope)[1], envelope);
-	}
-
-	public GeoImage(int width, int height, Envelope envelope) {
+	private GeoImage(int width, int height, Envelope envelope) {
 		this.height = height;
 		this.scaleX = (width - 2 * margin) / envelope.getWidth();
 		this.minX = envelope.getMinX();
@@ -39,6 +35,28 @@ public class GeoImage implements AutoCloseable {
 		);
 		g.setBackground(Color.WHITE);
 		g.clearRect(0, 0, width, height);
+	}
+
+	public static GeoImage of(int maxSize, Envelope envelope) {
+		var dims = dimensionsOf(maxSize, envelope);
+		return new GeoImage(dims[0], dims[1], envelope);
+	}
+
+	private static int[] dimensionsOf(int maxSize, Envelope envelope) {
+		if (envelope == null)
+			return new int[] { maxSize, maxSize };
+
+		double width = envelope.getWidth();
+		double height = envelope.getHeight();
+		if (width <= 0 || height <= 0)
+			return new int[] { maxSize, maxSize };
+
+		if (width >= height) {
+			int dimY = (int) Math.round(maxSize * (height / width));
+			return new int[] {maxSize, Math.max(1, dimY)};
+		}
+		int dimX = (int) Math.round(maxSize * (width / height));
+		return new int[] {Math.max(1, dimX), maxSize};
 	}
 
 	public BufferedImage getImage() {
@@ -101,30 +119,6 @@ public class GeoImage implements AutoCloseable {
 	@Override
 	public void close() {
 		g.dispose();
-	}
-
-	private static int[] dimensionsOf(int maxSize, Envelope envelope) {
-		if (envelope == null) {
-			return new int[] { maxSize, maxSize };
-		}
-
-		double width = envelope.getWidth();
-		double height = envelope.getHeight();
-		if (width <= 0 || height <= 0) {
-			return new int[] { maxSize, maxSize };
-		}
-
-		if (width >= height) {
-			return new int[] {
-				maxSize,
-				Math.max(1, (int) Math.round((maxSize * height) / width)),
-			};
-		}
-
-		return new int[] {
-			Math.max(1, (int) Math.round((maxSize * width) / height)),
-			maxSize,
-		};
 	}
 
 	private Shape shapeOf(Coordinate[] cs) {
