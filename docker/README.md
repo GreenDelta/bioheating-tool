@@ -75,7 +75,6 @@ Copy these files** to your server:
 + `docker/images/bioheating-db.tar.gz`
 + `docker/images/bioheating-app.tar.gz`
 + `docker/docker-compose.yaml`
-+ `docker/init-db.sql`
 
 Then, on the server:
 
