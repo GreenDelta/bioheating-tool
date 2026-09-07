@@ -1,10 +1,10 @@
 package com.greendelta.bioheating.io.sophena;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.NetworkTree.Junction;
 import com.greendelta.bioheating.graph.NetworkTree.Segment;
@@ -52,15 +52,15 @@ public class SophenaExport {
 			);
 			var export = new SophenaExport(solution, result.value());
 			var root = export.createJson();
-			var mapper = new ObjectMapper();
+			var mapper = JsonMapper.builder()
+				.enable(SerializationFeature.INDENT_OUTPUT)
+				.build();
 			try (
 				var fos = new FileOutputStream(file);
 				var gzos = new GZIPOutputStream(fos);
 				var writer = new OutputStreamWriter(gzos, StandardCharsets.UTF_8)
 			) {
-				mapper
-					.enable(SerializationFeature.INDENT_OUTPUT)
-					.writeValue(writer, root);
+				mapper.writeValue(writer, root);
 			}
 			return Res.ok();
 		} catch (Exception e) {

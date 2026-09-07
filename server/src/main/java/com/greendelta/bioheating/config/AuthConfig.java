@@ -1,6 +1,6 @@
 package com.greendelta.bioheating.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +34,7 @@ public class AuthConfig {
 	public SecurityFilterChain securityFilterChain(
 		HttpSecurity http,
 		AuthenticationConfiguration authConfig
-	) throws Exception {
+	) {
 		var authMan = authConfig.getAuthenticationManager();
 		var authFilter = new AuthFilter(authMan, json);
 		authFilter.setFilterProcessesUrl("/api/users/login");

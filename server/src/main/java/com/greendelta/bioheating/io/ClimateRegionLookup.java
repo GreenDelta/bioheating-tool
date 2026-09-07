@@ -10,8 +10,8 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.openlca.commons.Res;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.GeoMap;
@@ -133,7 +133,7 @@ public class ClimateRegionLookup {
 	private List<Polygon> polygonsOf(JsonNode node) {
 		if (node == null || node.isMissingNode())
 			return null;
-		var type = node.path("type").asText();
+		var type = node.path("type").asString();
 		var coords = node.path("coordinates");
 		if ("Polygon".equals(type)) {
 			var p = polygonOf(coords);
