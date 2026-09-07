@@ -12,6 +12,10 @@
 # may need sudo to delete them if needed:
 #   sudo rm -rf ./data/bioheating-db
 #   sudo rm -rf ./data/uploads
+#
+# Also note, that the memory settings (mem_limit, Xmx) are for a small server
+# currently. It makes sense to adjust them when moving to a more powerfull
+# server.
 
 services:
   bioheating-db:
@@ -19,6 +23,8 @@ services:
     container_name: bioheating-db
     volumes:
       - ./data/bioheating-db:/var/lib/postgresql/data
+    mem_limit: 768m
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: bioheating
@@ -36,6 +42,10 @@ services:
     container_name: bioheating-app
     volumes:
       - ./data/uploads:/app/uploads
+    mem_limit: 2560m
+    restart: unless-stopped
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx2176m -XX:MaxMetaspaceSize=384m -XX:+ExitOnOutOfMemoryError -XX:+UseG1GC -XX:+UseStringDeduplication"
     depends_on:
       bioheating-db:
         condition: service_healthy

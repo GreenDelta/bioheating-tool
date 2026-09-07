@@ -15,4 +15,4 @@ RUN mkdir -p /app/uploads
 
 EXPOSE 3000
 
-CMD ["java", "-XX:MaxRAMPercentage=80", "-XX:+UseG1GC", "-jar", "server.jar"]
+CMD ["java", "-jar", "server.jar"]
