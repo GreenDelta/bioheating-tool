@@ -72,7 +72,7 @@ export const TaskPanel = ({ taskId, message, getTargetUrl }: Props) => {
 	return <ErrorPanel message="Unknown task state" />;
 };
 
-const ProgressPanel = ({ message }: { message: string }) => (
+export const ProgressPanel = ({ message }: { message: string }) => (
 	<div className="d-flex justify-content-center">
 		<div className="card text-center" style={{ maxWidth: "600px" }}>
 			<div className="card-body py-5">

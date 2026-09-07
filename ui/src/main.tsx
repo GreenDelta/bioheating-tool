@@ -18,6 +18,7 @@ import { UserList, UserForm } from "./users";
 import { HomePage } from "./home";
 import errors, { ErrorPage } from "./components/errors";
 import { MainMenu } from "./components/navi";
+import { NavigationLoading } from "./components/navigation-loading";
 
 /// The root component of the application. It contains the main menu and the
 /// respective sub-components that are navigated to by routing.
@@ -45,6 +46,7 @@ const Root = () => {
 			<div className="container-fluid px-5">
 				<Outlet context={[user, setUser]} />
 			</div>
+			<NavigationLoading />
 		</>
 	);
 };
