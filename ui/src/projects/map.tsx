@@ -25,8 +25,8 @@ export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 		handleSelect,
 		onChange,
 	);
-	const selectedBuildingCount = data.features.filter(feature =>
-		isBuilding(feature) && selection.has(feature.properties?.id)
+	const selectedCount = data.features.filter(feature =>
+		selection.has(feature.properties?.id)
 	).length;
 	useMapInteractions(
 		mapRef,
@@ -44,11 +44,11 @@ export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 			<button
 				type="button"
 				className="btn btn-sm"
-				disabled={selectedBuildingCount === 0}
+				disabled={selectedCount === 0}
 				onClick={deleteSelection}
 				title={
-					selectedBuildingCount > 0
-						? `Delete ${selectedBuildingCount} selected building(s)`
+					selectedCount > 0
+						? `Delete ${selectedCount} selected building(s)`
 						: "Select building(s) to delete"
 				}
 				style={{
@@ -61,9 +61,9 @@ export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 					padding: 0,
 					borderRadius: "50%",
 					backgroundColor:
-						selectedBuildingCount > 0 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.8)",
+						selectedCount > 0 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.8)",
 					border:
-						selectedBuildingCount > 0
+						selectedCount > 0
 							? "1px solid var(--bs-danger)"
 							: "1px solid var(--bs-secondary)",
 					display: "flex",
@@ -71,7 +71,7 @@ export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 					justifyContent: "center",
 					boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
 				}}>
-				<DeleteIcon color={selectedBuildingCount > 0 ? "var(--bs-danger)" : "var(--bs-secondary)"} />
+				<DeleteIcon color={selectedCount > 0 ? "var(--bs-danger)" : "var(--bs-secondary)"} />
 			</button>
 		</div>
 	);
@@ -263,24 +263,19 @@ function useDeleteSelection(
 			return;
 		}
 
-		data.features = data.features.filter(feature => {
-			if (!isBuilding(feature)) {
-				return true;
-			}
-			return !ids.has(feature.properties?.id);
-		});
+		data.features = data.features.filter(feature =>
+			!ids.has(feature.properties?.id)
+		);
 
 		const layer = layerRef.current;
 		if (layer) {
 			const removed: L.Layer[] = [];
 			layer.eachLayer(item => {
 				const feature = (item as any).feature as GeoFeature | undefined;
-				if (!feature || !isBuilding(feature)) {
+				if (!feature || !ids.has(feature.properties?.id)) {
 					return;
 				}
-				if (ids.has(feature.properties?.id)) {
-					removed.push(item);
-				}
+				removed.push(item);
 			});
 			for (const item of removed) {
 				layer.removeLayer(item);

@@ -2,7 +2,7 @@ package com.greendelta.bioheating.io;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.greendelta.bioheating.io.citygml.OsmStreet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

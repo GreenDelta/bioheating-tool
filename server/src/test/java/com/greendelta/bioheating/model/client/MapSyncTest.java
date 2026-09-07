@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Street;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -95,6 +96,36 @@ public class MapSyncTest {
 		assertEquals("Retained", map.buildings().getFirst().name());
 	}
 
+
+	@Test
+	public void removesStreetsMissingFromClientMap() {
+		var map = new GeoMap().crs("EPSG:4326");
+		var retained = new Street().name("Retained");
+		retained.id(1);
+		var deleted = new Street().name("Deleted");
+		deleted.id(2);
+		map.streets().add(retained);
+		map.streets().add(deleted);
+
+		var clientMap = new ClientMap(List.of(new GeoFeature(
+			"Feature",
+			Geometry.lineOf(new Coordinate[]{
+				new Coordinate(10.0, 50.0),
+				new Coordinate(10.001, 50.0),
+			}),
+			Map.of(
+				"@type", "street",
+				"id", 1,
+				"name", "Retained"
+			)
+		)));
+
+		MapSync.updateFromClient(map, clientMap);
+
+		assertEquals(1, map.streets().size());
+		assertEquals(1, map.streets().getFirst().id());
+		assertEquals("Retained", map.streets().getFirst().name());
+	}
 	private Coordinate[] square() {
 		return new Coordinate[] {
 			new Coordinate(10.0, 50.0),

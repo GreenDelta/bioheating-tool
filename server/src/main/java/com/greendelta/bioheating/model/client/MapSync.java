@@ -22,6 +22,7 @@ public class MapSync {
 	private final Map<Long, Street> streets;
 	private final ClientMap clientMap;
 	private final Set<Long> retainedBuildings = new HashSet<>();
+	private final Set<Long> retainedStreets = new HashSet<>();
 
 	private MapSync(GeoMap map, ClientMap clientMap) {
 		this.map = map;
@@ -53,6 +54,9 @@ public class MapSync {
 		// remove buildings that are not contained in the client data
 		map.buildings().removeIf(
 			b -> b.id() != 0 && !retainedBuildings.contains(b.id()));
+		// remove streets that are not contained in the client data
+		map.streets().removeIf(
+			s -> s.id() != 0 && !retainedStreets.contains(s.id()));
 	}
 
 	private void syncBuilding(GeoFeature f) {
@@ -74,6 +78,7 @@ public class MapSync {
 		var street = streets.get(f.id());
 		if (street != null) {
 			PropertyPatch.of(f).applyOn(street);
+			retainedStreets.add(street.id());
 		}
 	}
 
