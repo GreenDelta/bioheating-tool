@@ -1,9 +1,9 @@
 # Model training
 
-This directory contains the Python scripts for converting the simulation output
-and for training the XGBoost model used in the application. The model is a
-single booster with two outputs: the annual heat demand in kWh and the peak load
-in kW.
+This directory contains the Python scripts for converting the simulation output,
+for training and for validating the XGBoost model used in the application. The
+model is a single booster with two outputs: the annual heat demand in kWh and the
+peak load in kW.
 
 ## Setup & usage
 
@@ -16,13 +16,20 @@ cd server/model-training
 # install dependencies (creates .venv automatically)
 uv sync
 
-# convert the simulation output Excel files to the training CSV format
+# convert the simulation output Excel files to the CSV format
 uv run xls_simout_to_csv.py training-simout.xlsx data/training-data.csv
+uv run xls_simout_to_csv.py validation-simout.xlsx data/validation-data.csv
 
-# run the training script
-uv run train.py
+# train the model (creates the model.ubj resource)
+uv run train.py data/training-data.csv
 
-# clean up generated check files
+# validate the model (creates data/validation-check.txt and prints statistics)
+uv run validate.py data/validation-data.csv
+
+# create the charts from the check file
+gnuplot model-check-plot.plt
+
+# clean up generated check files and charts
 uv run clean.py
 
 # clean up including model files
@@ -58,7 +65,13 @@ prediction targets:
 All raw values and codes are used directly as model features, there are no
 factor mappings.
 
-## Generated output
+## Training
+
+`train.py` reads the given training CSV and trains one model for both targets:
+
+```bash
+uv run train.py data/training-data.csv
+```
 
 The trained model is saved to:
 
@@ -70,17 +83,48 @@ This is the location expected by the server application, which loads the model
 at runtime. The model has two outputs: index 0 is the heat demand in kWh and
 index 1 is the peak load in kW.
 
-The script also runs a validation on `data/validation-data.csv` and a self check
-with its own training data. It writes the tab-separated files
-`data/validation-check.txt` and `data/self-check.txt`, each with four columns:
+## Validation
+
+`validate.py` loads the trained model, predicts both targets for the given CSV
+and writes the check file and prints statistics:
+
+```bash
+uv run validate.py data/validation-data.csv
+```
+
+The check file is written next to the input file, replacing a trailing `-data`
+with `-check`, so `data/validation-data.csv` produces
+`data/validation-check.txt`. It contains four tab-separated columns:
 
 ```
 heat_expected  heat_predicted  peak_expected  peak_predicted
 ```
 
-These files can be plotted using GnuPlot, see the `model-check-plot.plt` script.
-It produces the two images `data/model-check-heat-demand.png` and
-`data/model-check-peak-load.png`.
+### Statistics
+
+For both targets the script prints the following statistics:
+
+| Statistic | Meaning                                                                                                                                                                               |
+|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| n         | Number of rows that were validated.                                                                                                                                                   |
+| MAE       | Mean absolute error: the average absolute deviation between expected and predicted values, in the unit of the target (kWh or kW). Lower is better.                                     |
+| RMSE      | Root mean squared error: like MAE, but large errors are weighted more. Same unit as the target. Lower is better.                                                                       |
+| MBE       | Mean bias error (mean of expected − predicted): the average systematic deviation. Positive means the model under-predicts on average, negative means it over-predicts. Ideal is 0.      |
+| R2        | Coefficient of determination: the fraction of the variance of the expected values that the model explains. 1.0 is a perfect fit, 0.0 is no better than always predicting the mean, negative values are worse than the mean. |
+
+### Charts
+
+The check file can be plotted with GnuPlot:
+
+```bash
+gnuplot model-check-plot.plt
+```
+
+This creates `data/model-check-heat-demand.png` and
+`data/model-check-peak-load.png`. To also visualize the fit on the training data
+(a self-check), run `uv run validate.py data/training-data.csv` to create
+`data/training-check.txt` and add it to the plot commands in
+`model-check-plot.plt`.
 
 > **Note:** the simulation Excel and CSV format changed with the new model, so
 > the Java example classes (`ModelTrainingExample`, `ModelValidationExample`)

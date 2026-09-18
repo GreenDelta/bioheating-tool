@@ -3,3 +3,5 @@
 ui/node_modules/
 ui/static/main.js*
 ui/static/pico.min.css
+
+*.pyc
