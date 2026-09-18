@@ -1,129 +1,155 @@
+"""Train the multi-output model for heat demand and peak load prediction.
+
+The model is trained on the CSV files that are produced from the simulation
+output Excel files with ``xls_simout_to_csv.py``.  Such a CSV contains six
+features and two targets:
+
+    +-----+--------------------------+--------------------------------------+
+    | Idx | Feature                  | Meaning                              |
+    +-----+--------------------------+--------------------------------------+
+    | 0   | ground area [m2]         | ground surface area of the building  |
+    | 1   | height [m]               | building height                      |
+    | 2   | weather station [code]   | weather station / climate region     |
+    | 3   | construction year [code] | construction age code (1..6)         |
+    | 4   | roof type [1|0]          | 1 = flat roof, 0 = pitched roof      |
+    | 5   | building type [code]     | building classification (1..10)      |
+    +-----+--------------------------+--------------------------------------+
+    | 6   | heat demand [kWh]        | target: annual heat demand           |
+    | 7   | peak load [kW]           | target: maximum heat load            |
+    +-----+--------------------------+--------------------------------------+
+
+All raw values and codes are used directly, no factor mappings are applied.
+Both targets are predicted by a single model, i.e. the model has two outputs.
+XGBoost handles this as a multi-output regression: the label matrix has two
+columns and ``multi_strategy`` controls how the trees are built (see PARAMS).
+The trained booster is saved as a single ``model.ubj`` file.
+
+The script trains on ``data/training-data.csv`` and writes the model to
+``../src/main/resources/com/greendelta/bioheating/predict/model.ubj``.  It then
+writes two check files for GnuPlot:
+
+    data/self-check.txt        predictions on the training data
+    data/validation-check.txt  predictions on the validation data
+
+Each line of a check file contains four tab-separated values:
+``heat_expected  heat_predicted  peak_expected  peak_predicted``.
+"""
+
 import csv
+from pathlib import Path
+
 import numpy as np
 import xgboost as xgb
 
-from pathlib import Path
+from xls_simout_to_csv import CSV_HEADER
 
+# Column indices of the training CSV, see xls_simout_to_csv.py.
+COL_GROUND_AREA = 0
+COL_HEIGHT = 1
+COL_WEATHER_STATION = 2
+COL_CONSTRUCTION_YEAR = 3
+COL_ROOF_TYPE = 4
+COL_BUILDING_TYPE = 5
+COL_HEAT_DEMAND = 6
+COL_PEAK_LOAD = 7
+COL_COUNT = 8
 
-def get_building_type_factor(code: int) -> float:
-    mapping = {
-        1: 0.65,  # HIGH_RISE
-        2: 0.8,  # MULTI_FAMILY_SMALL
-        3: 0.75,  # MULTI_FAMILY_MEDIUM
-        4: 0.7,  # MULTI_FAMILY_LARGE
-        5: 0.8,  # BUILDING_PART
-        6: 1.0,  # SINGLE_FAMILY
-        7: 0.9,  # END_TERRACE
-        8: 0.8,  # MID_TERRACE
-        9: 0.88,  # HOUSE_GROUP
-        0: 0.8,  # OTHER
-    }
-    return mapping.get(code, 0.8)
+# Number of model inputs and outputs and the names of the two targets.
+FEATURE_COUNT = 6
+TARGET_NAMES = ["heat demand", "peak load"]
 
-
-def get_climate_region_factor(code: int):
-    mapping = {
-        1: 0.85,
-        2: 1.08,
-        3: 0.83,
-        4: 0.84,
-        5: 1.01,
-        6: 0.8,
-        7: 1.06,
-        8: 0.84,
-        9: 0.89,
-        10: 1.06,
-        11: 1.16,
-        12: 0.91,
-        13: 1.15,
-        14: 1.19,
-        15: 0.89,
-    }
-    return mapping.get(code, 0.91)
-
-
-def get_average_heat_demand(age_code):
-    mapping = {
-        0: 130.0,  # UNKNOWN
-        1: 180.0,  # AGE_1900_1919
-        2: 190.0,  # AGE_1919_1948
-        3: 210.0,  # AGE_1949_1978
-        4: 150.0,  # AGE_1979_1995
-        5: 80.0,  # AGE_1995_2009
-        6: 50.0,  # AGE_2010_2030
-    }
-    return mapping.get(age_code, 130.0)
+# XGBoost training parameters.  ``multi_output_tree`` builds a single tree per
+# boosting round that predicts both targets at once, which lets the model use
+# the correlation between heat demand and peak load.
+PARAMS = {
+    "objective": "reg:squarederror",
+    "tree_method": "hist",
+    "multi_strategy": "multi_output_tree",
+    "reg_alpha": 0.1,
+    "eta": 0.5,  # learning rate
+    "max_depth": 6,
+}
+NUM_ROUNDS = 1000
 
 
 def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
+    """Read the features and the two target columns from a training CSV."""
     features = []
     labels = []
 
-    with open(csv_file, "r") as f:
+    with open(csv_file, "r", encoding="utf-8", newline="") as f:
         reader = csv.reader(f)
-        next(reader)  # skip header
+        header = next(reader, None)
+        if header != CSV_HEADER:
+            raise ValueError(
+                f"{csv_file.name} has an unexpected header {header}; "
+                "convert the simulation output with xls_simout_to_csv.py"
+            )
 
-        for row in reader:
-            if len(row) < 9:
+        for line, row in enumerate(reader, start=2):
+            if not row:
                 continue
+            if len(row) < COL_COUNT:
+                raise ValueError(
+                    f"{csv_file.name}:{line} has {len(row)} columns, "
+                    f"expected {COL_COUNT}"
+                )
 
-            height = float(row[1])
-            storeys = int(row[2])
-            ground_area = float(row[3])
-            building_type_code = int(row[4])
-            climate_region_code = int(row[5])
-            construction_age_code = int(row[6])
-            roof_type_factor = float(row[7])
-            heat_demand = float(row[8])
+            features.append(
+                [
+                    float(row[COL_GROUND_AREA]),
+                    float(row[COL_HEIGHT]),
+                    float(row[COL_WEATHER_STATION]),
+                    float(row[COL_CONSTRUCTION_YEAR]),
+                    float(row[COL_ROOF_TYPE]),
+                    float(row[COL_BUILDING_TYPE]),
+                ]
+            )
+            labels.append([float(row[COL_HEAT_DEMAND]), float(row[COL_PEAK_LOAD])])
 
-            feature_vector = [
-                height,
-                storeys,
-                ground_area,
-                get_building_type_factor(building_type_code),
-                get_climate_region_factor(climate_region_code),
-                get_average_heat_demand(construction_age_code),
-                roof_type_factor,
-            ]
+    if not features:
+        raise ValueError(f"{csv_file.name} contains no data rows")
 
-            features.append(feature_vector)
-            labels.append(heat_demand)
-
-    return (np.array(features, dtype=np.float32), np.array(labels, dtype=np.float32))
+    return (
+        np.array(features, dtype=np.float32),
+        np.array(labels, dtype=np.float32),
+    )
 
 
 def train_model(training_file: Path, output_model_file: Path) -> xgb.Booster:
+    """Train the multi-output model and save it to ``output_model_file``."""
     print(f"Read training data from: {training_file.name}")
     features, labels = read_csv_data(training_file)
     dtrain = xgb.DMatrix(features, label=labels)
 
-    print("Train model...")
-    params = {
-        "objective": "reg:squarederror",
-        "tree_method": "hist",
-        "reg_alpha": 0.1,
-        "eta": 0.5,
-        "max_depth": 6,
-    }
-    num_rounds = 1000
-    model = xgb.train(params, dtrain, num_rounds)
+    print(f"Train model with {FEATURE_COUNT} features and {len(TARGET_NAMES)} targets...")
+    model = xgb.train(PARAMS, dtrain, NUM_ROUNDS)
 
     print(f"Saving model to: {output_model_file.name}")
     output_model_file.parent.mkdir(exist_ok=True, parents=True)
-    # Save in JSON format for better cross-platform compatibility
+    # Save in binary JSON (UBJ) format for better cross-platform compatibility
     model.save_model(output_model_file)
     return model
 
 
-def validate_model(model: xgb.Booster, validation_file: Path, out_file: Path):
+def validate_model(model: xgb.Booster, validation_file: Path, out_file: Path) -> None:
+    """Write the expected and predicted values of both targets to ``out_file``."""
     print(f"Validate model with {validation_file.name}")
     features, labels = read_csv_data(validation_file)
-    dvalid = xgb.DMatrix(features)
-    predictions = model.predict(dvalid)
+    predictions = model.predict(xgb.DMatrix(features))
+
     out_file.parent.mkdir(exist_ok=True, parents=True)
-    with open(out_file, "w") as f:
+    with open(out_file, "w", encoding="utf-8") as f:
         for expected, predicted in zip(labels, predictions):
-            f.write(f"{expected}\t{predicted}\n")
+            f.write(
+                f"{expected[0]}\t{predicted[0]}\t"
+                f"{expected[1]}\t{predicted[1]}\n"
+            )
+
+    for i, name in enumerate(TARGET_NAMES):
+        error = labels[:, i] - predictions[:, i]
+        rmse = float(np.sqrt(np.mean(error**2)))
+        print(f"  {name}: RMSE = {rmse:.2f}")
 
 
 def main():

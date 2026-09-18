@@ -38,36 +38,36 @@ Excel input format
 CSV output format
 -----------------
 
-The output CSV has the same eight columns in the same order, but uses the
-following cleaner names and types:
+The output CSV has the same eight columns in the same order, but uses readable
+headers with units and the following types:
 
-    +-----+------------------+---------+---------------------------------------+
-    | Idx | Header           | Type    | Conversion from the Excel             |
-    +-----+------------------+---------+---------------------------------------+
-    | 0   | groundArea       | Float   | A, copied as is                       |
-    | 1   | height           | Float   | B, copied as is                       |
-    | 2   | weatherStation   | Integer | C, copied as is                       |
-    | 3   | constructionYear | Integer | D, copied as is (0/empty -> default 4)|
-    | 4   | roofType         | Integer | E, "1000" -> 1, "3100" -> 0           |
-    | 5   | buildingType     | Integer | F, copied as is                       |
-    | 6   | heatDemand       | Float   | G, absolute value (sign flipped)      |
-    | 7   | peakLoad         | Float   | H, absolute value (sign flipped)      |
-    +-----+------------------+---------+---------------------------------------+
+    +-----+--------------------------+---------+---------------------------------------+
+    | Idx | Header                   | Type    | Conversion from the Excel             |
+    +-----+--------------------------+---------+---------------------------------------+
+    | 0   | ground area [m2]         | Float   | A, copied as is                       |
+    | 1   | height [m]               | Float   | B, copied as is                       |
+    | 2   | weather station [code]   | Integer | C, copied as is                       |
+    | 3   | construction year [code] | Integer | D, copied as is (0/empty -> default 4)|
+    | 4   | roof type [1|0]          | Integer | E, "1000" -> 1, "3100" -> 0           |
+    | 5   | building type [code]     | Integer | F, copied as is                       |
+    | 6   | heat demand [kWh]        | Float   | G, absolute value (sign flipped)      |
+    | 7   | peak load [kW]           | Float   | H, absolute value (sign flipped)      |
+    +-----+--------------------------+---------+---------------------------------------+
 
 Conversion decisions
 --------------------
 
-``groundArea`` / ``height`` (columns 0 and 1)
-    Copied verbatim.  ``groundArea`` is the building footprint (Grundfläche),
+``ground area`` / ``height`` (columns 0 and 1)
+    Copied verbatim.  ``ground area`` is the building footprint (Grundfläche),
     in m2.  Both values must be positive.
 
-``weatherStation`` (column 2)
+``weather station`` (column 2)
     Copied verbatim.  The code is the same weather station numbering that the
     application already uses for climate regions (1..15, see
     ``climate-regions.json``).  No factor mapping is applied any more, the raw
     code is fed into the model directly.
 
-``constructionYear`` (column 3)
+``construction year`` (column 3)
     Copied verbatim.  The codes are:
 
     ===========  ====
@@ -86,7 +86,7 @@ Conversion decisions
     or an empty cell, which is converted to the default code ``4`` (1979-1995).
     Such substitutions are reported as a warning after conversion.
 
-``roofType`` (column 4)
+``roof type`` (column 4)
     Completely changed.  The simulation only knows two roof types which are
     mapped to a binary flag:
 
@@ -101,7 +101,7 @@ Conversion decisions
     "1 = pitched" convention: it keeps the previous behaviour where the flat
     roof had the highest roof factor (1.0).
 
-``buildingType`` (column 5)
+``building type`` (column 5)
     Copied verbatim.  The codes are:
 
     =====  =========================
@@ -123,10 +123,10 @@ Conversion decisions
     labels of ``BuildingType`` are kept).  Code 10 is new.  There is no
     ``OTHER`` code (0) any more.
 
-``heatDemand`` / ``peakLoad`` (columns 6 and 7)
+``heat demand`` / ``peak load`` (columns 6 and 7)
     Copied from the absolute value, because the simulation reports both values
-    with a negative sign.  ``heatDemand`` is the annual heat demand in kWh,
-    ``peakLoad`` is the maximum heat load in kW.
+    with a negative sign.  ``heat demand`` is the annual heat demand in kWh,
+    ``peak load`` is the maximum heat load in kW.
 
 Invalid data
 ------------
@@ -160,14 +160,14 @@ COL_PEAK_LOAD = 7
 COL_COUNT = 8
 
 CSV_HEADER = [
-    "groundArea",
-    "height",
-    "weatherStation",
-    "constructionYear",
-    "roofType",
-    "buildingType",
-    "heatDemand",
-    "peakLoad",
+    "ground area [m2]",
+    "height [m]",
+    "weather station [code]",
+    "construction year [code]",
+    "roof type [1|0]",
+    "building type [code]",
+    "heat demand [kWh]",
+    "peak load [kW]",
 ]
 
 # Excel roof type code -> (CSV flag, German name)
