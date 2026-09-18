@@ -5,9 +5,10 @@ given CSV file and writes a tab-separated check file with four columns:
 
     heat_expected  heat_predicted  peak_expected  peak_predicted
 
-For ``data/validation-data.csv`` the check file is ``data/validation-check.txt``
-(any other name gets a ``-check.txt`` suffix instead of ``-data.csv``).  The
-check file can be plotted with GnuPlot, see ``model-check-plot.plt``.
+The check file is always written as ``validation-check.txt`` next to the input
+CSV, so running the script on the training data (a self-check) or on the
+validation data both produce ``data/validation-check.txt``.  The check file is
+plotted with GnuPlot, see ``model-check-plot.plt``.
 
 The script also prints common regression statistics for both targets; the
 meaning of these statistics is documented in the README.
@@ -80,7 +81,7 @@ def main():
         "--output",
         type=Path,
         default=None,
-        help="the check file to write (default: <name>-check.txt next to the input)",
+        help="the check file to write (default: validation-check.txt next to the input)",
     )
     args = parser.parse_args()
 

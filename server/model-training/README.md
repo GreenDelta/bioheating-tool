@@ -18,13 +18,15 @@ uv sync
 
 # convert the simulation output Excel files to the CSV format
 uv run xls_simout_to_csv.py training-simout.xlsx data/training-data.csv
-uv run xls_simout_to_csv.py validation-simout.xlsx data/validation-data.csv
 
 # train the model (creates the model.ubj resource)
 uv run train.py data/training-data.csv
 
-# validate the model (creates data/validation-check.txt and prints statistics)
+# validate the model (writes data/validation-check.txt and prints statistics)
 uv run validate.py data/validation-data.csv
+
+# optional: self-check on the training data (writes the same check file)
+uv run validate.py data/training-data.csv
 
 # create the charts from the check file
 gnuplot model-check-plot.plt
@@ -92,9 +94,10 @@ and writes the check file and prints statistics:
 uv run validate.py data/validation-data.csv
 ```
 
-The check file is written next to the input file, replacing a trailing `-data`
-with `-check`, so `data/validation-data.csv` produces
-`data/validation-check.txt`. It contains four tab-separated columns:
+The check file is always written as `data/validation-check.txt` next to the
+input file, so both the self-validation on the training data
+(`uv run validate.py data/training-data.csv`) and the validation on the
+validation data produce the same file. It contains four tab-separated columns:
 
 ```
 heat_expected  heat_predicted  peak_expected  peak_predicted
@@ -121,10 +124,9 @@ gnuplot model-check-plot.plt
 ```
 
 This creates `data/model-check-heat-demand.png` and
-`data/model-check-peak-load.png`. To also visualize the fit on the training data
-(a self-check), run `uv run validate.py data/training-data.csv` to create
-`data/training-check.txt` and add it to the plot commands in
-`model-check-plot.plt`.
+`data/model-check-peak-load.png` from `data/validation-check.txt`. Since both
+the self-validation and the validation write to that same file, run the
+`validate.py` command for the data you want to see before running gnuplot.
 
 > **Note:** the simulation Excel and CSV format changed with the new model, so
 > the Java example classes (`ModelTrainingExample`, `ModelValidationExample`)

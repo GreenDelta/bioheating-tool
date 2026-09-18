@@ -85,12 +85,11 @@ def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
 
 
 def check_file_for(csv_file: Path) -> Path:
-    """Return the check file path that belongs to a data CSV.
+    """Return the check file path for a data CSV.
 
-    ``data/validation-data.csv`` becomes ``data/validation-check.txt`` and
-    ``data/training-data.csv`` becomes ``data/training-check.txt``.
+    The check file is always named ``validation-check.txt`` and written next to
+    the input CSV.  This way the same file, and thus the same chart, works for
+    the self-validation on the training data as well as for the validation on
+    the validation data.
     """
-    stem = csv_file.stem
-    if stem.endswith("-data"):
-        stem = stem[: -len("-data")]
-    return csv_file.with_name(stem + "-check.txt")
+    return csv_file.with_name("validation-check.txt")
