@@ -1,12 +1,15 @@
 """Validate the trained model and write the resources for the model check.
 
 The script loads the trained model, predicts both targets for the rows of the
-given CSV file and writes a tab-separated check file with four columns:
+given CSV file and writes two check files next to the input CSV:
 
-    heat_expected  heat_predicted  peak_expected  peak_predicted
+* ``validation-check.txt`` - tab-separated, for plotting with GnuPlot
+  (columns: ``heat_expected  heat_predicted  peak_expected  peak_predicted``)
+* ``validation-check.xlsx`` - Excel file with the columns
+  ``heat demand expected [kWh]``, ``heat demand predicted [kWh]``,
+  ``peak load expected [kW]`` and ``peak load predicted [kW]``
 
-The check file is written as ``validation-check.txt`` next to the input
-CSV.  The check file can be plotted with GnuPlot, see ``model-check-plot.plt``.
+The GnuPlot script is ``model-check-plot.plt``.
 
 The script also prints common regression statistics for both targets; the
 meaning of these statistics is documented in the README.
@@ -21,6 +24,7 @@ from pathlib import Path
 
 import numpy as np
 import xgboost as xgb
+from openpyxl import Workbook
 
 from common import MODEL_FILE, TARGET_NAMES, read_csv_data
 
@@ -45,6 +49,35 @@ def write_check_file(
                 f"{expected[0]}\t{predicted[0]}\t"
                 f"{expected[1]}\t{predicted[1]}\n"
             )
+
+
+EXCEL_HEADER = [
+    "heat demand expected [kWh]",
+    "heat demand predicted [kWh]",
+    "peak load expected [kW]",
+    "peak load predicted [kW]",
+]
+
+
+def write_excel_file(
+    out_file: Path, labels: np.ndarray, predictions: np.ndarray
+) -> None:
+    """Write expected and predicted values of both targets to an Excel file."""
+    out_file.parent.mkdir(exist_ok=True, parents=True)
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "validation"
+    sheet.append(EXCEL_HEADER)
+    for expected, predicted in zip(labels, predictions):
+        sheet.append(
+            [
+                float(expected[0]),
+                float(predicted[0]),
+                float(expected[1]),
+                float(predicted[1]),
+            ]
+        )
+    workbook.save(out_file)
 
 
 def print_statistics(
@@ -90,7 +123,10 @@ def main():
         "--output",
         type=Path,
         default=None,
-        help="the check file to write (default: validation-check.txt next to the input)",
+        help=(
+            "the check file to write (default: validation-check.txt next to "
+            "the input; the Excel file uses the same name with .xlsx)"
+        ),
     )
     args = parser.parse_args()
 
@@ -107,6 +143,10 @@ def main():
     out_file = args.output or check_file_for(args.data)
     write_check_file(out_file, labels, predictions)
     print(f"Wrote check file to: {out_file}")
+
+    excel_file = out_file.with_suffix(".xlsx")
+    write_excel_file(excel_file, labels, predictions)
+    print(f"Wrote Excel file to: {excel_file}")
 
     print_statistics(args.data, labels, predictions)
 

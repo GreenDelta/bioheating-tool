@@ -23,7 +23,7 @@ uv run xls_simout_to_csv.py training-simout.xlsx data/training-data.csv
 # train the model (creates the model.ubj resource)
 uv run train.py data/training-data.csv
 
-# validate the model (writes data/validation-check.txt and prints statistics)
+# validate the model (writes data/validation-check.* and prints statistics)
 uv run validate.py data/validation-data.csv
 
 # optional: self-check on the training data (writes the same check file)
@@ -90,21 +90,23 @@ index 1 is the peak load in kW.
 
 ## Validation
 
-`validate.py` loads the trained model, predicts both targets for the given CSV
-and writes the check file and prints statistics:
+`validate.py` loads the trained model, predicts both targets for the given CSV,
+writes the check files and prints statistics:
 
 ```bash
 uv run validate.py data/validation-data.csv
 ```
 
-The check file is always written as `data/validation-check.txt` next to the
-input file, so both the self-validation on the training data
+Both check files are always written next to the input file, so both the
+self-validation on the training data
 (`uv run validate.py data/training-data.csv`) and the validation on the
-validation data produce the same file. It contains four tab-separated columns:
+validation data produce the same files:
 
-```
-heat_expected  heat_predicted  peak_expected  peak_predicted
-```
++ `validation-check.txt` - tab-separated, with the columns `heat_expected`,
+  `heat_predicted`, `peak_expected` and `peak_predicted`, used by GnuPlot.
++ `validation-check.xlsx` - Excel file with the columns `heat demand expected
+  [kWh]`, `heat demand predicted [kWh]`, `peak load expected [kW]` and
+  `peak load predicted [kW]`.
 
 ### Statistics
 

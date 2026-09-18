@@ -1,4 +1,4 @@
-# cleanup generated files of train.py
+# cleanup generated files of the model training and validation scripts
 
 import sys
 from pathlib import Path
@@ -9,8 +9,8 @@ def main():
     data_dir = script_dir / "data"
 
 
-    # delete check files
-    for ext in ["*.png", "*.txt"]:
+    # delete check files and charts
+    for ext in ["*.png", "*.txt", "validation-check.xlsx"]:
         for f in data_dir.glob(ext):
             if f.is_file():
                 f.unlink()
