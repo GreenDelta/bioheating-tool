@@ -1,4 +1,4 @@
-src/main/resources/com/greendelta/bioheating/predict/model.*
+src/main/resources/com/greendelta/bioheating/predict/*.ubj
 model-training/.venv
 
 HELP.md

@@ -1,9 +1,9 @@
 # Model training
 
 This directory contains the Python scripts for converting the simulation output,
-for training and for validating the XGBoost model used in the application. The
-model is a single booster with two outputs: the annual heat demand in kWh and the
-peak load in kW.
+for training and for validating the XGBoost models used in the application. The
+application uses two separate models: one for the annual heat demand in kWh and
+one for the peak load in kW.
 
 ## Setup & usage
 
@@ -20,7 +20,7 @@ uv sync
 # convert the simulation output Excel files to the CSV format
 uv run xls_simout_to_csv.py training-simout.xlsx data/training-data.csv
 
-# train the model (creates the model.ubj resource)
+# train the models (creates demand-model.ubj and peak-model.ubj)
 uv run train.py data/training-data.csv
 
 # validate the model (writes data/validation-check.* and prints statistics)
@@ -72,26 +72,28 @@ can be changed freely.
 
 ## Training
 
-`train.py` reads the given training CSV and trains one model for both targets:
+`train.py` reads the given training CSV and trains two separate models, one per
+target:
 
 ```bash
 uv run train.py data/training-data.csv
 ```
 
-The trained model is saved to:
+The trained models are saved to:
 
 ```
-../src/main/resources/com/greendelta/bioheating/predict/model.ubj
+../src/main/resources/com/greendelta/bioheating/predict/demand-model.ubj
+../src/main/resources/com/greendelta/bioheating/predict/peak-model.ubj
 ```
 
-This is the location expected by the server application, which loads the model
-at runtime. The model has two outputs: index 0 is the heat demand in kWh and
-index 1 is the peak load in kW.
+These are the locations expected by the server application, which loads both
+models at runtime: `demand-model.ubj` predicts the annual heat demand in kWh and
+`peak-model.ubj` predicts the peak load in kW.
 
 ## Validation
 
-`validate.py` loads the trained model, predicts both targets for the given CSV,
-writes the check files and prints statistics:
+`validate.py` loads both trained models, predicts both targets for the given
+CSV, writes the check files and prints statistics:
 
 ```bash
 uv run validate.py data/validation-data.csv

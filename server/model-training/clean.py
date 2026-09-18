@@ -20,7 +20,7 @@ def main():
     delete_models = "--all" in sys.argv
     mod_dir = script_dir / "../src/main/resources/com/greendelta/bioheating/predict"
     if delete_models and mod_dir.exists():
-        for model in mod_dir.glob("model.*"):
+        for model in mod_dir.glob("*-model.ubj"):
             if model.is_file():
                 model.unlink()
                 print(f"Deleted: {model.name}")

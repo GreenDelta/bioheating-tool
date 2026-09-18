@@ -1,8 +1,8 @@
 """Shared constants and helpers for the training and validation scripts.
 
-The CSV column layout, the model location and the ``read_csv_data`` function
+The CSV column layout, the model locations and the ``read_csv_data`` function
 live here so that ``train.py`` and ``validate.py`` always read the data and the
-model in exactly the same way.
+models in exactly the same way.
 """
 
 import csv
@@ -25,11 +25,13 @@ COL_COUNT = 8
 FEATURE_COUNT = 6
 TARGET_NAMES = ["heat demand", "peak load"]
 
-# The location where the trained model is expected by the server application.
-MODEL_FILE = (
+# Locations of the two trained models expected by the server application.
+MODEL_DIR = (
     Path(__file__).parent
-    / "../src/main/resources/com/greendelta/bioheating/predict/model.ubj"
+    / "../src/main/resources/com/greendelta/bioheating/predict"
 )
+DEMAND_MODEL_FILE = MODEL_DIR / "demand-model.ubj"
+PEAK_MODEL_FILE = MODEL_DIR / "peak-model.ubj"
 
 
 def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
