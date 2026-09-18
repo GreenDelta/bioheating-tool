@@ -11,8 +11,6 @@ from pathlib import Path
 
 import numpy as np
 
-from xls_simout_to_csv import CSV_HEADER
-
 # Column indices of the data CSV, see xls_simout_to_csv.py.
 COL_GROUND_AREA = 0
 COL_HEIGHT = 1
@@ -39,20 +37,15 @@ def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
     """Read the features and the two target columns from a data CSV.
 
     Returns the feature matrix (n x 6) and the label matrix (n x 2) as float32
-    arrays.  The header is checked so that files in the old format are rejected
-    instead of being silently misread.
+    arrays.  The first row is always skipped and all values are read by column
+    index, so the header names can be changed freely.
     """
     features = []
     labels = []
 
     with open(csv_file, "r", encoding="utf-8", newline="") as f:
         reader = csv.reader(f)
-        header = next(reader, None)
-        if header != CSV_HEADER:
-            raise ValueError(
-                f"{csv_file.name} has an unexpected header {header}; "
-                "convert the simulation output with xls_simout_to_csv.py"
-            )
+        next(reader, None)  # skip the header row, columns are read by index
 
         for line, row in enumerate(reader, start=2):
             if not row:

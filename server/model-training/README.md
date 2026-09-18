@@ -65,7 +65,9 @@ prediction targets:
 | 7      | peak load [kW]           | Float   | Target: maximum heat load           |
 
 All raw values and codes are used directly as model features, there are no
-factor mappings.
+factor mappings. The header names are only documentation: the scripts always
+read the values by column index and ignore the header row, so the header names
+can be changed freely.
 
 ## Training
 
