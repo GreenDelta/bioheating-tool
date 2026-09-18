@@ -1,7 +1,6 @@
 """Train the multi-output model for heat demand and peak load prediction.
 
-The model is trained on a CSV file that is produced from the simulation output
-Excel file with ``xls_simout_to_csv.py``.  The CSV contains six features and two
+The model is trained on a CSV file.  The CSV contains six features and two
 targets, see ``common.py`` for the exact column layout.
 
 All raw values and codes are used directly, no factor mappings are applied.
@@ -21,7 +20,7 @@ from pathlib import Path
 
 import xgboost as xgb
 
-from common import FEATURE_COUNT, MODEL_FILE, TARGET_NAMES, read_csv_data
+from common import MODEL_FILE, read_csv_data
 
 # XGBoost training parameters.  ``multi_output_tree`` builds a single tree per
 # boosting round that predicts both targets at once, which lets the model use
@@ -43,7 +42,7 @@ def train_model(training_file: Path, output_model_file: Path) -> xgb.Booster:
     features, labels = read_csv_data(training_file)
     dtrain = xgb.DMatrix(features, label=labels)
 
-    print(f"Train model with {FEATURE_COUNT} features and {len(TARGET_NAMES)} targets...")
+    print("Train model with ...")
     model = xgb.train(PARAMS, dtrain, NUM_ROUNDS)
 
     print(f"Saving model to: {output_model_file.name}")
@@ -57,7 +56,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="Train the heat demand and peak load prediction model."
     )
-    parser.add_argument("training_data", type=Path, help="the training CSV file")
+    parser.add_argument(
+        "training_data", type=Path, help="the training CSV file"
+    )
     args = parser.parse_args()
 
     train_model(args.training_data, MODEL_FILE)

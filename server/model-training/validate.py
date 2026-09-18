@@ -5,10 +5,8 @@ given CSV file and writes a tab-separated check file with four columns:
 
     heat_expected  heat_predicted  peak_expected  peak_predicted
 
-The check file is always written as ``validation-check.txt`` next to the input
-CSV, so running the script on the training data (a self-check) or on the
-validation data both produce ``data/validation-check.txt``.  The check file is
-plotted with GnuPlot, see ``model-check-plot.plt``.
+The check file is written as ``validation-check.txt`` next to the input
+CSV.  The check file can be plotted with GnuPlot, see ``model-check-plot.plt``.
 
 The script also prints common regression statistics for both targets; the
 meaning of these statistics is documented in the README.
@@ -24,10 +22,12 @@ from pathlib import Path
 import numpy as np
 import xgboost as xgb
 
-from common import MODEL_FILE, TARGET_NAMES, check_file_for, read_csv_data
+from common import MODEL_FILE, TARGET_NAMES, read_csv_data
 
 
-def predict(model: xgb.Booster, csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
+def predict(
+    model: xgb.Booster, csv_file: Path
+) -> tuple[np.ndarray, np.ndarray]:
     """Return the expected labels and the model predictions for ``csv_file``."""
     features, labels = read_csv_data(csv_file)
     predictions = model.predict(xgb.DMatrix(features))
@@ -72,6 +72,15 @@ def print_statistics(
         print(f"    R2   = {r2:.4f}")
 
 
+def check_file_for(csv_file: Path) -> Path:
+    """Return the check file path for a data CSV.
+
+    The check file is always named ``validation-check.txt`` and written next to
+    the input CSV.
+    """
+    return csv_file.with_name("validation-check.txt")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Validate the heat demand and peak load prediction model."
@@ -86,7 +95,9 @@ def main():
     args = parser.parse_args()
 
     if not MODEL_FILE.is_file():
-        raise SystemExit(f"Model file not found: {MODEL_FILE}. Run train.py first.")
+        raise SystemExit(
+            f"Model file not found: {MODEL_FILE}. Run train.py first."
+        )
 
     model = xgb.Booster()
     model.load_model(str(MODEL_FILE))

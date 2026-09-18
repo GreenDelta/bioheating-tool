@@ -7,8 +7,9 @@ peak load in kW.
 
 ## Setup & usage
 
-The project uses [uv](https://docs.astral.sh/uv/) for Python dependency management. The required
-dependencies and Python version (3.13) are configured in `pyproject.toml`.
+The project uses [uv](https://docs.astral.sh/uv/) for Python dependency
+management. The required dependencies and Python version (3.13) are configured
+in `pyproject.toml`.
 
 ```bash
 cd server/model-training
@@ -133,4 +134,3 @@ the self-validation and the validation write to that same file, run the
 > **Note:** the simulation Excel and CSV format changed with the new model, so
 > the Java example classes (`ModelTrainingExample`, `ModelValidationExample`)
 > still use the old format and need to be updated to match this document.
-

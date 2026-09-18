@@ -2,8 +2,7 @@
 
 The CSV column layout, the model location and the ``read_csv_data`` function
 live here so that ``train.py`` and ``validate.py`` always read the data and the
-model in exactly the same way.  The CSV format itself is documented in
-``xls_simout_to_csv.py``.
+model in exactly the same way.
 """
 
 import csv
@@ -11,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 
-# Column indices of the data CSV, see xls_simout_to_csv.py.
+# Column indices of the data CSV
 COL_GROUND_AREA = 0
 COL_HEIGHT = 1
 COL_WEATHER_STATION = 2
@@ -45,7 +44,7 @@ def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
 
     with open(csv_file, "r", encoding="utf-8", newline="") as f:
         reader = csv.reader(f)
-        next(reader, None)  # skip the header row, columns are read by index
+        next(reader, None)  # skip the header row
 
         for line, row in enumerate(reader, start=2):
             if not row:
@@ -56,17 +55,10 @@ def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
                     f"expected {COL_COUNT}"
                 )
 
-            features.append(
-                [
-                    float(row[COL_GROUND_AREA]),
-                    float(row[COL_HEIGHT]),
-                    float(row[COL_WEATHER_STATION]),
-                    float(row[COL_CONSTRUCTION_YEAR]),
-                    float(row[COL_ROOF_TYPE]),
-                    float(row[COL_BUILDING_TYPE]),
-                ]
+            features.append(_feature_of(row))
+            labels.append(
+                [float(row[COL_HEAT_DEMAND]), float(row[COL_PEAK_LOAD])]
             )
-            labels.append([float(row[COL_HEAT_DEMAND]), float(row[COL_PEAK_LOAD])])
 
     if not features:
         raise ValueError(f"{csv_file.name} contains no data rows")
@@ -77,12 +69,12 @@ def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:
     )
 
 
-def check_file_for(csv_file: Path) -> Path:
-    """Return the check file path for a data CSV.
-
-    The check file is always named ``validation-check.txt`` and written next to
-    the input CSV.  This way the same file, and thus the same chart, works for
-    the self-validation on the training data as well as for the validation on
-    the validation data.
-    """
-    return csv_file.with_name("validation-check.txt")
+def _feature_of(row: list[str]) -> list[float]:
+    return [
+        float(row[COL_GROUND_AREA]),
+        float(row[COL_HEIGHT]),
+        float(row[COL_WEATHER_STATION]),
+        float(row[COL_CONSTRUCTION_YEAR]),
+        float(row[COL_ROOF_TYPE]),
+        float(row[COL_BUILDING_TYPE]),
+    ]
