@@ -57,7 +57,6 @@ class FeaturesTest {
 			.groundArea(100)
 			.height(10)
 			.type(BuildingType.SINGLE_FAMILY)
-			.constructionAge(ConstructionAge.UNKNOWN)
 			.roofType(RoofType.PITCHED);
 
 		var data = new float[Features.COUNT];

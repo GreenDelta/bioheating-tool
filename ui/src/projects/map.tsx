@@ -381,7 +381,7 @@ function createBuilding(layer: L.Polygon, data: GeoMap): GeoFeature {
 			isSupplyCenter: false,
 			isIncluded: false,
 			type: "OTHER",
-			constructionAge: "UNKNOWN",
+			constructionAge: "AGE_1979_1995",
 			roofType: "PITCHED",
 		},
 	};

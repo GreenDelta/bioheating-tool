@@ -39,7 +39,7 @@ public class MapSyncTest {
 				Map.entry("isSupplyCenter", false),
 				Map.entry("isIncluded", true),
 				Map.entry("type", "OTHER"),
-				Map.entry("constructionAge", "UNKNOWN")
+				Map.entry("constructionAge", "AGE_1979_1995")
 			)
 		)));
 

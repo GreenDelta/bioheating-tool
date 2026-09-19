@@ -196,10 +196,6 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 					value={data.constructionAge}
 					options={[
 						{
-							value: ConstructionAge.UNKNOWN,
-							label: constructionAgeToString(ConstructionAge.UNKNOWN),
-						},
-						{
 							value: ConstructionAge.AGE_1900_1919,
 							label: constructionAgeToString(ConstructionAge.AGE_1900_1919),
 						},

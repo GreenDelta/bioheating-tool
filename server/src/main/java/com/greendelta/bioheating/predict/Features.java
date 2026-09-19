@@ -39,12 +39,13 @@ class Features {
 		data[offset + 5] = buildingTypeOf(b);
 	}
 
-	/// The domain model still has an unknown construction age (0); the model
-	/// defaults to 1979-1995 (4) for such buildings.
+	/// The construction year code of a building; buildings without a
+	/// construction age default to 1979-1995.
 	private static int constructionYearOf(Building b) {
 		var age = b.constructionAge();
-		if (age == null || age == ConstructionAge.UNKNOWN) return 4;
-		return age.code();
+		return age == null
+			? ConstructionAge.AGE_1979_1995.code()
+			: age.code();
 	}
 
 	/// The roof type code: 1 for a flat roof, 0 for a pitched roof.

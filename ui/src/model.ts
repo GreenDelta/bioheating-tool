@@ -116,7 +116,6 @@ export function buildingTypeFromString(value: string): BuildingType {
 }
 
 export enum ConstructionAge {
-	UNKNOWN = "UNKNOWN",
 	AGE_1900_1919 = "AGE_1900_1919",
 	AGE_1919_1948 = "AGE_1919_1948",
 	AGE_1949_1978 = "AGE_1949_1978",
@@ -139,9 +138,8 @@ export function constructionAgeFromString(value: string): ConstructionAge {
 			return ConstructionAge.AGE_1995_2009;
 		case "AGE_2010_2030":
 			return ConstructionAge.AGE_2010_2030;
-		case "UNKNOWN":
 		default:
-			return ConstructionAge.UNKNOWN;
+			return ConstructionAge.AGE_1979_1995;
 	}
 }
 
@@ -159,9 +157,8 @@ export function constructionAgeToString(age: ConstructionAge): string {
 			return "1995-2009";
 		case ConstructionAge.AGE_2010_2030:
 			return "2010-2030";
-		case ConstructionAge.UNKNOWN:
 		default:
-			return "unknown";
+			return "1979-1995";
 	}
 }
 export enum RoofType {
