@@ -133,7 +133,7 @@ public class XlsBuildingExport {
 	}
 
 	private int typeCodeOf(BuildingType type) {
-		return type != null ? type.code() : BuildingType.OTHER.code();
+		return type != null ? type.code() : BuildingType.MULTI_GENERATION.code();
 	}
 
 	private void putString(Row row, int column, String value) {

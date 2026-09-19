@@ -38,7 +38,7 @@ public class MapSyncTest {
 				Map.entry("isHeated", true),
 				Map.entry("isSupplyCenter", false),
 				Map.entry("isIncluded", true),
-				Map.entry("type", "OTHER"),
+				Map.entry("type", "MULTI_GENERATION"),
 				Map.entry("constructionAge", "AGE_1979_1995")
 			)
 		)));

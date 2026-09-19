@@ -2,7 +2,6 @@ package com.greendelta.bioheating.predict;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
@@ -65,12 +64,14 @@ class FeaturesTest {
 	}
 
 	@Test
-	void rejectsBuildingsWithoutValidType() {
-		var building = new Building().type(BuildingType.OTHER);
+	void defaultsMissingBuildingType() {
+		var building = new Building()
+			.groundArea(100)
+			.height(10)
+			.roofType(RoofType.PITCHED);
+
 		var data = new float[Features.COUNT];
-		assertThrows(
-			IllegalArgumentException.class,
-			() -> Features.of(7, building, data, 0)
-		);
+		Features.of(7, building, data, 0);
+		assertArrayEquals(new float[] { 100f, 10f, 7f, 4f, 0f, 10f }, data);
 	}
 }

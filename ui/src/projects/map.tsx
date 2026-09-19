@@ -380,7 +380,7 @@ function createBuilding(layer: L.Polygon, data: GeoMap): GeoFeature {
 			isHeated: true,
 			isSupplyCenter: false,
 			isIncluded: false,
-			type: "OTHER",
+			type: "MULTI_GENERATION",
 			constructionAge: "AGE_1979_1995",
 			roofType: "PITCHED",
 		},

@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.model;
 
+/// The building type. There is no unknown value; when the type cannot be
+/// determined it defaults to MULTI_GENERATION.
 public enum BuildingType {
 	HIGH_RISE(1),
 	MULTI_FAMILY_SMALL(2),
@@ -10,7 +12,7 @@ public enum BuildingType {
 	END_TERRACE(7),
 	MID_TERRACE(8),
 	HOUSE_GROUP(9),
-	OTHER(0);
+	MULTI_GENERATION(10);
 
 	private final int code;
 
@@ -26,6 +28,6 @@ public enum BuildingType {
 		for (var t : values()) {
 			if (t.code == code) return t;
 		}
-		return OTHER;
+		return MULTI_GENERATION;
 	}
 }

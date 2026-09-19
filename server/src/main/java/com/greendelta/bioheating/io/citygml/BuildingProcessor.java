@@ -65,13 +65,12 @@ class BuildingProcessor {
 				return count;
 			};
 
-			// second pass: count the heated neighbors and
+			// second pass: assign the building type from the building
+			// parameters and the heated neighbors
 			for (var b : buildings) {
-				if (!b.isHeated()) continue;
 				var shape = shapeMap.get(b.cityId());
 				if (shape == null) continue;
-				var type = typeOf(shape, neighbors);
-				b.type(type);
+				b.type(typeOf(shape, neighbors));
 			}
 
 			return Res.ok(buildings);
@@ -94,7 +93,7 @@ class BuildingProcessor {
 			.height(gml.height())
 			.groundArea(shape.groundArea())
 			.isIncluded(false)
-			.type(BuildingType.OTHER); // updated later
+			.type(BuildingType.MULTI_GENERATION); // updated later
 
 		if (func != null) {
 			b.functionCode(func.code());

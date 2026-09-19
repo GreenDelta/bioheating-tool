@@ -186,7 +186,10 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 						{ value: BuildingType.END_TERRACE, label: "End Terrace" },
 						{ value: BuildingType.MID_TERRACE, label: "Mid Terrace" },
 						{ value: BuildingType.HOUSE_GROUP, label: "House Group" },
-						{ value: BuildingType.OTHER, label: "Other" },
+						{
+							value: BuildingType.MULTI_GENERATION,
+							label: "Multi Generation House",
+						},
 					]}
 					onChange={value => put({ type: value })}
 				/>

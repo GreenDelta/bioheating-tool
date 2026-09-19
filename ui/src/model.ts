@@ -86,7 +86,7 @@ export enum BuildingType {
 	END_TERRACE = "END_TERRACE",
 	MID_TERRACE = "MID_TERRACE",
 	HOUSE_GROUP = "HOUSE_GROUP",
-	OTHER = "OTHER",
+	MULTI_GENERATION = "MULTI_GENERATION",
 }
 
 export function buildingTypeFromString(value: string): BuildingType {
@@ -109,9 +109,8 @@ export function buildingTypeFromString(value: string): BuildingType {
 			return BuildingType.MID_TERRACE;
 		case "HOUSE_GROUP":
 			return BuildingType.HOUSE_GROUP;
-		case "OTHER":
 		default:
-			return BuildingType.OTHER;
+			return BuildingType.MULTI_GENERATION;
 	}
 }
 

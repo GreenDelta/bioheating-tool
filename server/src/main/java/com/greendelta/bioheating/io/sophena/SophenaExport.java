@@ -255,7 +255,7 @@ public class SophenaExport {
 				MULTI_FAMILY_LARGE,
 				HOUSE_GROUP -> SophenaBuildingType.BLOCK_OF_FLATS;
 			case HIGH_RISE -> SophenaBuildingType.TOWER_BLOCK;
-			case BUILDING_PART, OTHER -> SophenaBuildingType.OTHER;
+			case BUILDING_PART, MULTI_GENERATION -> SophenaBuildingType.OTHER;
 		};
 	}
 }

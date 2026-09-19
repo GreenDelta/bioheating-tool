@@ -103,7 +103,7 @@ export class BuildingData {
 			this.roofType = roofTypeFromString(d.roofType);
 			this.functionCode = stringOf(d.functionCode || d.function);
 			this.functionLabel = stringOf(d.functionLabel || d.function);
-			this.type = buildingTypeFromString(d.type || "OTHER");
+			this.type = buildingTypeFromString(d.type || "MULTI_GENERATION");
 			this.constructionAge = constructionAgeFromString(d.constructionAge || "AGE_1979_1995");
 			this.groundArea = floatOf(d.groundArea);
 			this.country = stringOf(d.country);

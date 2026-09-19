@@ -54,15 +54,12 @@ class Features {
 		return roofType == null ? RoofType.PITCHED.code() : roofType.code();
 	}
 
-	/// The model does not know the fallback type `OTHER` (0), so buildings
-	/// without a valid type cannot be predicted.
+	/// The building type code; buildings without a type default to
+	/// MULTI_GENERATION.
 	private static int buildingTypeOf(Building b) {
 		var type = b.type();
-		if (type == null || type == BuildingType.OTHER) {
-			throw new IllegalArgumentException(
-				"cannot predict a building without a valid building type"
-			);
-		}
-		return type.code();
+		return type == null
+			? BuildingType.MULTI_GENERATION.code()
+			: type.code();
 	}
 }
