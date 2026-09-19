@@ -3,6 +3,7 @@ package com.greendelta.bioheating.model.client;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
+import com.greendelta.bioheating.model.RoofType;
 import com.greendelta.bioheating.model.Street;
 
 import java.util.Map;
@@ -21,8 +22,7 @@ record PropertyPatch(Map<String, Object> properties) {
 		if (b == null) 	return;
 
 		setString("name", b::name);
-		setString("roofTypeCode", b::roofTypeCode);
-		setString("roofTypeLabel", b::roofTypeLabel);
+		setRoofType(b::roofType);
 		setString("functionCode", b::functionCode);
 		setString("functionLabel", b::functionLabel);
 
@@ -78,6 +78,13 @@ record PropertyPatch(Map<String, Object> properties) {
 		var type = getEnum("type", BuildingType.class);
 		if (type != null) {
 			setter.apply(type);
+		}
+	}
+
+	private void setRoofType(Function<RoofType, ?> setter) {
+		var roofType = getEnum("roofType", RoofType.class);
+		if (roofType != null) {
+			setter.apply(roofType);
 		}
 	}
 

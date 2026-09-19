@@ -6,6 +6,8 @@ import {
 	BuildingType,
 	ConstructionAge,
 	constructionAgeToString,
+	RoofType,
+	roofTypeToString,
 	isBuilding,
 } from "../model";
 import { BuildingData, BuildingProps } from "./panel-data";
@@ -140,10 +142,20 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 					onChange={value => put({ groundArea: value })}
 				/>
 
-				<StringField
+				<SelectField
 					label="Roof Type"
-					value={data.roofTypeLabel}
-					onChange={value => put({ roofTypeLabel: value })}
+					value={data.roofType}
+					options={[
+						{
+							value: RoofType.FLAT,
+							label: roofTypeToString(RoofType.FLAT),
+						},
+						{
+							value: RoofType.PITCHED,
+							label: roofTypeToString(RoofType.PITCHED),
+						},
+					]}
+					onChange={value => put({ roofType: value })}
 				/>
 
 				<StringField

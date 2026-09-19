@@ -164,7 +164,30 @@ export function constructionAgeToString(age: ConstructionAge): string {
 			return "unknown";
 	}
 }
+export enum RoofType {
+	FLAT = "FLAT",
+	PITCHED = "PITCHED",
+}
 
+export function roofTypeFromString(value: string): RoofType {
+	switch (value?.toUpperCase()) {
+		case "FLAT":
+			return RoofType.FLAT;
+		case "PITCHED":
+		default:
+			return RoofType.PITCHED;
+	}
+}
+
+export function roofTypeToString(roofType: RoofType): string {
+	switch (roofType) {
+		case RoofType.FLAT:
+			return "Flat";
+		case RoofType.PITCHED:
+		default:
+			return "Pitched";
+	}
+}
 export interface TaskState {
 	id: string;
 	status: TaskStatus;

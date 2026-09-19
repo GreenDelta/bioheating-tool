@@ -40,11 +40,9 @@ public class Building extends BaseEntity {
 	@Convert(converter = CoordinateConverter.class)
 	private Coordinate[] coordinates;
 
-	@Column(name = "roof_type_code")
-	private String roofTypeCode;
-
-	@Column(name = "roof_type_label")
-	private String roofTypeLabel;
+	@Column(name = "roof_type")
+	@Enumerated(EnumType.STRING)
+	private RoofType roofType;
 
 	@Column(name = "function_code")
 	private String functionCode;
@@ -124,21 +122,12 @@ public class Building extends BaseEntity {
 		return this;
 	}
 
-	public String roofTypeCode() {
-		return roofTypeCode;
+	public RoofType roofType() {
+		return roofType;
 	}
 
-	public Building roofTypeCode(String roofTypeCode) {
-		this.roofTypeCode = roofTypeCode;
-		return this;
-	}
-
-	public String roofTypeLabel() {
-		return roofTypeLabel;
-	}
-
-	public Building roofTypeLabel(String roofTypeLabel) {
-		this.roofTypeLabel = roofTypeLabel;
+	public Building roofType(RoofType roofType) {
+		this.roofType = roofType;
 		return this;
 	}
 

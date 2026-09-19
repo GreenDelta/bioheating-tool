@@ -1,14 +1,12 @@
 import { GeoFeature } from "../model";
-import { BuildingType, buildingTypeFromString, ConstructionAge, constructionAgeFromString } from "../model";
+import { BuildingType, buildingTypeFromString, ConstructionAge, constructionAgeFromString, RoofType, roofTypeFromString } from "../model";
 
 export interface BuildingProps {
 	name?: any;
 	height?: any;
 	heatDemand?: any;
 	peakLoad?: any;
-	roofTypeCode?: any;
-	roofTypeLabel?: any;
-	roofType?: any; // backward compatibility
+	roofType?: any;
 	functionCode?: any;
 	functionLabel?: any;
 	function?: any; // backward compatibility
@@ -57,8 +55,7 @@ export class BuildingData {
 	height: number;
 	heatDemand: number;
 	peakLoad: number;
-	roofTypeCode: string;
-	roofTypeLabel: string;
+	roofType: RoofType;
 	functionCode: string;
 	functionLabel: string;
 	type: BuildingType;
@@ -84,8 +81,7 @@ export class BuildingData {
 			this.height = d.height;
 			this.heatDemand = d.heatDemand;
 			this.peakLoad = d.peakLoad;
-			this.roofTypeCode = d.roofTypeCode;
-			this.roofTypeLabel = d.roofTypeLabel;
+			this.roofType = d.roofType;
 			this.functionCode = d.functionCode;
 			this.functionLabel = d.functionLabel;
 			this.type = d.type;
@@ -104,9 +100,7 @@ export class BuildingData {
 			this.height = floatOf(d.height);
 			this.heatDemand = floatOf(d.heatDemand);
 			this.peakLoad = floatOf(d.peakLoad);
-			// Handle backward compatibility - if old properties exist, use them as codes
-			this.roofTypeCode = stringOf(d.roofTypeCode || d.roofType);
-			this.roofTypeLabel = stringOf(d.roofTypeLabel || d.roofType);
+			this.roofType = roofTypeFromString(d.roofType);
 			this.functionCode = stringOf(d.functionCode || d.function);
 			this.functionLabel = stringOf(d.functionLabel || d.function);
 			this.type = buildingTypeFromString(d.type || "OTHER");
@@ -137,11 +131,8 @@ export class BuildingData {
 		if (props.peakLoad) {
 			copy.peakLoad = props.peakLoad;
 		}
-		if (props.roofTypeCode) {
-			copy.roofTypeCode = props.roofTypeCode;
-		}
-		if (props.roofTypeLabel) {
-			copy.roofTypeLabel = props.roofTypeLabel;
+		if (props.roofType) {
+			copy.roofType = props.roofType;
 		}
 		if (props.functionCode) {
 			copy.functionCode = props.functionCode;
@@ -193,8 +184,7 @@ export class BuildingData {
 		f.properties.height = this.height;
 		f.properties.heatDemand = this.heatDemand;
 		f.properties.peakLoad = this.peakLoad;
-		f.properties.roofTypeCode = this.roofTypeCode;
-		f.properties.roofTypeLabel = this.roofTypeLabel;
+		f.properties.roofType = this.roofType;
 		f.properties.functionCode = this.functionCode;
 		f.properties.functionLabel = this.functionLabel;
 		f.properties.type = this.type;

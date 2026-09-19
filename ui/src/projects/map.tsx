@@ -382,6 +382,7 @@ function createBuilding(layer: L.Polygon, data: GeoMap): GeoFeature {
 			isIncluded: false,
 			type: "OTHER",
 			constructionAge: "UNKNOWN",
+			roofType: "PITCHED",
 		},
 	};
 }

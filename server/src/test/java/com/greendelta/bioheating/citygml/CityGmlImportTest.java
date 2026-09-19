@@ -7,6 +7,7 @@ import com.greendelta.bioheating.io.citygml.CityGmlImport;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.RoofType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -57,7 +58,7 @@ public class CityGmlImportTest {
 		assertNotNull(cs);
 		assertEquals(5, cs.length);
 		assertEquals("31001_1010", building.functionCode());
-		assertEquals("3100", building.roofTypeCode());
+		assertEquals(RoofType.PITCHED, building.roofType());
 		assertEquals(10.354, building.height(), 1e-3);
 
 		// check address data

@@ -3,9 +3,9 @@ package com.greendelta.bioheating.io.citygml;
 import com.greendelta.bioheating.citygml.GmlAddress;
 import com.greendelta.bioheating.citygml.GmlBuilding;
 import com.greendelta.bioheating.citygml.GmlFunctionType;
-import com.greendelta.bioheating.citygml.GmlRoofType;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
+import com.greendelta.bioheating.model.RoofType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,12 +21,10 @@ class BuildingProcessor {
 
 	private final List<BuildingShape> shapes;
 	private final Map<String, GmlFunctionType> functionTypes;
-	private final Map<String, GmlRoofType> roofTypes;
 
 	private BuildingProcessor(List<BuildingShape> shapes) {
 		this.shapes = shapes;
 		this.functionTypes = GmlFunctionType.getAll();
-		this.roofTypes = GmlRoofType.getAll();
 	}
 
 	static Res<List<Building>> map(List<BuildingShape> shapes) {
@@ -103,13 +101,17 @@ class BuildingProcessor {
 			b.functionLabel(func.label());
 		}
 
-		var roofType = roofTypes.get(gml.roofType());
-		if (roofType != null) {
-			b.roofTypeCode(roofType.code());
-			b.roofTypeLabel(roofType.label());
-		}
+		b.roofType(roofTypeOf(gml));
 		mapAddress(gml.address(), b);
 		return b;
+	}
+
+	/// The model only distinguishes flat and pitched roofs; only "1000"
+	/// (Flachdach) is a flat roof in the CityGML data.
+	private static RoofType roofTypeOf(GmlBuilding gml) {
+		return "1000".equals(gml.roofType())
+			? RoofType.FLAT
+			: RoofType.PITCHED;
 	}
 
 	private BuildingType typeOf(

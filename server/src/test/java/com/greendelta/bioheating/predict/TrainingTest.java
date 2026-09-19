@@ -8,6 +8,7 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.ConstructionAge;
+import com.greendelta.bioheating.model.RoofType;
 import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,7 +36,7 @@ class TrainingTest {
 			.height(10)
 			.type(BuildingType.SINGLE_FAMILY)
 			.constructionAge(ConstructionAge.AGE_1979_1995)
-			.roofTypeCode("1000");
+			.roofType(RoofType.FLAT);
 		var prediction = predictor
 			.predict(new ClimateRegion().number(5), building)
 			.orElseThrow();

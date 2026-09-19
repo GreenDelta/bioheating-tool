@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
+import com.greendelta.bioheating.model.RoofType;
 import java.io.File;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class FeaturesTest {
 			.height(10)
 			.type(BuildingType.SINGLE_FAMILY)
 			.constructionAge(ConstructionAge.AGE_1979_1995)
-			.roofTypeCode("1000");
+			.roofType(RoofType.FLAT);
 
 		var data = new float[Features.COUNT];
 		Features.of(7, building, data, 0);
@@ -57,7 +58,7 @@ class FeaturesTest {
 			.height(10)
 			.type(BuildingType.SINGLE_FAMILY)
 			.constructionAge(ConstructionAge.UNKNOWN)
-			.roofTypeCode("3100");
+			.roofType(RoofType.PITCHED);
 
 		var data = new float[Features.COUNT];
 		Features.of(7, building, data, 0);

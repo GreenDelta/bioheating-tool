@@ -3,6 +3,7 @@ package com.greendelta.bioheating.predict;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ConstructionAge;
+import com.greendelta.bioheating.model.RoofType;
 
 /// Builds the feature vector of the model. Both training and prediction use
 /// this class, so the feature order can never diverge.
@@ -46,10 +47,10 @@ class Features {
 		return age.code();
 	}
 
-	/// The domain model still uses the CityGML roof codes; only "1000"
-	/// (Flachdach) is a flat roof.
+	/// The roof type code: 1 for a flat roof, 0 for a pitched roof.
 	private static int roofTypeOf(Building b) {
-		return "1000".equals(b.roofTypeCode()) ? 1 : 0;
+		var roofType = b.roofType();
+		return roofType == null ? RoofType.PITCHED.code() : roofType.code();
 	}
 
 	/// The model does not know the fallback type `OTHER` (0), so buildings

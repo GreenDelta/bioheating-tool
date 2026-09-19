@@ -7,6 +7,7 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.ConstructionAge;
+import com.greendelta.bioheating.model.RoofType;
 import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -28,7 +29,7 @@ class BuildingEstimatorTest {
 			.height(9.5)
 			.type(BuildingType.MULTI_FAMILY_SMALL)
 			.constructionAge(ConstructionAge.AGE_1949_1978)
-			.roofTypeCode("1000")
+			.roofType(RoofType.FLAT)
 			.isHeated(true);
 		var region = new ClimateRegion().number(5);
 

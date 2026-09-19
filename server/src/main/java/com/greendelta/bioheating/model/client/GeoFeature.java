@@ -28,8 +28,7 @@ public record GeoFeature(
 		props.put("@type", "building");
 		props.put("id", b.id());
 		props.put("name", b.name());
-		props.put("roofTypeCode", b.roofTypeCode());
-		props.put("roofTypeLabel", b.roofTypeLabel());
+		props.put("roofType", b.roofType());
 		props.put("functionCode", b.functionCode());
 		props.put("functionLabel", b.functionLabel());
 		props.put("type", b.type());
