@@ -93,18 +93,12 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		if (predictions.isError()) return predictions.wrapError(
 			"Failed to predict heat demands"
 		);
-		var demands = predictions.value();
+		var predictionsByBuilding = predictions.value();
 		for (int i = 0; i < buildings.size(); i++) {
 			var building = buildings.get(i);
-			var heatDemand = demands[i];
-			building.heatDemand(heatDemand);
-
-			// Estimates the peak heating load of the building based on its annual
-			// heat demand using a linear regression model. The `heatDemand` is
-			// given in kWh/year and peakLoad is then in kW.
-			/// Note: In a future version of the model, this field will also be
-			/// predicted by the machine learning model.
-			building.peakLoad(0.000451213244244867 * heatDemand + 3.66786593448211);
+			var prediction = predictionsByBuilding.get(i);
+			building.heatDemand(prediction.heatDemand());
+			building.peakLoad(prediction.peakLoad());
 		}
 
 		return Res.ok(project);

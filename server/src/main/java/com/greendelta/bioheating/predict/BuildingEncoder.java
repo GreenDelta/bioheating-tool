@@ -6,50 +6,34 @@ import java.util.List;
 import ml.dmlc.xgboost4j.java.DMatrix;
 import org.openlca.commons.Res;
 
+/// Encodes buildings into an XGBoost matrix for prediction.
 class BuildingEncoder {
 
-	private static final int PARAMS = 7;
-
-	private final float regionParam;
-	private final List<Building> buildings;
-	private final float[] data;
-
-	private BuildingEncoder(float regionParam, List<Building> buildings) {
-		this.regionParam = regionParam;
-		this.buildings = buildings;
-		this.data = new float[PARAMS * buildings.size()];
-	}
+	private BuildingEncoder() {}
 
 	static Res<DMatrix> encode(ClimateRegion region, List<Building> buildings) {
-		if (
-			region == null || buildings == null || buildings.isEmpty()
-		) return Res.error("Climate region or building data missing");
-
-		float regionParam = FeatureValue.climateRegionFactor(region.number());
-		return new BuildingEncoder(regionParam, buildings).run();
-	}
-
-	private Res<DMatrix> run() {
+		if (region == null || buildings == null || buildings.isEmpty()) {
+			return Res.error("Climate region or building data missing");
+		}
 		try {
+			var data = new float[Features.COUNT * buildings.size()];
 			for (var i = 0; i < buildings.size(); i++) {
-				var b = buildings.get(i);
-				encode(i * PARAMS, b);
+				Features.of(
+					region.number(),
+					buildings.get(i),
+					data,
+					i * Features.COUNT
+				);
 			}
-			var matrix = new DMatrix(data, buildings.size(), PARAMS, Float.NaN);
+			var matrix = new DMatrix(
+				data,
+				buildings.size(),
+				Features.COUNT,
+				Float.NaN
+			);
 			return Res.ok(matrix);
 		} catch (Exception e) {
 			return Res.error("Failed to encode building data", e);
 		}
-	}
-
-	private void encode(int offset, Building b) {
-		int p = offset;
-		data[p] = (float) b.height();
-		data[p + 1] = (float) b.storeys();
-		data[p + 2] = (float) b.groundArea();
-		data[p + 3] = FeatureValue.typeFactor(b.type());
-		data[p + 4] = regionParam;
-		data[p + 5] = FeatureValue.averageHeatDemand(b.constructionAge());
-		data[p + 6] = FeatureValue.roofTypeFacor(b.roofTypeCode());
 	}
 }

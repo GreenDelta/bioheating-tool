@@ -24,8 +24,7 @@ import xgboost as xgb
 
 from common import DEMAND_MODEL_FILE, PEAK_MODEL_FILE, read_csv_data
 
-# XGBoost training parameters, shared by both models.  There is no
-# ``multi_strategy`` because each model predicts a single target.
+# XGBoost training parameters, shared by both models.
 PARAMS = {
     "objective": "reg:squarederror",
     "tree_method": "hist",
@@ -39,7 +38,7 @@ NUM_ROUNDS = 1000
 def train_model(
     features: np.ndarray, labels: np.ndarray, output_model_file: Path
 ) -> xgb.Booster:
-    """Train one single-target model and save it to ``output_model_file``."""
+    """Train one model and save it to ``output_model_file``."""
     print(f"Train model: {output_model_file.name}")
     dtrain = xgb.DMatrix(features, label=labels)
     model = xgb.train(PARAMS, dtrain, NUM_ROUNDS)

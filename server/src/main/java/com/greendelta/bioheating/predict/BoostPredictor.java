@@ -2,62 +2,93 @@ package com.greendelta.bioheating.predict;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.ClimateRegion;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import ml.dmlc.xgboost4j.java.Booster;
-import ml.dmlc.xgboost4j.java.DMatrix;
 import ml.dmlc.xgboost4j.java.XGBoost;
 import org.openlca.commons.Res;
 
-public record BoostPredictor(Booster booster) {
+/// Loads the two trained models and predicts the heat demand and the peak
+/// load of buildings.
+///
+/// @param heatDemand the model for the annual heat demand in kWh
+/// @param peakLoad the model for the peak heating load in kW
+public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
+
+	/// Loads the models that are packaged with the application.
 	public static Res<BoostPredictor> getDefault() {
-		var stream = BoostPredictor.class.getResourceAsStream("model.ubj");
-		if (stream == null) return Res.error("Default model not found");
-		try (stream) {
-			var booster = XGBoost.loadModel(stream);
-			var predictor = new BoostPredictor(booster);
-			return Res.ok(predictor);
-		} catch (Exception e) {
-			return Res.error("Failed to load default model", e);
-		}
+		var heatDemand = load(Target.HEAT_DEMAND);
+		if (heatDemand.isError()) return heatDemand.castError();
+		var peakLoad = load(Target.PEAK_LOAD);
+		if (peakLoad.isError()) return peakLoad.castError();
+		return Res.ok(new BoostPredictor(heatDemand.value(), peakLoad.value()));
 	}
 
-	public Res<Float> predict(ClimateRegion region, Building b) {
+	/// The booster of the given target.
+	public Booster of(Target target) {
+		return switch (target) {
+			case HEAT_DEMAND -> heatDemand;
+			case PEAK_LOAD -> peakLoad;
+		};
+	}
+
+	/// Predicts both targets for a single building.
+	public Res<Prediction> predict(ClimateRegion region, Building b) {
 		if (b == null) return Res.error("No building data provided");
 		var res = predictAll(region, List.of(b));
 		if (res.isError()) return res.castError();
-		var xs = res.value();
-		return xs.length == 0
-			? Res.error("Invalid value predicted")
-			: Res.ok(xs[0]);
+		return Res.ok(res.value().get(0));
 	}
 
-	public Res<float[]> predictAll(ClimateRegion region, List<Building> bs) {
-		var encoded = BuildingEncoder.encode(region, bs);
-		return encoded.isError()
-			? encoded.wrapError("Failed to encode building data")
-			: predict(encoded.value());
-	}
-
-	private float predictOne(float[] data) {
+	/// Predicts both targets for the given buildings.
+	public Res<List<Prediction>> predictAll(
+		ClimateRegion region,
+		List<Building> buildings
+	) {
+		var encoded = BuildingEncoder.encode(region, buildings);
+		if (encoded.isError()) return encoded.wrapError(
+			"Failed to encode building data"
+		);
 		try {
-			var matrix = new DMatrix(data, 1, data.length, Float.NaN);
-			var predictions = booster.predict(matrix);
-			return predictions[0][0];
-		} catch (Exception e) {
-			throw new RuntimeException("failed to predict value", e);
-		}
-	}
-
-	private Res<float[]> predict(DMatrix matrix) {
-		try {
-			var predictions = booster.predict(matrix);
-			var ret = new float[predictions.length];
-			for (int i = 0; i < predictions.length; i++) {
-				ret[i] = predictions[i][0];
+			var matrix = encoded.value();
+			var demands = firstColumn(heatDemand.predict(matrix));
+			var peaks = firstColumn(peakLoad.predict(matrix));
+			var predictions = new ArrayList<Prediction>(demands.length);
+			for (var i = 0; i < demands.length; i++) {
+				predictions.add(new Prediction(demands[i], peaks[i]));
 			}
-			return Res.ok(ret);
+			return Res.ok(predictions);
 		} catch (Exception e) {
 			return Res.error("Prediction failed", e);
 		}
 	}
+
+	private static float[] firstColumn(float[][] predictions) {
+		var values = new float[predictions.length];
+		for (var i = 0; i < predictions.length; i++) {
+			values[i] = predictions[i][0];
+		}
+		return values;
+	}
+
+	private static Res<Booster> load(Target target) {
+		var stream = BoostPredictor.class.getResourceAsStream(
+			target.modelFile()
+		);
+		if (stream == null) return Res.error(
+			"Model file not found: " + target.modelFile()
+		);
+		try (InputStream in = stream) {
+			return Res.ok(XGBoost.loadModel(in));
+		} catch (Exception e) {
+			return Res.error("Failed to load model: " + target.modelFile(), e);
+		}
+	}
+
+	/// The predicted values of both targets for one building.
+	///
+	/// @param heatDemand the annual heat demand in kWh
+	/// @param peakLoad the peak heating load in kW
+	public record Prediction(double heatDemand, double peakLoad) {}
 }

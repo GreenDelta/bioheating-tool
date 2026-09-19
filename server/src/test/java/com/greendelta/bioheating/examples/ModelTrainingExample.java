@@ -8,15 +8,14 @@ public class ModelTrainingExample {
 	public static void main(String[] args) {
 		try {
 			var dataDir = new File("./model-training/data");
-
-			var model = Training.trainFrom(
+			var models = Training.trainFrom(
 				new File(dataDir, "training-data.csv")
 			).orElseThrow();
 
-			var modelFile = new File(
-				"./src/main/resources/com/greendelta/bioheating/predict/model.ubj"
+			var modelDir = new File(
+				"./src/main/resources/com/greendelta/bioheating/predict"
 			);
-			Training.save(model, modelFile).orElseThrow();
+			Training.save(models, modelDir).orElseThrow();
 
 			System.out.println("All done!");
 		} catch (Exception e) {

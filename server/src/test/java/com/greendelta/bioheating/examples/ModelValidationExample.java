@@ -10,32 +10,52 @@ import java.io.PrintWriter;
 public class ModelValidationExample {
 
 	public static void main(String[] args) {
-		var model = BoostPredictor.getDefault().orElseThrow().booster();
-
+		var predictor = BoostPredictor.getDefault().orElseThrow();
 		var dataDir = new File("./model-training/data");
 
-		var selfCheck = ModelValidator.validate(
-			model,
-			new File(dataDir, "training-data.csv")
-		).orElseThrow();
-		writeResults(selfCheck, new File(dataDir, "self-check.txt"));
-
-		var validationCheck = ModelValidator.validate(
-			model,
-			new File(dataDir, "validation-data.csv")
-		).orElseThrow();
-		writeResults(validationCheck, new File(dataDir, "validation-check.txt"));
+		validate(predictor, dataDir, "training-data.csv", "self-check.txt");
+		validate(
+			predictor,
+			dataDir,
+			"validation-data.csv",
+			"validation-check.txt"
+		);
 
 		System.out.println("All done!");
 	}
 
-	private static void writeResults(
-		ModelValidator.ValidationResult result,
-		File outputFile
+	private static void validate(
+		BoostPredictor predictor,
+		File dataDir,
+		String dataFile,
+		String checkFile
 	) {
-		try (var w = new PrintWriter(new FileWriter(outputFile))) {
-			for (var pair : result.pairs()) {
-				w.printf("%f\t%f%n", pair.actual(), pair.predicted());
+		var result = ModelValidator.validate(
+			predictor,
+			new File(dataDir, dataFile)
+		).orElseThrow();
+		writeCheckFile(result, new File(dataDir, checkFile));
+
+		System.out.println(dataFile);
+		System.out.println("  heat demand: " + result.heatDemand().metrics());
+		System.out.println("  peak load:   " + result.peakLoad().metrics());
+	}
+
+	private static void writeCheckFile(
+		ModelValidator.ValidationResult result,
+		File file
+	) {
+		try (var w = new PrintWriter(new FileWriter(file))) {
+			var heat = result.heatDemand().values();
+			var peak = result.peakLoad().values();
+			for (var i = 0; i < heat.size(); i++) {
+				w.printf(
+					"%f\t%f\t%f\t%f%n",
+					heat.get(i).expected(),
+					heat.get(i).predicted(),
+					peak.get(i).expected(),
+					peak.get(i).predicted()
+				);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
