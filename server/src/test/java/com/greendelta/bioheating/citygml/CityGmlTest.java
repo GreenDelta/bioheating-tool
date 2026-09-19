@@ -42,7 +42,6 @@ public class CityGmlTest {
 		assertEquals("DEHH_fe358f01-2ce4-4487-a47b-8989435fb552", b.id());
 		assertEquals("31001_1010", b.function());
 		assertEquals(10.354, b.height(), 1e-3);
-		assertEquals(1, b.storeys());
 	}
 
 	@Test

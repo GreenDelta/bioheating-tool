@@ -140,13 +140,6 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 					onChange={value => put({ groundArea: value })}
 				/>
 
-				<NumberField
-					label="Storeys"
-					value={data.storeys}
-					step="1"
-					onChange={value => put({ storeys: value })}
-				/>
-
 				<StringField
 					label="Roof Type"
 					value={data.roofTypeLabel}

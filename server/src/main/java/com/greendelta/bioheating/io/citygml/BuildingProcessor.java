@@ -6,7 +6,6 @@ import com.greendelta.bioheating.citygml.GmlFunctionType;
 import com.greendelta.bioheating.citygml.GmlRoofType;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
-import com.greendelta.bioheating.predict.FeatureValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,8 +73,7 @@ class BuildingProcessor {
 				var shape = shapeMap.get(b.cityId());
 				if (shape == null) continue;
 				var type = typeOf(shape, neighbors);
-				int storeys = storeysOf(shape.gml(), type);
-				b.type(type).storeys(storeys);
+				b.type(type);
 			}
 
 			return Res.ok(buildings);
@@ -172,10 +170,4 @@ class BuildingProcessor {
 			.streetNumber(a.number());
 	}
 
-	private static int storeysOf(GmlBuilding gml, BuildingType type) {
-		if (gml.storeys() > 0) return gml.storeys();
-		var hs = FeatureValue.defaultStoreyHeight(type);
-		var storeys = (int) Math.round(gml.height() / hs);
-		return Math.max(storeys, 1);
-	}
 }

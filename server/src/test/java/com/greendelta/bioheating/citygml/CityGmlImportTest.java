@@ -59,7 +59,6 @@ public class CityGmlImportTest {
 		assertEquals("31001_1010", building.functionCode());
 		assertEquals("3100", building.roofTypeCode());
 		assertEquals(10.354, building.height(), 1e-3);
-		assertEquals(1, building.storeys());
 
 		// check address data
 		assertEquals("Germany", building.country());

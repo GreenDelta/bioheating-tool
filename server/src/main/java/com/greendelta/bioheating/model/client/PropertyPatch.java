@@ -8,7 +8,6 @@ import com.greendelta.bioheating.model.Street;
 import java.util.Map;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 
 record PropertyPatch(Map<String, Object> properties) {
 
@@ -30,7 +29,6 @@ record PropertyPatch(Map<String, Object> properties) {
 		setBuildingType(b::type);
 		setConstructionAge(b::constructionAge);
 		setDouble("height", b::height);
-		setInt("storeys", b::storeys);
 		setDouble("groundArea", b::groundArea);
 
 		setString("country", b::country);
@@ -67,12 +65,6 @@ record PropertyPatch(Map<String, Object> properties) {
 	private void setDouble(String key, DoubleFunction<?> setter) {
 		if (properties.get(key) instanceof Number num) {
 			setter.apply(num.doubleValue());
-		}
-	}
-
-	private void setInt(String key, IntFunction<?> setter) {
-		if (properties.get(key) instanceof Number num) {
-			setter.apply(num.intValue());
 		}
 	}
 

@@ -376,7 +376,6 @@ function createBuilding(layer: L.Polygon, data: GeoMap): GeoFeature {
 			id: nextId,
 			name: `New building ${Math.abs(nextId)}`,
 			height: 10,
-			storeys: 1,
 			groundArea: polygonAreaOf(layer),
 			isHeated: true,
 			isSupplyCenter: false,

@@ -10,7 +10,6 @@ public record GmlBuilding(
 	GmlAddress address,
 	Polygon groundSurface,
 	double height,
-	int storeys,
 	String function,
 	String roofType,
 	Map<String, String> attributes
@@ -22,7 +21,6 @@ public record GmlBuilding(
 			GmlAddress.of(b),
 			groundSurface,
 			heightOf(b),
-			storeysOf(b),
 			CityGML.firstStringOf(b.getFunctions()),
 			CityGML.stringOf(b.getRoofType()),
 			attributesOf(b)
@@ -62,8 +60,4 @@ public record GmlBuilding(
 		};
 	}
 
-	private static int storeysOf(Building b) {
-		var s = b.getStoreysAboveGround();
-		return s != null ? s : 1;
-	}
 }

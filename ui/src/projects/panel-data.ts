@@ -4,7 +4,6 @@ import { BuildingType, buildingTypeFromString, ConstructionAge, constructionAgeF
 export interface BuildingProps {
 	name?: any;
 	height?: any;
-	storeys?: any;
 	heatDemand?: any;
 	peakLoad?: any;
 	roofTypeCode?: any;
@@ -42,18 +41,6 @@ function floatOf(field: any): number {
 	return 0;
 }
 
-function intOf(field: any): number {
-	const t = typeof field;
-	if (t === "number") {
-		return field;
-	}
-	if (t === "string") {
-		const i = parseInt(field);
-		return isNaN(i) ? 0 : i;
-	}
-	return 0;
-}
-
 function boolOf(field: any): boolean {
 	const t = typeof field;
 	if (t === "boolean") {
@@ -68,7 +55,6 @@ function boolOf(field: any): boolean {
 export class BuildingData {
 	name: string;
 	height: number;
-	storeys: number;
 	heatDemand: number;
 	peakLoad: number;
 	roofTypeCode: string;
@@ -96,7 +82,6 @@ export class BuildingData {
 		if (d instanceof BuildingData) {
 			this.name = d.name;
 			this.height = d.height;
-			this.storeys = d.storeys;
 			this.heatDemand = d.heatDemand;
 			this.peakLoad = d.peakLoad;
 			this.roofTypeCode = d.roofTypeCode;
@@ -117,7 +102,6 @@ export class BuildingData {
 		} else {
 			this.name = stringOf(d.name);
 			this.height = floatOf(d.height);
-			this.storeys = intOf(d.storeys);
 			this.heatDemand = floatOf(d.heatDemand);
 			this.peakLoad = floatOf(d.peakLoad);
 			// Handle backward compatibility - if old properties exist, use them as codes
@@ -146,9 +130,6 @@ export class BuildingData {
 		}
 		if (props.height) {
 			copy.height = props.height;
-		}
-		if (props.storeys) {
-			copy.storeys = props.storeys;
 		}
 		if (props.heatDemand) {
 			copy.heatDemand = props.heatDemand;
@@ -210,7 +191,6 @@ export class BuildingData {
 		}
 		f.properties.name = this.name;
 		f.properties.height = this.height;
-		f.properties.storeys = this.storeys;
 		f.properties.heatDemand = this.heatDemand;
 		f.properties.peakLoad = this.peakLoad;
 		f.properties.roofTypeCode = this.roofTypeCode;

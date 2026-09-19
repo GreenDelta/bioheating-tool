@@ -35,7 +35,6 @@ public record GeoFeature(
 		props.put("type", b.type());
 		props.put("constructionAge", b.constructionAge());
 		props.put("height", b.height());
-		props.put("storeys", b.storeys());
 		props.put("groundArea", b.groundArea());
 		props.put("country", b.country());
 		props.put("locality", b.locality());

@@ -32,7 +32,6 @@ public class MapSyncTest {
 				Map.entry("id", -1),
 				Map.entry("name", "Drawn building"),
 				Map.entry("height", 12.5),
-				Map.entry("storeys", 3),
 				Map.entry("groundArea", 85.0),
 				Map.entry("heatDemand", 14000.0),
 				Map.entry("peakLoad", 32.0),
@@ -50,7 +49,6 @@ public class MapSyncTest {
 		var created = map.buildings().getFirst();
 		assertEquals("Drawn building", created.name());
 		assertEquals(12.5, created.height(), 1e-6);
-		assertEquals(3, created.storeys());
 		assertEquals(85.0, created.groundArea(), 1e-6);
 		assertEquals(14000.0, created.heatDemand(), 1e-6);
 		assertEquals(32.0, created.peakLoad(), 1e-6);

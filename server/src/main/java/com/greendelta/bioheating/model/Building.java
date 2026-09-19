@@ -63,9 +63,6 @@ public class Building extends BaseEntity {
 	@Column(name = "height")
 	private double height;
 
-	@Column(name = "storeys")
-	private int storeys;
-
 	@Column(name = "ground_area")
 	private double groundArea;
 
@@ -187,15 +184,6 @@ public class Building extends BaseEntity {
 
 	public Building height(double height) {
 		this.height = height;
-		return this;
-	}
-
-	public int storeys() {
-		return storeys;
-	}
-
-	public Building storeys(int storeys) {
-		this.storeys = storeys;
 		return this;
 	}
 
