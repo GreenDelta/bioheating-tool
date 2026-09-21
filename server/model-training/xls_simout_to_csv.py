@@ -1,22 +1,19 @@
 """Convert the simulation output Excel file into the model training CSV.
 
-This script turns the raw simulation results (Excel) into the exact CSV format
-that is used to train and validate the XGBoost heat demand prediction model.
-
 Usage
 -----
 
     uv run xls_simout_to_csv.py <input.xlsx> <output.csv> [--sheet NAME]
 
+The format of the resulting CSV is documented in ``README.md``.
+
 Sheet
 -----
 
 All data is read from the sheet ``Für_Greendelta`` (configurable via
-``--sheet``).  The sheet name must match exactly, including the ``ü``.
-
-Columns are addressed by their fixed position (index), never by the header
-text, because the headers are not guaranteed to be stable.  The first row is
-the header row and is always skipped.
+``--sheet``); the name must match exactly, including the ``ü``.  Columns are
+addressed by their fixed position (index), never by the header text, and the
+header row is always skipped.
 
 Excel input format
 ------------------
@@ -32,101 +29,40 @@ Excel input format
     | E    | 4   | RoofType         | Roof type code ("1000" or "3100")     |
     | F    | 5   | classification   | Building classification code (1..10)  |
     | G    | 6   | Heat demand      | Annual heat demand in kWh (negative)  |
-    | H    | 7   | max. Heat        | Peak load in kW (negative)            |
+    | H    | 7   | max. Heat        | Peak load in W (negative)             |
     +------+-----+------------------+---------------------------------------+
 
-CSV output format
------------------
+Conversion rules
+----------------
 
-The output CSV has the same eight columns in the same order, but uses readable
-headers with units and the following types:
+The meaning of the codes is documented in ``README.md``.
 
-    +-----+--------------------------+---------+---------------------------------------+
-    | Idx | Header                   | Type    | Conversion from the Excel             |
-    +-----+--------------------------+---------+---------------------------------------+
-    | 0   | ground area [m2]         | Float   | A, copied as is                       |
-    | 1   | height [m]               | Float   | B, copied as is                       |
-    | 2   | weather station [code]   | Integer | C, copied as is                       |
-    | 3   | construction year [code] | Integer | D, copied as is (0/empty -> default 4)|
-    | 4   | roof type [1|0]          | Integer | E, "1000" -> 1, "3100" -> 0           |
-    | 5   | building type [code]     | Integer | F, copied as is                       |
-    | 6   | heat demand [kWh]        | Float   | G, absolute value (sign flipped)      |
-    | 7   | peak load [kW]           | Float   | H, absolute value (sign flipped)      |
-    +-----+--------------------------+---------+---------------------------------------+
+``GroundSurface`` / ``Height`` (columns 0 and 1)
+    Copied verbatim; both values must be positive.  ``GroundSurface`` is the
+    building footprint (Grundfläche) in m2.
 
-Conversion decisions
---------------------
+``WeatherStation`` (column 2)
+    Copied verbatim; no factor mapping is applied.
 
-``ground area`` / ``height`` (columns 0 and 1)
-    Copied verbatim.  ``ground area`` is the building footprint (Grundfläche),
-    in m2.  Both values must be positive.
+``ConstructionYear`` (column 3)
+    Copied verbatim, except that an empty cell or ``0`` (year unknown) is
+    replaced by the default code ``4`` (1979-1995).  Such substitutions are
+    reported as a warning after the conversion.
 
-``weather station`` (column 2)
-    Copied verbatim.  The code is the same weather station numbering that the
-    application already uses for climate regions (1..15, see
-    ``climate-regions.json``).  No factor mapping is applied any more, the raw
-    code is fed into the model directly.
+``RoofType`` (column 4)
+    The simulation only knows two roof types, which are mapped to the binary
+    flag: ``1000`` (Flachdach) becomes ``1`` and ``3100`` (Satteldach) becomes
+    ``0``.  The mapping is deliberately inverted relative to the common
+    "1 = pitched" convention, because the previous model gave the flat roof the
+    highest roof factor.
 
-``construction year`` (column 3)
-    Copied verbatim.  The codes are:
+``classification`` (column 5)
+    Copied verbatim.
 
-    ===========  ====
-    Range        Code
-    ===========  ====
-    1900-1919    1
-    1919-1948    2
-    1949-1978    3
-    1979-1995    4  (default)
-    1995-2009    5
-    2010-2030    6
-    ===========  ====
-
-    Unlike the previous model there is no ``UNKNOWN`` code (0) any more.  If
-    the year cannot be determined, the simulation is expected to provide ``0``
-    or an empty cell, which is converted to the default code ``4`` (1979-1995).
-    Such substitutions are reported as a warning after conversion.
-
-``roof type`` (column 4)
-    Completely changed.  The simulation only knows two roof types which are
-    mapped to a binary flag:
-
-    ======  ===========  =============
-    Excel   CSV          Meaning
-    ======  ===========  =============
-    1000    1            Flachdach (flat roof)
-    3100    0            Satteldach (pitched roof)
-    ======  ===========  =============
-
-    Note that the mapping is deliberately inverted relative to the common
-    "1 = pitched" convention: it keeps the previous behaviour where the flat
-    roof had the highest roof factor (1.0).
-
-``building type`` (column 5)
-    Copied verbatim.  The codes are:
-
-    =====  =========================
-    Code   Meaning
-    =====  =========================
-    1      high house
-    2      small multi-family house
-    3      medium multi-family house
-    4      large multi-family house
-    5      Gebäudeteil (building part)
-    6      one-family house
-    7      end row house
-    8      middle row house
-    9      group of houses
-    10     multi-generation house
-    =====  =========================
-
-    Codes 1..9 have the same meaning as in the previous model (so the improved
-    labels of ``BuildingType`` are kept).  Code 10 is new.  There is no
-    ``OTHER`` code (0) any more.
-
-``heat demand`` / ``peak load`` (columns 6 and 7)
-    Copied from the absolute value, because the simulation reports both values
-    with a negative sign.  ``heat demand`` is the annual heat demand in kWh,
-    ``peak load`` is the maximum heat load in kW.
+``Heat demand`` / ``max. Heat`` (columns 6 and 7)
+    The simulation reports both values with a negative sign, so their absolute
+    value is used.  The peak load is additionally divided by 1000, because the
+    simulation reports it in Watt while the CSV uses kW.
 
 Invalid data
 ------------
@@ -176,6 +112,9 @@ ROOF_TYPES = {
     "3100": (0, "Satteldach"),
 }
 
+# The simulation reports the peak load in Watt, the CSV uses kilowatt.
+WATT_PER_KILOWATT = 1000
+
 # Valid code ranges (see the module docstring for their meaning).
 WEATHER_STATION_MIN, WEATHER_STATION_MAX = 1, 15
 CONSTRUCTION_YEAR_MIN, CONSTRUCTION_YEAR_MAX = 1, 6
@@ -216,7 +155,9 @@ def _to_float(value, row: int, column: str) -> float:
     return number
 
 
-def _to_code(value, row: int, column: str, low: int, high: int, name: str) -> int:
+def _to_code(
+    value, row: int, column: str, low: int, high: int, name: str
+) -> int:
     """Read a cell as an integer code within the inclusive range low..high."""
     number = _to_float(value, row, column)
     code = int(number)
@@ -303,9 +244,10 @@ def _convert_row(values: list, row: int) -> tuple[list, bool]:
     )
 
     year_value = values[COL_CONSTRUCTION_YEAR]
-    used_default = _is_empty(year_value) or _to_float(
-        year_value, row, "ConstructionYear"
-    ) == 0
+    used_default = (
+        _is_empty(year_value)
+        or _to_float(year_value, row, "ConstructionYear") == 0
+    )
     construction_year = (
         DEFAULT_CONSTRUCTION_YEAR
         if used_default
@@ -329,7 +271,9 @@ def _convert_row(values: list, row: int) -> tuple[list, bool]:
         "building type",
     )
     heat_demand = _to_target(values[COL_HEAT_DEMAND], row, "Heat demand")
-    peak_load = _to_target(values[COL_PEAK_LOAD], row, "max. Heat")
+    peak_load = (
+        _to_target(values[COL_PEAK_LOAD], row, "max. Heat") / WATT_PER_KILOWATT
+    )
 
     csv_row = [
         ground_area,
@@ -363,7 +307,9 @@ def _read_rows(path: Path, sheet_name: str) -> list[tuple[int, list]]:
             )
 
         rows: list[tuple[int, list]] = []
-        for index, raw in enumerate(workbook[sheet_name].iter_rows(values_only=True)):
+        for index, raw in enumerate(
+            workbook[sheet_name].iter_rows(values_only=True)
+        ):
             if index == 0:
                 continue  # skip the header row
             values = list(raw[:COL_COUNT])
@@ -430,7 +376,9 @@ def main() -> int:
         description="Convert the simulation output Excel file into the model "
         "training CSV.",
     )
-    parser.add_argument("input", type=Path, help="the simulation output .xlsx file")
+    parser.add_argument(
+        "input", type=Path, help="the simulation output .xlsx file"
+    )
     parser.add_argument("output", type=Path, help="the CSV file to write")
     parser.add_argument(
         "--sheet",

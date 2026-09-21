@@ -65,10 +65,42 @@ prediction targets:
 | 6      | heat demand [kWh]        | Float   | Target: annual heat demand          |
 | 7      | peak load [kW]           | Float   | Target: maximum heat load           |
 
-All raw values and codes are used directly as model features, there are no
-factor mappings. The header names are only documentation: the scripts always
-read the values by column index and ignore the header row, so the header names
-can be changed freely.
+The header names are only documentation: the scripts always read the values by
+column index and ignore the header row, so the header names can be changed
+freely.
+
+### Codes
+
+All codes are used directly as model features, there are no factor mappings.
+
+Construction year (column 3):
+
+| Range     | Code        |
+|-----------|-------------|
+| 1900-1919 | 1           |
+| 1919-1948 | 2           |
+| 1949-1978 | 3           |
+| 1979-1995 | 4 (default) |
+| 1995-2009 | 5           |
+| 2010-2030 | 6           |
+
+Roof type (column 4): `1` = flat roof (Flachdach), `0` = pitched roof
+(Satteldach).
+
+Building type (column 5):
+
+| Code | Meaning                     |
+|------|-----------------------------|
+| 1    | high house                  |
+| 2    | small multi-family house    |
+| 3    | medium multi-family house   |
+| 4    | large multi-family house    |
+| 5    | Gebäudeteil (building part) |
+| 6    | one-family house            |
+| 7    | end row house               |
+| 8    | middle row house            |
+| 9    | group of houses             |
+| 10   | multi-generation house      |
 
 ## Training
 
@@ -135,6 +167,3 @@ This creates `data/model-check-heat-demand.png` and
 the self-validation and the validation write to that same file, run the
 `validate.py` command for the data you want to see before running gnuplot.
 
-> **Note:** the simulation Excel and CSV format changed with the new model, so
-> the Java example classes (`ModelTrainingExample`, `ModelValidationExample`)
-> still use the old format and need to be updated to match this document.
