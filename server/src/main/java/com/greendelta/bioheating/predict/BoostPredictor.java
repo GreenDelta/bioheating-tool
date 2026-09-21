@@ -2,6 +2,7 @@ package com.greendelta.bioheating.predict;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.ClimateRegion;
+import com.greendelta.bioheating.model.WarmWater;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,8 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 	}
 
 	/// Predicts both targets for the given buildings. The raw model outputs are
-	/// corrected with the configured correction of the target.
+	/// corrected with the configured correction of the target and scaled with the
+	/// warm water fraction of the building.
 	public Res<List<Prediction>> predictAll(
 		ClimateRegion region,
 		List<Building> buildings
@@ -61,10 +63,17 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 			var peakCorrection = ModelCorrection.of(Target.PEAK_LOAD);
 			var predictions = new ArrayList<Prediction>(demands.length);
 			for (var i = 0; i < demands.length; i++) {
+				var building = buildings.get(i);
 				predictions.add(
 					new Prediction(
-						demandCorrection.apply(demands[i]),
-						peakCorrection.apply(peaks[i])
+						WarmWater.totalOf(
+							building,
+							demandCorrection.apply(demands[i])
+						),
+						WarmWater.totalOf(
+							building,
+							peakCorrection.apply(peaks[i])
+						)
 					)
 				);
 			}
@@ -96,9 +105,10 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 		}
 	}
 
-	/// The predicted values of both targets for one building.
+	/// The predicted values of both targets for one building. Both values include
+	/// the warm water demand of the building.
 	///
-	/// @param heatDemand the annual heat demand in kWh
-	/// @param peakLoad the peak heating load in kW
+	/// @param heatDemand the total annual heat demand in kWh
+	/// @param peakLoad the total peak heating load in kW
 	public record Prediction(double heatDemand, double peakLoad) {}
 }

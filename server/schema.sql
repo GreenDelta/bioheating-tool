@@ -39,6 +39,7 @@ create table tbl_buildings (
     climate_zone int,
     heat_demand double precision,
     peak_load double precision,
+    warm_water_fraction double precision,
     is_heated boolean,
     is_supply_center boolean,
     is_included boolean

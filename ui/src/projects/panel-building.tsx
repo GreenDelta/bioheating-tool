@@ -229,6 +229,13 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 				{data.isHeated && (
 					<>
 						<NumberField
+							label="Warm water fraction (%)"
+							value={round2(data.warmWaterFraction)}
+							step="0.1"
+							onChange={value => put({ warmWaterFraction: value })}
+						/>
+
+						<NumberField
 							label="Heat demand (kWh)"
 							value={round2(data.heatDemand)}
 							step="0.1"

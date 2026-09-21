@@ -85,6 +85,9 @@ public class Building extends BaseEntity {
 	@Column(name = "peak_load")
 	private double peakLoad;
 
+	@Column(name = "warm_water_fraction")
+	private double warmWaterFraction;
+
 	@Column(name = "is_heated")
 	private boolean isHeated;
 
@@ -276,6 +279,16 @@ public class Building extends BaseEntity {
 
 	public Building peakLoad(double peakLoad) {
 		this.peakLoad = peakLoad;
+		return this;
+	}
+
+	/// Returns the warm water fraction of the heat demand in percent.
+	public double warmWaterFraction() {
+		return warmWaterFraction;
+	}
+
+	public Building warmWaterFraction(double warmWaterFraction) {
+		this.warmWaterFraction = warmWaterFraction;
 		return this;
 	}
 

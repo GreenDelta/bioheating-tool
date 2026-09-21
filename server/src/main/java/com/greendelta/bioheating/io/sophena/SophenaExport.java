@@ -104,7 +104,7 @@ public class SophenaExport {
 			.objectNode()
 			.put("id", consumerIdOf(b))
 			.put("name", b.name())
-			.put("waterFraction", 12.0)
+			.put("waterFraction", b.warmWaterFraction())
 			.put("loadHours", loadHours)
 			.put("heatingLimit", 14.0)
 			.put("heatingLoad", b.peakLoad());

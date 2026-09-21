@@ -6,6 +6,7 @@ import com.greendelta.bioheating.citygml.GmlFunctionType;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.RoofType;
+import com.greendelta.bioheating.model.WarmWater;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,12 +66,15 @@ class BuildingProcessor {
 				return count;
 			};
 
-			// second pass: assign the building type from the building
-			// parameters and the heated neighbors
+			// second pass: assign the building type from the building parameters
+			// and the heated neighbors, and look up the warm water fraction for
+			// the type and the construction age
 			for (var b : buildings) {
 				var shape = shapeMap.get(b.cityId());
 				if (shape == null) continue;
-				b.type(typeOf(shape, neighbors));
+				var type = typeOf(shape, neighbors);
+				b.type(type);
+				b.warmWaterFraction(WarmWater.of(type, b.constructionAge()));
 			}
 
 			return Res.ok(buildings);

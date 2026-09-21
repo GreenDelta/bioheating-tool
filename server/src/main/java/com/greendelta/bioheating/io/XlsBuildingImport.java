@@ -4,6 +4,7 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.WarmWater;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -150,9 +151,13 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 			.streetNumber(row.streetNumber());
 
 		var heated = row.heatDemand() > 0 && row.peakLoad() > 0;
+		var warmWaterFraction = row.warmWaterFraction() > 0
+			? row.warmWaterFraction()
+			: WarmWater.DEFAULT;
 		b.isHeated(heated)
 			.heatDemand(row.heatDemand())
 			.peakLoad(row.peakLoad())
+			.warmWaterFraction(warmWaterFraction)
 			.isIncluded(row.isIncluded());
 	}
 
@@ -180,7 +185,8 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 		String locality,
 		String postalCode,
 		String street,
-		String streetNumber
+		String streetNumber,
+		double warmWaterFraction
 	) {
 
 		static RowData of(Row row) {
@@ -197,7 +203,8 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 				textOf(row, 8),
 				textOf(row, 9),
 				textOf(row, 10),
-				textOf(row, 11)
+				textOf(row, 11),
+				numOf(row, 12)
 			);
 		}
 

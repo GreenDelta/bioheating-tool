@@ -39,6 +39,7 @@ record PropertyPatch(Map<String, Object> properties) {
 
 		setDouble("heatDemand", b::heatDemand);
 		setDouble("peakLoad", b::peakLoad);
+		setDouble("warmWaterFraction", b::warmWaterFraction);
 		setBool("isHeated", b::isHeated);
 		setBool("isSupplyCenter", b::isSupplyCenter);
 		setBool("isIncluded", b::isIncluded);

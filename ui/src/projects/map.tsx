@@ -383,6 +383,7 @@ function createBuilding(layer: L.Polygon, data: GeoMap): GeoFeature {
 			type: "MULTI_GENERATION",
 			constructionAge: "AGE_1979_1995",
 			roofType: "PITCHED",
+			warmWaterFraction: 14,
 		},
 	};
 }

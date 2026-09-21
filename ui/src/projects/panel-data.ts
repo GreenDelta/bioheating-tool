@@ -6,6 +6,7 @@ export interface BuildingProps {
 	height?: any;
 	heatDemand?: any;
 	peakLoad?: any;
+	warmWaterFraction?: any;
 	roofType?: any;
 	functionCode?: any;
 	functionLabel?: any;
@@ -55,6 +56,7 @@ export class BuildingData {
 	height: number;
 	heatDemand: number;
 	peakLoad: number;
+	warmWaterFraction: number;
 	roofType: RoofType;
 	functionCode: string;
 	functionLabel: string;
@@ -81,6 +83,7 @@ export class BuildingData {
 			this.height = d.height;
 			this.heatDemand = d.heatDemand;
 			this.peakLoad = d.peakLoad;
+			this.warmWaterFraction = d.warmWaterFraction;
 			this.roofType = d.roofType;
 			this.functionCode = d.functionCode;
 			this.functionLabel = d.functionLabel;
@@ -100,6 +103,7 @@ export class BuildingData {
 			this.height = floatOf(d.height);
 			this.heatDemand = floatOf(d.heatDemand);
 			this.peakLoad = floatOf(d.peakLoad);
+			this.warmWaterFraction = floatOf(d.warmWaterFraction);
 			this.roofType = roofTypeFromString(d.roofType);
 			this.functionCode = stringOf(d.functionCode || d.function);
 			this.functionLabel = stringOf(d.functionLabel || d.function);
@@ -130,6 +134,9 @@ export class BuildingData {
 		}
 		if (props.peakLoad) {
 			copy.peakLoad = props.peakLoad;
+		}
+		if (props.warmWaterFraction) {
+			copy.warmWaterFraction = props.warmWaterFraction;
 		}
 		if (props.roofType) {
 			copy.roofType = props.roofType;
@@ -184,6 +191,7 @@ export class BuildingData {
 		f.properties.height = this.height;
 		f.properties.heatDemand = this.heatDemand;
 		f.properties.peakLoad = this.peakLoad;
+		f.properties.warmWaterFraction = this.warmWaterFraction;
 		f.properties.roofType = this.roofType;
 		f.properties.functionCode = this.functionCode;
 		f.properties.functionLabel = this.functionLabel;
