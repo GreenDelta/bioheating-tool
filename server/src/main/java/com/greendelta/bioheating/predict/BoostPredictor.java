@@ -35,13 +35,16 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 
 	/// Predicts both targets for a single building.
 	public Res<Prediction> predict(ClimateRegion region, Building b) {
-		if (b == null) return Res.error("No building data provided");
+		if (b == null)
+			return Res.error("No building data provided");
 		var res = predictAll(region, List.of(b));
-		if (res.isError()) return res.castError();
-		return Res.ok(res.value().get(0));
+		if (res.isError())
+			return res.castError();
+		return Res.ok(res.value().getFirst());
 	}
 
-	/// Predicts both targets for the given buildings.
+	/// Predicts both targets for the given buildings. The raw model outputs are
+	/// corrected with the configured correction of the target.
 	public Res<List<Prediction>> predictAll(
 		ClimateRegion region,
 		List<Building> buildings
@@ -54,9 +57,16 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 			var matrix = encoded.value();
 			var demands = firstColumn(heatDemand.predict(matrix));
 			var peaks = firstColumn(peakLoad.predict(matrix));
+			var demandCorrection = ModelCorrection.of(Target.HEAT_DEMAND);
+			var peakCorrection = ModelCorrection.of(Target.PEAK_LOAD);
 			var predictions = new ArrayList<Prediction>(demands.length);
 			for (var i = 0; i < demands.length; i++) {
-				predictions.add(new Prediction(demands[i], peaks[i]));
+				predictions.add(
+					new Prediction(
+						demandCorrection.apply(demands[i]),
+						peakCorrection.apply(peaks[i])
+					)
+				);
 			}
 			return Res.ok(predictions);
 		} catch (Exception e) {
