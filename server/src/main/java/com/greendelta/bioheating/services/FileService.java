@@ -1,5 +1,6 @@
 package com.greendelta.bioheating.services;
 
+import com.greendelta.bioheating.io.ImportFileType;
 import org.openlca.commons.Res;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -116,7 +117,9 @@ public class FileService {
 			for (var e = zip.getNextEntry(); e != null; e = zip.getNextEntry()) {
 				try {
 					if (e.isDirectory()) continue;
-					var ext = extensionOf(e.getName());
+					var name = e.getName();
+					if (!ImportFileType.isSupported(name)) continue;
+					var ext = extensionOf(name);
 					var path = workDir.resolve(UUID.randomUUID() + "." + ext);
 					Files.copy(zip, path);
 					files.add(path.toFile());

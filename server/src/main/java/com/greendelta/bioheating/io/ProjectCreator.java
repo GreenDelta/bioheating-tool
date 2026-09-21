@@ -56,14 +56,18 @@ public class ProjectCreator {
 		return Res.ok(project);
 	}
 
-	private Res<Project> importFiles() {
+	/// Only files with a supported {@link ImportFileType} are imported; all other
+	/// files are skipped. When no file has a supported type, an error is
+	/// returned. This is package-private for testing.
+	Res<Project> importFiles() {
 		if (files == null || files.isEmpty())
 			return Res.error("No import files provided");
 
 		int imported = 0;
 		for (var file : files) {
-			if (file == null) continue;
-			var res = isXlsx(file)
+			var type = ImportFileType.of(file);
+			if (type == null) continue;
+			var res = type == ImportFileType.EXCEL
 				? importExcelFile(file)
 				: importCityGmlFile(file);
 			if (res.isError()) return res;
@@ -132,7 +136,4 @@ public class ProjectCreator {
 		}
 	}
 
-	private boolean isXlsx(File file) {
-		return file != null && file.getName().toLowerCase().endsWith(".xlsx");
-	}
 }

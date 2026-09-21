@@ -55,7 +55,11 @@ public class FileServiceTest {
 			"application/zip",
 			zipOf(Map.of(
 				"nested/building-a.xml", "<a />",
-				"building-b.gml", "<b />"
+				"building-b.gml", "<b />",
+				"building-c.citygml", "<c />",
+				"readme.txt", "not a model",
+				".DS_Store", "not a model",
+				"__MACOSX/._building-b.gml", "not a model"
 			))
 		);
 
@@ -63,7 +67,7 @@ public class FileServiceTest {
 
 		assertFalse(result.isError());
 		var files = result.value();
-		assertEquals(3, files.size());
+		assertEquals(4, files.size());
 		var contents = files.stream()
 			.map(file -> {
 				try {
@@ -73,13 +77,34 @@ public class FileServiceTest {
 				}
 			})
 			.collect(Collectors.toSet());
-		assertEquals(Set.of("<direct />", "<a />", "<b />"), contents);
+		assertEquals(Set.of("<direct />", "<a />", "<b />", "<c />"), contents);
 		assertTrue(files.stream().anyMatch(file -> file.getName().endsWith(".gml")));
 		assertTrue(files.stream().anyMatch(file -> file.getName().endsWith(".xml")));
+		assertTrue(files.stream()
+			.anyMatch(file -> file.getName().endsWith(".citygml")));
 
 		for (var file : files) {
 			Files.deleteIfExists(file.toPath());
 		}
+	}
+
+	@Test
+	public void testZipWithUnsupportedEntriesOnly() throws IOException {
+		var zip = new MockMultipartFile(
+			"file",
+			"docs.zip",
+			"application/zip",
+			zipOf(Map.of(
+				"readme.txt", "hello",
+				"notes.md", "# notes",
+				"__MACOSX/._readme.txt", "not a model"
+			))
+		);
+
+		var result = service.saveUploads(new MockMultipartFile[]{zip});
+
+		assertFalse(result.isError());
+		assertTrue(result.value().isEmpty());
 	}
 
 	private byte[] zipOf(Map<String, String> entries) throws IOException {
