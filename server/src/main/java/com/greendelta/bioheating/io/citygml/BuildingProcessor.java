@@ -7,6 +7,7 @@ import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.RoofType;
 import com.greendelta.bioheating.model.WarmWater;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,15 +86,13 @@ class BuildingProcessor {
 
 	private Building buildingOf(BuildingShape shape) {
 		var gml = shape.gml();
-
 		var func = functionTypes.get(gml.function());
-		var isHeated = gml.address() != null || (func != null && func.isHeated());
 
 		var b = new Building()
 			.name(nameOf(gml))
 			.cityId(gml.id())
 			.coordinates(coordinatesOf(gml))
-			.isHeated(isHeated)
+			.isHeated(isHeated(shape, func))
 			.height(gml.height())
 			.groundArea(shape.groundArea())
 			.isIncluded(false)
@@ -108,6 +107,15 @@ class BuildingProcessor {
 		mapAddress(gml.address(), b);
 		return b;
 	}
+
+	private boolean isHeated(BuildingShape shape, GmlFunctionType func) {
+		if (shape.groundArea() < 20 || shape.height() < 2)
+			return false;
+		if (func != null && !func.isHeated())
+			return false;
+		return shape.gml().address() != null || func != null;
+	}
+
 
 	/// The model only distinguishes flat and pitched roofs; only "1000"
 	/// (Flachdach) is a flat roof in the CityGML data.
@@ -166,9 +174,9 @@ class BuildingProcessor {
 	}
 
 	private void mapAddress(GmlAddress a, Building b) {
-		if (a == null) return;
-		b
-			.country(a.country())
+		if (a == null)
+			return;
+		b.country(a.country())
 			.locality(a.locality())
 			.postalCode(a.postalCode())
 			.street(a.street())
