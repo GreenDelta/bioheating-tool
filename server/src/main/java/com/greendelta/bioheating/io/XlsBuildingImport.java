@@ -144,7 +144,7 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 	private void update(Building b, RowData row) {
 		b.cityId(row.cityId())
 			.name(row.name().strip())
-			.type(BuildingType.of(row.buildingTypeCode()))
+			.type(BuildingType.fromCode(row.buildingTypeCode()))
 			.locality(row.locality())
 			.postalCode(row.postalCode())
 			.street(row.street())

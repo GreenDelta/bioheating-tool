@@ -136,7 +136,7 @@ export const ProjectForm = () => {
 						<input
 							type="file"
 							className="form-control"
-							accept=".gml,.xml,.xlsx,.zip"
+							accept=".gml,.xml,.citygml,.xlsx,.zip"
 							multiple
 							onChange={e => {
 								const files = e.target.files ? Array.from(e.target.files) : [];

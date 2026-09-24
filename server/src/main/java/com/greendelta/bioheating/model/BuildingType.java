@@ -24,10 +24,76 @@ public enum BuildingType {
 		return code;
 	}
 
-	public static BuildingType of(int code) {
+	public static BuildingType fromCode(int code) {
 		for (var t : values()) {
 			if (t.code == code) return t;
 		}
 		return MULTI_GENERATION;
 	}
+
+	/// Tries to estimate the building type from the given attribute values.
+	/// Values `<= 0` are interpreted as _not provided_ and ignored or handled as
+	/// default.
+	public static BuildingType estimate(
+		double height, double groundArea, int neighborCount
+	) {
+
+		var byNeighbors = switch (Math.max(0, neighborCount)) {
+			case 0 -> BuildingType.SINGLE_FAMILY;
+			case 1 -> BuildingType.END_TERRACE;
+			case 2 -> BuildingType.MID_TERRACE;
+			default -> BuildingType.HOUSE_GROUP;
+		};
+
+		boolean hasHeight = height > 0;
+		boolean hasArea = groundArea > 0;
+
+		// no geometry: only the neighbor count is left
+		if (!hasHeight && !hasArea)
+			return byNeighbors;
+
+		// only the ground area is known
+		if (!hasHeight) {
+			if (groundArea < 30)
+				return BuildingType.BUILDING_PART;
+			if (groundArea < 150)
+				return byNeighbors;
+			if (groundArea < 380)
+				return BuildingType.MULTI_FAMILY_MEDIUM;
+			else
+				return BuildingType.MULTI_FAMILY_LARGE;
+		}
+
+		// only the height is known
+		if (!hasArea) {
+			if (height > 25)
+				return BuildingType.HIGH_RISE;
+			if (height > 18)
+				return BuildingType.MULTI_FAMILY_LARGE;
+			if (height > 12)
+				return BuildingType.MULTI_FAMILY_MEDIUM;
+			return byNeighbors;
+		}
+
+		// both values are known
+		if (height > 25)
+			return BuildingType.HIGH_RISE;
+		if (height > 12) {
+			var block = height * groundArea;
+			if (block < 2000)
+				return BuildingType.MULTI_FAMILY_SMALL;
+			if (block < 5000)
+				return BuildingType.MULTI_FAMILY_MEDIUM;
+			else
+				return BuildingType.MULTI_FAMILY_LARGE;
+		}
+
+		if (groundArea > 150)
+			return BuildingType.MULTI_FAMILY_SMALL;
+		if (groundArea < 30)
+			return BuildingType.BUILDING_PART;
+		else
+			return byNeighbors;
+	}
+
 }
