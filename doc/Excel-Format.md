@@ -8,6 +8,7 @@ exported file can be edited and re-imported.
 
 ## General rules
 
+- The buildings provided by the Excel-Sheet are expected to be all heated and to be all included in the solution.
 - Only the first sheet of the workbook is read; the sheet name does not matter.
 - The first row contains the column headers and is ignored.
 - The column order matters; fields are mapped by their column position.
@@ -20,37 +21,35 @@ exported file can be edited and re-imported.
 
 ## Columns
 
-The proposed columns, in the order that we would write them on export:
+The table below shows which columns are mapped to which building attributes:
 
-| # | Field                 | Unit      | Required | Default                             |
-|---|-----------------------|-----------|----------|-------------------------------------|
-| A | `id`                  | –         | no       | generated                           |
-| B | `name`                | –         | no       | street + number or id               |
-| C | `longitude`           | °         | yes      | –                                   |
-| D | `latitude`            | °         | yes      | –                                   |
-| _ | `building type`       | code      | no       | `10` (multi-generation) / estimated |
+| # | Attribute           | Unit      | Required | Default value         |
+|---|---------------------|-----------|----------|-----------------------|
+| A | ID                  | –         | no       | generated             |
+| B | Name                | –         | no       | street + number or id |
+| C | Longitude           | °         | yes      | –                     |
+| D | Latitude            | °         | yes      | –                     |
+| E | Building type       | code      | no       | estimated             |
+| F | Construction year   | code/year | no       | `4` (1979-1995)       |
+| G | Height              | m         | no       | estimated             |
+| H | Ground area         | m²        | no       | estimated             |
+| I | Flat roof           | bool      | no       | `false`               |
+| J | Warm water fraction | %         | no       | estimated             |
+| K | Heat demand         | kWh/a     | no       | estimated             |
+| L | Peak load           | kW        | no       | estimated             |
+| M | City                | –         | no       | –                     |
+| N | Postal code         | –         | no       | –                     |
+| O | Street              | –         | no       | –                     |
+| P | Number              | –         | no       | –                     |
 
-| _ | `city`                | –         | no       | –                                   |
-| _ | `postal code`         | –         | no       | –                                   |
-| _ | `street`              | –         | no       | –                                   |
-| _ | `number`              | –         | no       | –                                   |
-| _ | `construction year`   | code/year | no       | `4` (1979-1995)                     |
-| _ | `roof type`           | text/code | no       | pitched roof                        |
-| _ | `ground area`         | m²        | no       | 0                                   |
-| _ | `height`              | m         | no       | 0                                   |
-| _ | `heat demand`         | kWh/a     | no       | estimated                           |
-| _ | `peak load`           | kW        | no       | estimated                           |
-| _ | `warm water fraction` | %         | no       | value for type + age, else `14`     |
-| _ | `is heated`           | bool      | no       | derived (demand and load > 0)       |
-| _ | `is included`         | bool      | no       | `true`                              |
+### ID
 
-### Field descriptions
-
-- **`id`** — the building id from the source data (e.g. the CityGML id) or any
+— the building id from the source data (e.g. the CityGML id) or any
   other stable identifier.
   - Used to **find and update** existing buildings. Without it, a new building is
     created on every import.
   - Must be unique within the file.
+
 - **`name`** — display name of the building.
   - When omitted for a new building, it is derived from `street` and `number`.
   - A row without a name (and without a derivable address) is skipped.
@@ -150,21 +149,7 @@ name, a coordinate and a ground area still produces a result.
 | `0`, `flat`     | flat roof (Flachdach)      |
 | `1`, `pitched`  | pitched roof (Satteldach, default) |
 
-## Example
 
-A minimal file that only locates buildings and estimates everything else:
-
-| name         | longitude | latitude | street        | number | ground area | height |
-|--------------|-----------|----------|---------------|--------|-------------|--------|
-| Main Street 1| 8.6821    | 50.1109  | Main Street   | 1      | 160         | 12     |
-| Main Street 3| 8.6830    | 50.1115  | Main Street   | 3      | 90          | 6      |
-
-The same file with explicit estimation inputs and a manual heat demand override:
-
-| id     | name          | longitude | latitude | building type | construction year | roof type | ground area | height | heat demand | is included |
-|--------|---------------|-----------|----------|---------------|-------------------|-----------|-------------|--------|-------------|-------------|
-| b-0001 | Main Street 1 | 8.6821    | 50.1109  | 3             | 1979-1994         | pitched   | 160         | 12     |             | x           |
-| b-0002 | Main Street 3 | 8.6830    | 50.1115  | 6             | 1994              | flat      | 90          | 6      | 14200       | x           |
 
 
 
