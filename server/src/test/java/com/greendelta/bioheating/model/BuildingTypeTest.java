@@ -25,25 +25,25 @@ class BuildingTypeTest {
 		// a height above 25 m is always a high-rise
 		assertEquals(
 			BuildingType.HIGH_RISE,
-			BuildingType.estimate(25.1, 100, 0)
+			BuildingType.estimateFrom(25.1, 100, () -> 0)
 		);
 		assertEquals(
 			BuildingType.HIGH_RISE,
-			BuildingType.estimate(40, 20, 2)
+			BuildingType.estimateFrom(40, 20, () -> 2)
 		);
 
 		// between 12 m and 25 m the block volume decides
 		assertEquals(
 			BuildingType.MULTI_FAMILY_SMALL,
-			BuildingType.estimate(20, 90, 0) // volume 1800
+			BuildingType.estimateFrom(20, 90) // volume 1800
 		);
 		assertEquals(
 			BuildingType.MULTI_FAMILY_MEDIUM,
-			BuildingType.estimate(20, 150, 0) // volume 3000
+			BuildingType.estimateFrom(20, 150) // volume 3000
 		);
 		assertEquals(
 			BuildingType.MULTI_FAMILY_LARGE,
-			BuildingType.estimate(20, 400, 0) // volume 8000
+			BuildingType.estimateFrom(20, 400) // volume 8000
 		);
 	}
 
@@ -52,20 +52,20 @@ class BuildingTypeTest {
 		// volume < 2000 -> small, == 2000 -> medium
 		assertEquals(
 			BuildingType.MULTI_FAMILY_SMALL,
-			BuildingType.estimate(20, 99.9, 0)
+			BuildingType.estimateFrom(20, 99.9)
 		);
 		assertEquals(
 			BuildingType.MULTI_FAMILY_MEDIUM,
-			BuildingType.estimate(20, 100, 0) // volume 2000
+			BuildingType.estimateFrom(20, 100) // volume 2000
 		);
 		// volume < 5000 -> medium, == 5000 -> large
 		assertEquals(
 			BuildingType.MULTI_FAMILY_MEDIUM,
-			BuildingType.estimate(20, 249.9, 0)
+			BuildingType.estimateFrom(20, 249.9)
 		);
 		assertEquals(
 			BuildingType.MULTI_FAMILY_LARGE,
-			BuildingType.estimate(20, 250, 0) // volume 5000
+			BuildingType.estimateFrom(20, 250) // volume 5000
 		);
 	}
 
@@ -74,29 +74,29 @@ class BuildingTypeTest {
 		// a ground area above 150 m2 is a small multi-family house
 		assertEquals(
 			BuildingType.MULTI_FAMILY_SMALL,
-			BuildingType.estimate(10, 200, 0)
+			BuildingType.estimateFrom(10, 200, () -> 0)
 		);
 		// a ground area below 30 m2 is a building part
 		assertEquals(
 			BuildingType.BUILDING_PART,
-			BuildingType.estimate(10, 20, 0)
+			BuildingType.estimateFrom(10, 20, () -> 0)
 		);
 		// in between the neighbor count decides
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimate(10, 100, 0)
+			BuildingType.estimateFrom(10, 100, () -> 0)
 		);
 		assertEquals(
 			BuildingType.END_TERRACE,
-			BuildingType.estimate(10, 100, 1)
+			BuildingType.estimateFrom(10, 100, () -> 1)
 		);
 		assertEquals(
 			BuildingType.MID_TERRACE,
-			BuildingType.estimate(10, 100, 2)
+			BuildingType.estimateFrom(10, 100, () -> 2)
 		);
 		assertEquals(
 			BuildingType.HOUSE_GROUP,
-			BuildingType.estimate(10, 100, 3)
+			BuildingType.estimateFrom(10, 100, () -> 3)
 		);
 	}
 
@@ -105,26 +105,26 @@ class BuildingTypeTest {
 		// height == 25 is not a high-rise, but in the multi-family branch
 		assertEquals(
 			BuildingType.MULTI_FAMILY_MEDIUM,
-			BuildingType.estimate(25, 100, 0) // volume 2500
+			BuildingType.estimateFrom(25, 100) // volume 2500
 		);
 		// height == 12 is still low-rise
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimate(12, 100, 0)
+			BuildingType.estimateFrom(12, 100)
 		);
 		// area == 150 is not small multi-family, it falls through to the neighbors
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimate(10, 150, 0)
+			BuildingType.estimateFrom(10, 150)
 		);
 		// area == 30 is not a building part, it falls through to the neighbors
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimate(10, 30, 0)
+			BuildingType.estimateFrom(10, 30)
 		);
 		assertEquals(
 			BuildingType.BUILDING_PART,
-			BuildingType.estimate(10, 29.9, 0)
+			BuildingType.estimateFrom(10, 29.9)
 		);
 	}
 
@@ -133,49 +133,49 @@ class BuildingTypeTest {
 		// nothing provided -> only the neighbors decide
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimate(0, 0, 0)
+			BuildingType.estimateFrom(0, 0, () -> 0)
 		);
 		assertEquals(
 			BuildingType.MID_TERRACE,
-			BuildingType.estimate(0, 0, 2)
+			BuildingType.estimateFrom(0, 0, () -> 2)
 		);
 		assertEquals(
 			BuildingType.HOUSE_GROUP,
-			BuildingType.estimate(0, 0, 4)
+			BuildingType.estimateFrom(0, 0, () -> 4)
 		);
 
 		// negative values count as not provided
 		assertEquals(
 			BuildingType.END_TERRACE,
-			BuildingType.estimate(-5, -5, 1)
+			BuildingType.estimateFrom(-5, -5, () -> 1)
 		);
 
 		// only the ground area is known
 		assertEquals(
 			BuildingType.MULTI_FAMILY_MEDIUM,
-			BuildingType.estimate(-1, 200, 0)
+			BuildingType.estimateFrom(-1, 200)
 		);
 		assertEquals(
 			BuildingType.BUILDING_PART,
-			BuildingType.estimate(-1, 20, 0)
+			BuildingType.estimateFrom(-1, 20)
 		);
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimate(-1, 100, 0)
+			BuildingType.estimateFrom(-1, 100)
 		);
 
 		// only the height is known
 		assertEquals(
 			BuildingType.HIGH_RISE,
-			BuildingType.estimate(30, 0, 0)
+			BuildingType.estimateFrom(30, 0)
 		);
 		assertEquals(
 			BuildingType.MULTI_FAMILY_LARGE,
-			BuildingType.estimate(20, 0, 0)
+			BuildingType.estimateFrom(20, 0)
 		);
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimate(8, -1, 0)
+			BuildingType.estimateFrom(8, -1)
 		);
 	}
 
@@ -186,9 +186,10 @@ class BuildingTypeTest {
 		for (var height : heights) {
 			for (var area : areas) {
 				for (int neighbors = 0; neighbors < 5; neighbors++) {
+					int n = neighbors;
 					assertEquals(
 						legacyTypeFrom(height, area, neighbors),
-						BuildingType.estimate(height, area, neighbors),
+						BuildingType.estimateFrom(height, area, () -> n),
 						"height=" + height + ", area=" + area
 							+ ", neighbors=" + neighbors
 					);

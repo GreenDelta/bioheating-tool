@@ -72,8 +72,12 @@ class BuildingProcessor {
 			// the type and the construction age
 			for (var b : buildings) {
 				var shape = shapeMap.get(b.cityId());
-				if (shape == null) continue;
-				var type = typeOf(shape, neighbors);
+				if (shape == null)
+					continue;
+				var type = BuildingType.estimateFrom(
+					shape.height(),
+					shape.groundArea(),
+					() -> neighbors.applyAsInt(shape.id()));
 				b.type(type);
 				b.warmWaterFraction(WarmWater.of(type, b.constructionAge()));
 			}
@@ -125,36 +129,6 @@ class BuildingProcessor {
 			: RoofType.PITCHED;
 	}
 
-	private BuildingType typeOf(
-		BuildingShape shape,
-		ToIntFunction<String> neighbors
-	) {
-		if (shape.height() > 25) {
-			return BuildingType.HIGH_RISE;
-		}
-		if (shape.height() > 12) {
-			if (shape.blockVolume() < 2000) {
-				return BuildingType.MULTI_FAMILY_SMALL;
-			}
-			return shape.blockVolume() < 5000
-				? BuildingType.MULTI_FAMILY_MEDIUM
-				: BuildingType.MULTI_FAMILY_LARGE;
-		}
-
-		if (shape.groundArea() > 150) {
-			return BuildingType.MULTI_FAMILY_SMALL;
-		}
-		if (shape.groundArea() < 30) {
-			return BuildingType.BUILDING_PART;
-		}
-
-		return switch (neighbors.applyAsInt(shape.id())) {
-			case 0 -> BuildingType.SINGLE_FAMILY;
-			case 1 -> BuildingType.END_TERRACE;
-			case 2 -> BuildingType.MID_TERRACE;
-			default -> BuildingType.HOUSE_GROUP;
-		};
-	}
 
 	private String nameOf(GmlBuilding gml) {
 		var address = gml.address();

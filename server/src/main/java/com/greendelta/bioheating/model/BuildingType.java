@@ -1,5 +1,7 @@
 package com.greendelta.bioheating.model;
 
+import java.util.function.IntSupplier;
+
 /// The building type. There is no unknown value; when the type cannot be
 /// determined it defaults to MULTI_GENERATION.
 public enum BuildingType {
@@ -31,33 +33,29 @@ public enum BuildingType {
 		return MULTI_GENERATION;
 	}
 
+	public static BuildingType estimateFrom(double height, double groundArea) {
+		return estimateFrom(height, groundArea, null);
+	}
+
 	/// Tries to estimate the building type from the given attribute values.
-	/// Values `<= 0` are interpreted as _not provided_ and ignored or handled as
-	/// default.
-	public static BuildingType estimate(
-		double height, double groundArea, int neighborCount
+	/// Values `<= 0` or `null` are interpreted as _not provided_ and ignored or
+	/// handled as default.
+	public static BuildingType estimateFrom(
+		double height, double groundArea, IntSupplier neighborCount
 	) {
-
-		var byNeighbors = switch (Math.max(0, neighborCount)) {
-			case 0 -> BuildingType.SINGLE_FAMILY;
-			case 1 -> BuildingType.END_TERRACE;
-			case 2 -> BuildingType.MID_TERRACE;
-			default -> BuildingType.HOUSE_GROUP;
-		};
-
 		boolean hasHeight = height > 0;
 		boolean hasArea = groundArea > 0;
 
 		// no geometry: only the neighbor count is left
 		if (!hasHeight && !hasArea)
-			return byNeighbors;
+			return byNeighbors(neighborCount);
 
 		// only the ground area is known
 		if (!hasHeight) {
 			if (groundArea < 30)
 				return BuildingType.BUILDING_PART;
 			if (groundArea < 150)
-				return byNeighbors;
+				return byNeighbors(neighborCount);
 			if (groundArea < 380)
 				return BuildingType.MULTI_FAMILY_MEDIUM;
 			else
@@ -72,7 +70,7 @@ public enum BuildingType {
 				return BuildingType.MULTI_FAMILY_LARGE;
 			if (height > 12)
 				return BuildingType.MULTI_FAMILY_MEDIUM;
-			return byNeighbors;
+			return byNeighbors(neighborCount);
 		}
 
 		// both values are known
@@ -93,7 +91,18 @@ public enum BuildingType {
 		if (groundArea < 30)
 			return BuildingType.BUILDING_PART;
 		else
-			return byNeighbors;
+			return byNeighbors(neighborCount);
+	}
+
+	private static BuildingType byNeighbors(IntSupplier count) {
+		if (count == null)
+			return BuildingType.SINGLE_FAMILY;
+		return switch (Math.max(0, count.getAsInt())) {
+			case 0 -> BuildingType.SINGLE_FAMILY;
+			case 1 -> BuildingType.END_TERRACE;
+			case 2 -> BuildingType.MID_TERRACE;
+			default -> BuildingType.HOUSE_GROUP;
+		};
 	}
 
 }
