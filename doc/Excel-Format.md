@@ -42,22 +42,36 @@ The table below shows which columns are mapped to which building attributes:
 | O | Street              | –         | no       | –                     |
 | P | Number              | –         | no       | –                     |
 
+
 ### ID
 
-— the building id from the source data (e.g. the CityGML id) or any
-  other stable identifier.
-  - Used to **find and update** existing buildings. Without it, a new building is
-    created on every import.
-  - Must be unique within the file.
+This is the building ID from the source data (e.g. the CityGML ID) or any other stable identifier. When updating a project it is used to find possible matching buildings (beside the geometry matching; see below). If not provided, and no matching building was found in an update, it will be simply generated. Note that it must be unique within a project.
 
-- **`name`** — display name of the building.
-  - When omitted for a new building, it is derived from `street` and `number`.
-  - A row without a name (and without a derivable address) is skipped.
-- **`longitude`** / **`latitude`** — geographic position in **WGS84** decimal
-  degrees.
+
+### Name
+
+This is the display name of the building. In the CityGML and when not provided, the import tries to derive it from the address information (street and number). If there is also no address information available, the ID is copied here.
+
+
+### Longitude and latitude
+
+This is the geographic position of the building in WGS84 decimal degrees, for example for a point in Berlin:
+
+```
+13.37779496958173, 52.51743035298201
+```
+
+(Note that the order is longitude (x) and latitude (y) in the Excel file but when you copy coordinates from Google Maps or OpenStreetmap they are typically given in latitude-longitude order that you need to flip then).
+
+
+
+
   - The building footprint is projected into the UTM zone of the project; when a
     building is created, a small square around the point is used as footprint.
   - Rows without a valid coordinate pair (0, out of range) are skipped.
+
+
+
 - **`city`** / **`postal code`** / **`street`** / **`number`** — the address of
   the building (`locality`, `postalCode`, `street`, `streetNumber` in the model).
 - **`building type`** — the type of the building; a **code (1-10)** or a
