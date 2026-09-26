@@ -198,6 +198,34 @@ class BuildingTypeTest {
 		}
 	}
 
+	@Test
+	void testDefaultsAreConsistentWithEstimation() {
+		assertRoundTrip(BuildingType.HIGH_RISE, 0);
+		assertRoundTrip(BuildingType.MULTI_FAMILY_SMALL, 0);
+		assertRoundTrip(BuildingType.MULTI_FAMILY_MEDIUM, 0);
+		assertRoundTrip(BuildingType.MULTI_FAMILY_LARGE, 0);
+		assertRoundTrip(BuildingType.BUILDING_PART, 0);
+		assertRoundTrip(BuildingType.SINGLE_FAMILY, 0);
+		assertRoundTrip(BuildingType.END_TERRACE, 1);
+		assertRoundTrip(BuildingType.MID_TERRACE, 2);
+		assertRoundTrip(BuildingType.HOUSE_GROUP, 3);
+	}
+
+	/// The default height and ground area of a type must estimate back to that
+	/// type with the given number of heated neighbors.
+	private static void assertRoundTrip(BuildingType type, int neighbors) {
+		assertEquals(
+			type,
+			BuildingType.estimateFrom(
+				type.defaultHeight(),
+				type.defaultGroundArea(),
+				() -> neighbors
+			),
+			"default height and ground area of " + type
+				+ " must estimate back to that type"
+		);
+	}
+
 	/// This was the logic of the type detection in the old building processor
 	/// that we ported from the initial Matlab code.
 	private static BuildingType legacyTypeFrom(

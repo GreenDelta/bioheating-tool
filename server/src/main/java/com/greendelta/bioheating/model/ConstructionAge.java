@@ -58,4 +58,39 @@ public enum ConstructionAge {
 		if (year <= 2030) return AGE_2010_2030;
 		return AGE_1979_1995;
 	}
+
+	/// Parses a construction age from a user provided value. The following forms
+	/// are accepted:
+	///
+	/// - a code `< 7`, for example `4`
+	/// - a year, for example `1994`
+	/// - a range string, for example `1979-1994`
+	///
+	/// Returns `null` when the value is `null`, blank, or cannot be parsed, so
+	/// that the caller can fall back to a default.
+	public static ConstructionAge parse(String value) {
+		if (value == null || value.isBlank()) return null;
+		var text = value.strip();
+
+		// a range string like `1979-1994`: the ranges are defined by their upper
+		// bound, so we use the second number
+		var dash = text.indexOf('-');
+		if (dash > 0 && dash < text.length() - 1) {
+			var end = numberOf(text.substring(dash + 1));
+			return end > 0 ? ofYear((int) end) : null;
+		}
+
+		var number = numberOf(text);
+		if (Double.isNaN(number) || number <= 0) return null;
+		return number < 7 ? ofCode((int) number) : ofYear((int) number);
+	}
+
+	private static double numberOf(String value) {
+		if (value == null || value.isBlank()) return Double.NaN;
+		try {
+			return Double.parseDouble(value.strip());
+		} catch (NumberFormatException e) {
+			return Double.NaN;
+		}
+	}
 }

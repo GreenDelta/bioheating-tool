@@ -5,6 +5,7 @@ import com.greendelta.bioheating.io.citygml.OsmStreetFetch;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import org.openlca.commons.Res;
 
@@ -56,34 +57,64 @@ public class ProjectCreator {
 		return Res.ok(project);
 	}
 
-	/// Only files with a supported {@link ImportFileType} are imported; all other
-	/// files are skipped. When no file has a supported type, an error is
-	/// returned. This is package-private for testing.
+	/// The supported files in the order in which they are imported: first the
+	/// CityGML files (including those extracted from ZIP archives), then the
+	/// Excel files, so that Excel rows can update the buildings that were created
+	/// from the CityGML data. Unsupported files are skipped. This is
+	/// package-private for testing.
+	static List<File> orderedFiles(List<File> files) {
+		if (files == null) return List.of();
+		var gml = new ArrayList<File>();
+		var excel = new ArrayList<File>();
+		for (var file : files) {
+			var type = ImportFileType.of(file);
+			if (type == ImportFileType.CITY_GML) {
+				gml.add(file);
+			} else if (type == ImportFileType.EXCEL) {
+				excel.add(file);
+			}
+		}
+		gml.addAll(excel);
+		return gml;
+	}
+
+	/// Imports the CityGML files first and then the Excel files; all other files
+	/// are skipped. When no file has a supported type, an error is returned. This
+	/// is package-private for testing.
 	Res<Project> importFiles() {
 		if (files == null || files.isEmpty())
 			return Res.error("No import files provided");
 
-		int imported = 0;
-		for (var file : files) {
+		var gml = new ArrayList<File>();
+		var excel = new ArrayList<File>();
+		for (var file : orderedFiles(files)) {
 			var type = ImportFileType.of(file);
-			if (type == null) continue;
-			var res = type == ImportFileType.EXCEL
-				? importExcelFile(file)
-				: importCityGmlFile(file);
-			if (res.isError()) return res;
-			imported++;
+			if (type == ImportFileType.CITY_GML) {
+				gml.add(file);
+			} else if (type == ImportFileType.EXCEL) {
+				excel.add(file);
+			}
 		}
-		return imported > 0
-			? Res.ok(project)
-			: Res.error("No import files provided");
+		if (gml.isEmpty() && excel.isEmpty())
+			return Res.error("No import files provided");
+
+		if (!gml.isEmpty()) {
+			var res = importCityGmlFiles(gml);
+			if (res.isError()) return res;
+		}
+		for (var file : excel) {
+			var res = importExcelFile(file);
+			if (res.isError()) return res;
+		}
+		return Res.ok(project);
 	}
 
-	private Res<Project> importCityGmlFile(File file) {
-		if (file == null) {
+	private Res<Project> importCityGmlFiles(List<File> files) {
+		if (files == null || files.isEmpty()) {
 			return Res.error("No CityGML file provided");
 		}
 		try {
-			return new CityGmlImport(db, project, List.of(file)).call();
+			return new CityGmlImport(db, project, files).call();
 		} catch (Exception e) {
 			return Res.error("project creation failed during CityGML import", e);
 		}
@@ -94,7 +125,7 @@ public class ProjectCreator {
 			return Res.error("No Excel file provided");
 		}
 		try {
-			return new XlsBuildingImport(project, file).call();
+			return new XlsBuildingImport(db, project, file).call();
 		} catch (Exception e) {
 			return Res.error("project creation failed during Excel import", e);
 		}

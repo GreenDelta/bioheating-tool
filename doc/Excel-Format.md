@@ -15,32 +15,35 @@ exported file can be edited and re-imported to efficiently update building data.
 - Blank cells are allowed for optional values.
 - Text values are trimmed; comparisons ignore case.
 - Booleans accept `x`, `y`, `yes`, `true`, `ja`, `j`, `1`; everything else is `false`.
-- A row is skipped when it has no `name` or no valid `longitude`/`latitude`.
+- A row is skipped when it has no valid `longitude`/`latitude`, or when no name
+  can be derived from the name, the street and number, or the ID.
 - Buildings are matched by their `id`. When there is no ID, they are also matched by their geometric intersection (see below)
 
 
 ## Columns
 
-The table below shows which columns are mapped to which building attributes:
+The table below shows which columns are mapped to which building attributes.
+The `Header` column is the header text that the export writes; the import maps
+the fields by their column position, so only the order matters:
 
-| # | Attribute           | Unit      | Required | Default value         |
-|---|---------------------|-----------|----------|-----------------------|
-| A | ID                  | –         | no       | generated             |
-| B | Name                | –         | no       | street + number or id |
-| C | Longitude           | °         | yes      | –                     |
-| D | Latitude            | °         | yes      | –                     |
-| E | Building type       | code      | no       | estimated             |
-| F | Construction year   | code/year | no       | `4` (1979-1995)       |
-| G | Height              | m         | no       | estimated             |
-| H | Ground area         | m²        | no       | estimated             |
-| I | Flat roof           | bool      | no       | `false`               |
-| J | Warm water fraction | %         | no       | estimated             |
-| K | Heat demand         | kWh/a     | no       | estimated             |
-| L | Peak load           | kW        | no       | estimated             |
-| M | City                | –         | no       | –                     |
-| N | Postal code         | –         | no       | –                     |
-| O | Street              | –         | no       | –                     |
-| P | Number              | –         | no       | –                     |
+| # | Header                | Attribute           | Unit      | Required | Default value         |
+|---|-----------------------|---------------------|-----------|----------|-----------------------|
+| A | `id`                  | ID                  | –         | no       | generated             |
+| B | `name`                | Name                | –         | no       | street + number or id |
+| C | `longitude`           | Longitude           | °         | yes      | –                     |
+| D | `latitude`            | Latitude            | °         | yes      | –                     |
+| E | `building type`       | Building type       | code      | no       | estimated             |
+| F | `construction year`   | Construction year   | code/year | no       | `4` (1979-1995)       |
+| G | `height`              | Height              | m         | no       | estimated             |
+| H | `ground area`         | Ground area         | m²        | no       | estimated             |
+| I | `flat roof`           | Flat roof           | bool      | no       | `false`               |
+| J | `warm water fraction` | Warm water fraction | %         | no       | estimated             |
+| K | `heat demand`         | Heat demand         | kWh/a     | no       | estimated             |
+| L | `peak load`           | Peak load           | kW        | no       | estimated             |
+| M | `city`                | City                | –         | no       | –                     |
+| N | `postal code`         | Postal code         | –         | no       | –                     |
+| O | `street`              | Street              | –         | no       | –                     |
+| P | `number`              | Number              | –         | no       | –                     |
 
 
 ### ID
@@ -113,7 +116,7 @@ The height (m) and and ground area (m²) are provided as numbers. If not values 
 
 ### Roof type
 
-The model currently only distinguishes between flat and pitched roofs. If the value set in this column evaluates to `true`, the roof type is set to `flat`, otherwise it is set to `pitched`.
+The model currently only distinguishes between flat and pitched roofs. If the value set in this column evaluates to `true`, the roof type is set to `flat`, otherwise it is set to `pitched`. A blank cell means that no value is provided: an existing building keeps its roof type and a new building defaults to a pitched roof.
 
 
 ### Warm water fraction

@@ -57,6 +57,7 @@ public class FileServiceTest {
 				"nested/building-a.xml", "<a />",
 				"building-b.gml", "<b />",
 				"building-c.citygml", "<c />",
+				"buildings.xlsx", "xlsx-data",
 				"readme.txt", "not a model",
 				".DS_Store", "not a model",
 				"__MACOSX/._building-b.gml", "not a model"
@@ -67,7 +68,7 @@ public class FileServiceTest {
 
 		assertFalse(result.isError());
 		var files = result.value();
-		assertEquals(4, files.size());
+		assertEquals(5, files.size());
 		var contents = files.stream()
 			.map(file -> {
 				try {
@@ -77,11 +78,16 @@ public class FileServiceTest {
 				}
 			})
 			.collect(Collectors.toSet());
-		assertEquals(Set.of("<direct />", "<a />", "<b />", "<c />"), contents);
+		assertEquals(
+			Set.of("<direct />", "<a />", "<b />", "<c />", "xlsx-data"),
+			contents
+		);
 		assertTrue(files.stream().anyMatch(file -> file.getName().endsWith(".gml")));
 		assertTrue(files.stream().anyMatch(file -> file.getName().endsWith(".xml")));
 		assertTrue(files.stream()
 			.anyMatch(file -> file.getName().endsWith(".citygml")));
+		assertTrue(files.stream()
+			.anyMatch(file -> file.getName().endsWith(".xlsx")));
 
 		for (var file : files) {
 			Files.deleteIfExists(file.toPath());

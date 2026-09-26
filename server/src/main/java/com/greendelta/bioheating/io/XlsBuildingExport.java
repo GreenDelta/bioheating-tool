@@ -3,6 +3,7 @@ package com.greendelta.bioheating.io;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.RoofType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -54,7 +55,7 @@ public class XlsBuildingExport {
 				var row = sheet.createRow(rowIndex++);
 				append(row, b, wgs84.value());
 			}
-			for (int i = 0; i < 13; i++) {
+			for (int i = 0; i < 16; i++) {
 				sheet.autoSizeColumn(i);
 			}
 			workbook.write(stream);
@@ -69,15 +70,18 @@ public class XlsBuildingExport {
 		putString(row, 1, "name");
 		putString(row, 2, "longitude");
 		putString(row, 3, "latitude");
-		putString(row, 4, "heat demand");
-		putString(row, 5, "peak load");
-		putString(row, 6, "is included");
-		putString(row, 7, "building type");
-		putString(row, 8, "city");
-		putString(row, 9, "postal code");
-		putString(row, 10, "street");
-		putString(row, 11, "number");
-		putString(row, 12, "warm water fraction");
+		putString(row, 4, "building type");
+		putString(row, 5, "construction year");
+		putString(row, 6, "height");
+		putString(row, 7, "ground area");
+		putString(row, 8, "flat roof");
+		putString(row, 9, "warm water fraction");
+		putString(row, 10, "heat demand");
+		putString(row, 11, "peak load");
+		putString(row, 12, "city");
+		putString(row, 13, "postal code");
+		putString(row, 14, "street");
+		putString(row, 15, "number");
 	}
 
 	private void append(Row row, Building building, CoordinateTransformer wgs84) {
@@ -94,15 +98,18 @@ public class XlsBuildingExport {
 		putString(row, 1, nameOf(building));
 		putNumber(row, 2, point != null ? point.x : null);
 		putNumber(row, 3, point != null ? point.y : null);
-		putNumber(row, 4, building.heatDemand());
-		putNumber(row, 5, building.peakLoad());
-		putBoolean(row, 6, building.isIncluded());
-		putNumber(row, 7, typeCodeOf(building.type()));
-		putString(row, 8, building.locality());
-		putString(row, 9, building.postalCode());
-		putString(row, 10, building.street());
-		putString(row, 11, building.streetNumber());
-		putNumber(row, 12, building.warmWaterFraction());
+		putNumber(row, 4, typeCodeOf(building.type()));
+		putString(row, 5, constructionYearOf(building));
+		putNumber(row, 6, positive(building.height()));
+		putNumber(row, 7, positive(building.groundArea()));
+		putBoolean(row, 8, isFlatRoof(building));
+		putNumber(row, 9, positive(building.warmWaterFraction()));
+		putNumber(row, 10, positive(building.heatDemand()));
+		putNumber(row, 11, positive(building.peakLoad()));
+		putString(row, 12, building.locality());
+		putString(row, 13, building.postalCode());
+		putString(row, 14, building.street());
+		putString(row, 15, building.streetNumber());
 	}
 
 	private Coordinate centerOf(Building building) {
@@ -134,8 +141,27 @@ public class XlsBuildingExport {
 			: building.street() + " " + building.streetNumber();
 	}
 
-	private int typeCodeOf(BuildingType type) {
-		return type != null ? type.code() : BuildingType.MULTI_GENERATION.code();
+	/// The building type code, or `null` when the type is not set.
+	private static Double typeCodeOf(BuildingType type) {
+		return type != null ? (double) type.code() : null;
+	}
+
+	/// The construction year as a range string (the label of the age), or
+	/// `null` when it is not set.
+	private static String constructionYearOf(Building building) {
+		var age = building.constructionAge();
+		return age != null ? age.toString() : null;
+	}
+
+	/// The model only distinguishes flat and pitched roofs; a missing roof type
+	/// is written as pitched (the default).
+	private static boolean isFlatRoof(Building building) {
+		return building.roofType() == RoofType.FLAT;
+	}
+
+	/// `<= 0` means _not set_; such values are written as empty cells.
+	private static Double positive(double value) {
+		return value > 0 ? value : null;
 	}
 
 	private void putString(Row row, int column, String value) {
