@@ -3,7 +3,7 @@
 
 The BioHeating tool supports an format for importing and updating building data
 from an Excel file. The same format used when exporting building data, so an
-exported file can be edited and re-imported.
+exported file can be edited and re-imported to efficiently update building data. An Excel file can be directly provided with the initial CityGML file(s) when creating a project. Alternatively, a project can be updated also later with such an Excel file. Provided values in an Excel file always overwrite the respective building attributes.
 
 
 ## General rules
@@ -63,115 +63,69 @@ This is the geographic position of the building in WGS84 decimal degrees, for ex
 
 (Note that the order is longitude (x) and latitude (y) in the Excel file but when you copy coordinates from Google Maps or OpenStreetmap they are typically given in latitude-longitude order that you need to flip then).
 
+These coordinates are required. Rows without them are skipped.
+
+This point is projected into the UTM zone of the project. From the ground-area of the building, a square around this point is created as the polygon of the polygon in the map. If no matching building was found by the building ID, the square is used to search for an existing building in the map. If it is intersecting with the polygon of an existing building this existing building is updated with the new attributes. The polygon of the existing building is replaced with the square, if the area of the square is larger than the area of the polygon.
 
 
+### Building type
 
-  - The building footprint is projected into the UTM zone of the project; when a
-    building is created, a small square around the point is used as footprint.
-  - Rows without a valid coordinate pair (0, out of range) are skipped.
+For the building type, the integer codes from the table below are accepted. If the code is missing or invalid the building type is estimated from provided attributes (ground area, height, number of neighbors).
 
-
-
-- **`city`** / **`postal code`** / **`street`** / **`number`** — the address of
-  the building (`locality`, `postalCode`, `street`, `streetNumber` in the model).
-- **`building type`** — the type of the building; a **code (1-10)** or a
-  label is accepted (see [Codes](#codes)).
-  - Fallback: if the value is missing or unknown, the type is **estimated from
-    `ground area` and `height`** (e.g. small footprint + low height → single
-    family, large footprint → multi-family, tall → high-rise). If that is not
-    possible, it defaults to `10` (multi-generation).
-- **`construction year`** — the construction age of the building. Accepts:
-  - a **code** `< 8` (see [Codes](#codes)), e.g. `4`
-  - a **year** as an integer, e.g. `1994` (mapped to the matching age range)
-  - a **range string**, e.g. `1979-1994` or `1949-1978` (mapped to the matching
-    age range)
-  - Fallback: `4` / `1979-1995` when missing or unknown.
-- **`roof type`** — `flat` / `0` or `pitched` / `1`.
-  - Fallback: pitched.
-- **`ground area`** — the ground surface area of the building in m².
-  - This is a **model input** for the demand estimation.
-- **`height`** — the building height in m.
-  - This is a **model input** for the demand estimation.
-- **`heat demand`** — annual heat demand in kWh/a.
-  - When given, the value is used **as is** (manual override).
-  - When empty, the value is **estimated** from the model inputs.
-- **`peak load`** — peak heating load in kW.
-  - When given, the value is used **as is** (manual override).
-  - When empty, the value is **estimated** from the model inputs.
-- **`warm water fraction`** — share of the heat demand that is warm water, in %.
-  - Fallback: the value for the building type and construction year, otherwise
-    `14` %.
-- **`is heated`** — marks the building as a heat consumer.
-  - Fallback: `true` when `heat demand` **and** `peak load` are greater than `0`.
-- **`is included`** — marks the building as part of the selected network scope.
-  - Fallback: `true`.
-
-### Not a column (for now)
-
-- **Climate region / weather station** — this is a **project** property, not a
-  building property. It is determined once from the project location (the
-  coordinates of the whole dataset), so it does not need a per-building column.
-
-## How heat demand and peak load are estimated
-
-When `heat demand` and `peak load` are not given, they are estimated with the two
-trained models. The models use these six inputs:
-
-- `ground area` [m²]
-- `height` [m]
-- `construction year` (age code)
-- `roof type` (flat / pitched)
-- `building type` (code)
-- climate region / weather station code (from the project location)
-
-Everything except the weather station comes from the columns above. Missing
-inputs fall back to the defaults listed in the column table, so a row with only a
-name, a coordinate and a ground area still produces a result.
-
-## Codes
-
-### Building type (`building type`)
-
-| Code | Meaning                     |
-|------|-----------------------------|
-| 1    | high house                  |
-| 2    | small multi-family house    |
-| 3    | medium multi-family house   |
-| 4    | large multi-family house    |
-| 5    | Gebäudeteil (building part) |
-| 6    | one-family house            |
-| 7    | end row house               |
-| 8    | middle row house            |
-| 9    | group of houses             |
-| 10   | multi-generation house (default) |
-
-### Construction year (`construction year`)
-
-| Code | Range       | Accepted forms              |
-|------|-------------|-----------------------------|
-| 1    | 1900-1919   | `1`, `1910`, `1900-1919`    |
-| 2    | 1919-1948   | `2`, `1930`, `1919-1948`    |
-| 3    | 1949-1978   | `3`, `1960`, `1949-1978`    |
-| 4    | 1979-1995   | `4`, `1990`, `1979-1995` (default) |
-| 5    | 1995-2009   | `5`, `2000`, `1995-2009`    |
-| 6    | 2010-2030   | `6`, `2015`, `2010-2030`    |
-
-### Roof type (`roof type`)
-
-| Value           | Meaning                    |
-|-----------------|----------------------------|
-| `0`, `flat`     | flat roof (Flachdach)      |
-| `1`, `pitched`  | pitched roof (Satteldach, default) |
+| Code | Meaning                   |
+|------|---------------------------|
+| 1    | high house                |
+| 2    | small multi-family house  |
+| 3    | medium multi-family house |
+| 4    | large multi-family house  |
+| 5    | building part             |
+| 6    | one-family house          |
+| 7    | end row house             |
+| 8    | middle row house          |
+| 9    | group of houses           |
+| 10   | multi-generation house    |
 
 
+### Construction year
+
+For the construction year, the import accepts values of the following form:
+
+- a code `< 7`,
+- a year as an integer, or
+- a range string
+
+If it cannot determine the construction age from the provided input or when no value is provided, it falls back to the default: `4` / `1979-1995`
+
+| Code | Range     | Accepted forms                     |
+|------|-----------|------------------------------------|
+| 1    | 1900-1919 | `1`, `1910`, `1900-1919`           |
+| 2    | 1919-1948 | `2`, `1930`, `1919-1948`           |
+| 3    | 1949-1978 | `3`, `1960`, `1949-1978`           |
+| 4    | 1979-1995 | `4`, `1990`, `1979-1995` (default) |
+| 5    | 1995-2009 | `5`, `2000`, `1995-2009`           |
+| 6    | 2010-2030 | `6`, `2015`, `2010-2030`           |
 
 
+### Height and ground area
+
+The height (m) and and ground area (m²) are provided as numbers. If not values are given, they are estimated from the building type.
 
 
-The format is designed to be *permissive*: only a few fields are really needed,
-everything else has a sensible fallback. The main purpose of the additional
-columns is to provide the inputs that are needed to **estimate the heat demand
-and the peak load** of a building.
+### Roof type
 
-> This is a first draft. The field list, the fallback rules and the code tables
-> below are proposals that we will refine.
+The model currently only distinguishes between flat and pitched roofs. If the value set in this column evaluates to `true`, the roof type is set to `flat`, otherwise it is set to `pitched`.
+
+
+### Warm water fraction
+
+This value is given in %. If not provided it is estimated from the building type and construction year.
+
+
+### Heat demand and peak load
+
+The annual heat demand  (kWh/a) and peak heating load (kW) can be provided as numbers. If these values are missing, the are estimated by the model.
+
+
+### Address of the building
+
+It is recommended to provide at least the street name and number here.
