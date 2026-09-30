@@ -189,11 +189,11 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 		var projected = proj.project(patch.longitude(), patch.latitude());
 		if (projected.isError()) return null;
 		var center = new Coordinate(projected.value().x, projected.value().y);
-		var matched = index.findByCityId(patch.cityId());
+		var matched = index.findById(patch.cityId());
 		var square = squareAround(center, squareAreaOf(patch, matched));
 		var building = matched != null
 			? matched
-			: index.findIntersecting(square);
+			: index.findByIntersection(square);
 		return new Entry(patch, square, building);
 	}
 
