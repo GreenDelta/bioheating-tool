@@ -5,12 +5,14 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
+
 import com.greendelta.bioheating.graph.NetworkTree;
 import com.greendelta.bioheating.graph.NetworkTree.Junction;
 import com.greendelta.bioheating.graph.NetworkTree.Segment;
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Solution;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -19,6 +21,7 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.GZIPOutputStream;
+
 import org.locationtech.jts.geom.GeometryFactory;
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
@@ -41,8 +44,8 @@ public class SophenaExport {
 		if (file == null) return Res.error("No valid export file provided");
 		if (
 			solution == null ||
-			solution.project() == null ||
-			solution.project().map() == null
+				solution.project() == null ||
+				solution.project().map() == null
 		) return Res.error("No valid solution provided");
 
 		try {
@@ -93,12 +96,31 @@ public class SophenaExport {
 		return obj;
 	}
 
+	/// Converts the building information into a Sophena consumer object. The heat
+	/// demand is translated into a _fuel consumption_ of water with an efficiency
+	/// rate of 100% but with a specific utilization rate. In Sophena, the
+	/// utilization rate is calculated like this:
+	///
+	/// ```
+  /// standByRate = 1 / (((usageDuration/fullLoadHours) - 1) * standByLoss + 1)
+  /// utilizationRate = standByRate * efficiencyRate
+  /// ```
+	///
+	/// With `usageDuration = 8760` and `standByLoss = 0.014` (specific standby
+	/// loss for small boilers) and `efficiencyRate = 100%`:
+	///
+	/// ```
+  /// utilizationRate = 100 / (((8760/fullLoadHours) - 1) * 0.014 + 1)
+  /// ```
+	///
 	private ObjectNode consumerOf(Building b) {
-		if (b == null || !b.isHeated() || !b.isIncluded()) return null;
+		if (b == null || !b.isHeated() || !b.isIncluded())
+			return null;
 
 		var state = buildingStateOf(b);
-		var loadHours =
-			b.peakLoad() > 0 ? b.heatDemand() / b.peakLoad() : state.loadHours();
+		var loadHours = b.peakLoad() > 0
+			? b.heatDemand() / b.peakLoad()
+			: state.loadHours();
 
 		var obj = json
 			.objectNode()
@@ -122,12 +144,15 @@ public class SophenaExport {
 			.put("id", "031987ab-4a0d-43b3-b3e5-8f50d8e5df1e")
 			.put("name", "Warmwasser");
 
+		// see the doc above for that formula
+		double utilizationRate = 100 / (((8760 / loadHours) - 1) * 0.014 + 1);
+
 		var consObj = json
 			.objectNode()
 			.put("id", UUID.randomUUID().toString())
-			.put("utilisationRate", 85.73)
+			.put("utilisationRate", utilizationRate)
 			.put("waterContent", 0.0)
-			.put("amount", b.heatDemand() / 0.8573)
+			.put("amount", b.heatDemand() * (utilizationRate / 100))
 			.set("fuel", fuelObj);
 		obj.set("fuelConsumptions", json.arrayNode(1).add(consObj));
 
@@ -211,7 +236,8 @@ public class SophenaExport {
 					node.put("latitude", res.value().y);
 					node.put("longitude", res.value().x);
 				}
-			} catch (Exception ignored) {}
+			} catch (Exception ignored) {
+			}
 		}
 		return node;
 	}
@@ -233,12 +259,12 @@ public class SophenaExport {
 		return state != null
 			? state
 			: new SophenaBuildingState(
-					"4e1a2929-e59a-4b1a-bb3c-dec917eb9849",
-					"Standard 1979-1994",
-					SophenaBuildingType.SINGLE_FAMILY_HOUSE,
-					1921,
-					true
-				);
+			"4e1a2929-e59a-4b1a-bb3c-dec917eb9849",
+			"Standard 1979-1994",
+			SophenaBuildingType.SINGLE_FAMILY_HOUSE,
+			1921,
+			true
+		);
 	}
 
 	private SophenaBuildingType buildingTypeOf(Building b) {
@@ -248,12 +274,10 @@ public class SophenaExport {
 		return switch (b.type()) {
 			case SINGLE_FAMILY -> SophenaBuildingType.SINGLE_FAMILY_HOUSE;
 			case END_TERRACE, MID_TERRACE -> SophenaBuildingType.TERRACE_HOUSE;
-			case
-				MULTI_FAMILY_SMALL,
-				MULTI_FAMILY_MEDIUM -> SophenaBuildingType.MULTI_FAMILY_HOUSE;
-			case
-				MULTI_FAMILY_LARGE,
-				HOUSE_GROUP -> SophenaBuildingType.BLOCK_OF_FLATS;
+			case MULTI_FAMILY_SMALL,
+					 MULTI_FAMILY_MEDIUM -> SophenaBuildingType.MULTI_FAMILY_HOUSE;
+			case MULTI_FAMILY_LARGE,
+					 HOUSE_GROUP -> SophenaBuildingType.BLOCK_OF_FLATS;
 			case HIGH_RISE -> SophenaBuildingType.TOWER_BLOCK;
 			case BUILDING_PART, MULTI_GENERATION -> SophenaBuildingType.OTHER;
 		};
