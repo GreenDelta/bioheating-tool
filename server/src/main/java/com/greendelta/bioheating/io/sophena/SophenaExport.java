@@ -152,7 +152,7 @@ public class SophenaExport {
 			.put("id", UUID.randomUUID().toString())
 			.put("utilisationRate", utilizationRate)
 			.put("waterContent", 0.0)
-			.put("amount", b.heatDemand() * (utilizationRate / 100))
+			.put("amount", b.heatDemand() / (utilizationRate / 100))
 			.set("fuel", fuelObj);
 		obj.set("fuelConsumptions", json.arrayNode(1).add(consObj));
 
