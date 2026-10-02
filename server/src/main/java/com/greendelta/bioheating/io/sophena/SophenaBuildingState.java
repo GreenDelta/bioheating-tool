@@ -10,9 +10,11 @@ public record SophenaBuildingState(
 	String id,
 	String name,
 	SophenaBuildingType type,
+	double heatingLimit,
 	double loadHours,
 	boolean isDefault
 ) {
+
 	public static SophenaBuildingState defaultOf(
 		List<SophenaBuildingState> states,
 		SophenaBuildingType type
@@ -69,6 +71,7 @@ public record SophenaBuildingState(
 				var id = row.get(0);
 				var name = row.get(1);
 				var typeStr = row.get(2);
+				var heatingLimit = Double.parseDouble(row.get(3));
 				var loadHours = Double.parseDouble(row.get(6));
 				var isDefault = Boolean.parseBoolean(row.get(7));
 
@@ -78,7 +81,14 @@ public record SophenaBuildingState(
 				} catch (Exception ignored) {}
 
 				list.add(
-					new SophenaBuildingState(id, name, type, loadHours, isDefault)
+					new SophenaBuildingState(
+						id,
+						name,
+						type,
+						heatingLimit,
+						loadHours,
+						isDefault
+					)
 				);
 			}
 			return list;

@@ -128,7 +128,7 @@ public class SophenaExport {
 			.put("name", b.name())
 			.put("waterFraction", b.warmWaterFraction())
 			.put("loadHours", loadHours)
-			.put("heatingLimit", 14.0)
+			.put("heatingLimit", state.heatingLimit())
 			.put("heatingLoad", b.peakLoad());
 		obj.set("location", locationOf(b));
 
@@ -262,6 +262,7 @@ public class SophenaExport {
 			"4e1a2929-e59a-4b1a-bb3c-dec917eb9849",
 			"Standard 1979-1994",
 			SophenaBuildingType.SINGLE_FAMILY_HOUSE,
+			15.0,
 			1921,
 			true
 		);
