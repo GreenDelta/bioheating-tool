@@ -2,6 +2,7 @@ package com.greendelta.bioheating.io;
 
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.BuildingType;
+import com.greendelta.bioheating.model.ConstructionAge;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.RoofType;
 import org.apache.poi.ss.usermodel.Cell;
@@ -102,7 +103,7 @@ public class XlsBuildingExport {
 		putString(row, 5, constructionYearOf(building));
 		putNumber(row, 6, positive(building.height()));
 		putNumber(row, 7, positive(building.groundArea()));
-		putBoolean(row, 8, isFlatRoof(building));
+		row.createCell(8).setCellValue(isFlatRoof(building));
 		putNumber(row, 9, positive(building.warmWaterFraction()));
 		putNumber(row, 10, positive(building.heatDemand()));
 		putNumber(row, 11, positive(building.peakLoad()));
@@ -113,20 +114,26 @@ public class XlsBuildingExport {
 	}
 
 	private Coordinate centerOf(Building building) {
-		if (building == null || building.coordinates() == null) return null;
+		if (building == null || building.coordinates() == null)
+			return null;
 		var coords = normalized(building.coordinates());
-		if (coords == null || coords.length < 4) return null;
-		return geometries.createPolygon(coords).getCentroid().getCoordinate();
+		if (coords == null || coords.length < 4)
+			return null;
+		return geometries.createPolygon(coords)
+			.getCentroid()
+			.getCoordinate();
 	}
 
 	private Coordinate[] normalized(Coordinate[] coords) {
-		if (coords == null || coords.length == 0) return null;
+		if (coords == null || coords.length == 0)
+			return null;
 		var copy = Arrays.copyOf(coords, coords.length);
 		var first = copy[0];
 		var last = copy[copy.length - 1];
-		if (first != null && last != null && first.equals2D(last)) {
+		if (first == null || last == null)
+			return null;
+		if (first.equals2D(last))
 			return copy;
-		}
 		copy = Arrays.copyOf(copy, copy.length + 1);
 		copy[copy.length - 1] = new Coordinate(first.x, first.y, first.z);
 		return copy;
@@ -146,11 +153,14 @@ public class XlsBuildingExport {
 		return type != null ? (double) type.code() : null;
 	}
 
-	/// The construction year as a range string (the label of the age), or
-	/// `null` when it is not set.
+	/// The construction year as a range string (the label of the age). When the
+	/// age is not set, the default age class (1979-1995) is written.
 	private static String constructionYearOf(Building building) {
 		var age = building.constructionAge();
-		return age != null ? age.toString() : null;
+		if (age == null) {
+			age = ConstructionAge.AGE_1979_1995;
+		}
+		return age.toString();
 	}
 
 	/// The model only distinguishes flat and pitched roofs; a missing roof type
@@ -176,18 +186,6 @@ public class XlsBuildingExport {
 		if (value != null) {
 			cell.setCellValue(value);
 		}
-	}
-
-	private void putNumber(Row row, int column, double value) {
-		row.createCell(column).setCellValue(value);
-	}
-
-	private void putBoolean(Row row, int column, boolean value) {
-		row.createCell(column).setCellValue(value);
-	}
-
-	private void putNumber(Row row, int column, int value) {
-		row.createCell(column).setCellValue(value);
 	}
 
 	private boolean shouldSkip(Building b) {
