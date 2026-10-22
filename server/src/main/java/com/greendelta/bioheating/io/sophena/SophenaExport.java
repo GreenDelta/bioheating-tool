@@ -97,22 +97,8 @@ public class SophenaExport {
 	}
 
 	/// Converts the building information into a Sophena consumer object. The heat
-	/// demand is translated into a _fuel consumption_ of water with an efficiency
-	/// rate of 100% but with a specific utilization rate. In Sophena, the
-	/// utilization rate is calculated like this:
-	///
-	/// ```
-  /// standByRate = 1 / (((usageDuration/fullLoadHours) - 1) * standByLoss + 1)
-  /// utilizationRate = standByRate * efficiencyRate
-  /// ```
-	///
-	/// With `usageDuration = 8760` and `standByLoss = 0.014` (specific standby
-	/// loss for small boilers) and `efficiencyRate = 100%`:
-	///
-	/// ```
-  /// utilizationRate = 100 / (((8760/fullLoadHours) - 1) * 0.014 + 1)
-  /// ```
-	///
+	/// demand is translated into a _fuel consumption_ of water with a utilization
+	/// rate of 100%, so the fuel amount equals the heat demand.
 	private ObjectNode consumerOf(Building b) {
 		if (b == null || !b.isHeated() || !b.isIncluded())
 			return null;
@@ -144,15 +130,12 @@ public class SophenaExport {
 			.put("id", "031987ab-4a0d-43b3-b3e5-8f50d8e5df1e")
 			.put("name", "Warmwasser");
 
-		// see the doc above for that formula
-		double utilizationRate = 100 / (((8760 / loadHours) - 1) * 0.014 + 1);
-
 		var consObj = json
 			.objectNode()
 			.put("id", UUID.randomUUID().toString())
-			.put("utilisationRate", utilizationRate)
+			.put("utilisationRate", 100.0)
 			.put("waterContent", 0.0)
-			.put("amount", b.heatDemand() / (utilizationRate / 100))
+			.put("amount", b.heatDemand())
 			.set("fuel", fuelObj);
 		obj.set("fuelConsumptions", json.arrayNode(1).add(consObj));
 
