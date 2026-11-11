@@ -66,11 +66,11 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 				var building = buildings.get(i);
 				predictions.add(
 					new Prediction(
-						WarmWater.totalOf(
+						WarmWater.addTo(
 							building,
 							demandCorrection.apply(demands[i])
 						),
-						WarmWater.totalOf(
+						WarmWater.addTo(
 							building,
 							peakCorrection.apply(peaks[i])
 						)

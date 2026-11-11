@@ -74,17 +74,17 @@ class WarmWaterTest {
 	@Test
 	void scalesSpaceHeatingValuesWithTheWarmWaterFraction() {
 		var building = new Building().warmWaterFraction(14);
-		assertEquals(1162.7906976744187, WarmWater.totalOf(building, 1000), 1e-9);
+		assertEquals(1162.7906976744187, WarmWater.addTo(building, 1000), 1e-9);
 	}
 
 	@Test
 	void doesNotScaleWithoutAWarmWaterFraction() {
-		assertEquals(1000.0, WarmWater.totalOf(new Building(), 1000), 1e-9);
+		assertEquals(1000.0, WarmWater.addTo(new Building(), 1000), 1e-9);
 		assertEquals(
 			1000.0,
-			WarmWater.totalOf(new Building().warmWaterFraction(100), 1000),
+			WarmWater.addTo(new Building().warmWaterFraction(100), 1000),
 			1e-9
 		);
-		assertEquals(1000.0, WarmWater.totalOf(null, 1000), 1e-9);
+		assertEquals(1000.0, WarmWater.addTo(null, 1000), 1e-9);
 	}
 }

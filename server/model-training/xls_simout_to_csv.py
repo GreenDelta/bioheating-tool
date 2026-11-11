@@ -64,6 +64,13 @@ The meaning of the codes is documented in ``README.md``.
     value is used.  The peak load is additionally divided by 1000, because the
     simulation reports it in Watt while the CSV uses kW.
 
+    Both values are space heating only, they do not contain the warm water
+    demand.  The trained models therefore predict space heating values; the
+    application adds the warm water share after the prediction:
+    ``total = space_heating / (1 - f / 100)``, where ``f`` is the warm water
+    fraction of the building in percent of the total demand.  This fraction
+    depends on the building type and the construction age.
+
 Invalid data
 ------------
 

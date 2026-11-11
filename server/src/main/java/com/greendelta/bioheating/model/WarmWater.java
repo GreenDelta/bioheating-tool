@@ -12,7 +12,7 @@ import org.apache.commons.csv.CSVParser;
 /// The warm water fraction depends on the building type and the construction
 /// age; the values are stored in `warm-water-fractions.csv`. The heat demand
 /// and the peak load of a building always include the warm water demand, which
-/// is derived from that fraction with [#totalOf].
+/// is derived from that fraction with [#addTo].
 public final class WarmWater {
 
 	/// The warm water fraction in percent that is used when no other value is
@@ -37,10 +37,11 @@ public final class WarmWater {
 		return value != null ? value : DEFAULT;
 	}
 
-	/// Scales a space heating demand or peak load of the building so that it
-	/// includes the warm water demand: `y = x / (1 - f / 100)` with the warm
-	/// water fraction `f` of the building in percent.
-	public static double totalOf(Building building, double spaceHeating) {
+	/// Adds the warm water demand to a space heating demand or peak load of the
+	/// building: `y = x / (1 - f / 100)` with the warm water fraction `f` of the
+	/// building in percent of the total demand. Returns the total value; the
+	/// building is not modified.
+	public static double addTo(Building building, double spaceHeating) {
 		if (building == null) return spaceHeating;
 		var fraction = building.warmWaterFraction();
 		return fraction > 0 && fraction < 100
