@@ -66,10 +66,14 @@ The meaning of the codes is documented in ``README.md``.
 
     Both values are space heating only, they do not contain the warm water
     demand.  The trained models therefore predict space heating values; the
-    application adds the warm water share after the prediction:
-    ``total = space_heating / (1 - f / 100)``, where ``f`` is the warm water
-    fraction of the building in percent of the total demand.  This fraction
-    depends on the building type and the construction age.
+    application adds the warm water demand after the prediction.  The warm
+    water fraction ``f`` of a building is its share of the total annual heat
+    demand in percent and depends on the building type and the construction
+    age.  The warm water demand is modelled as a constant base load over the
+    year (as in Sophena):
+
+    * heat demand: ``Q = Q_space / (1 - f / 100)``
+    * peak load: ``P = P_space + (Q - Q_space) / 8760``
 
 Invalid data
 ------------

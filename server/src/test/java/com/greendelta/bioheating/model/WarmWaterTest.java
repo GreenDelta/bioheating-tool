@@ -72,19 +72,38 @@ class WarmWaterTest {
 	}
 
 	@Test
-	void scalesSpaceHeatingValuesWithTheWarmWaterFraction() {
+	void addsTheWarmWaterShareToTheDemand() {
 		var building = new Building().warmWaterFraction(14);
-		assertEquals(1162.7906976744187, WarmWater.addTo(building, 1000), 1e-9);
+		assertEquals(
+			1162.7906976744187,
+			WarmWater.addToDemand(building, 1000),
+			1e-9
+		);
 	}
 
 	@Test
-	void doesNotScaleWithoutAWarmWaterFraction() {
-		assertEquals(1000.0, WarmWater.addTo(new Building(), 1000), 1e-9);
-		assertEquals(
-			1000.0,
-			WarmWater.addTo(new Building().warmWaterFraction(100), 1000),
-			1e-9
-		);
-		assertEquals(1000.0, WarmWater.addTo(null, 1000), 1e-9);
+	void addsTheWarmWaterBaseLoadToThePeakLoad() {
+		// 20 MWh space heating with 14% warm water: 23,255.81 kWh total, thus
+		// 3,255.81 kWh warm water or a constant base load of 0.3717 kW
+		var building = new Building().warmWaterFraction(14);
+		var peak = WarmWater.addToPeakLoad(building, 20_000.0 / 1400, 20_000);
+		assertEquals(20_000.0 / 1400 + (20_000 / 0.86 - 20_000) / 8760, peak, 1e-9);
+		assertEquals(14.6574, peak, 1e-4);
+	}
+
+	@Test
+	void addsNothingWithoutAValidWarmWaterFraction() {
+		for (var building : new Building[] {
+			null,
+			new Building(),
+			new Building().warmWaterFraction(100),
+		}) {
+			assertEquals(1000.0, WarmWater.addToDemand(building, 1000), 1e-9);
+			assertEquals(
+				10.0,
+				WarmWater.addToPeakLoad(building, 10, 1000),
+				1e-9
+			);
+		}
 	}
 }

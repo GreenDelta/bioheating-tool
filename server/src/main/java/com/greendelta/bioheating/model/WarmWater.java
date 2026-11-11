@@ -9,11 +9,21 @@ import org.apache.commons.csv.CSVParser;
 
 /// Handles the warm water share of the heat demand of a building.
 ///
-/// The warm water fraction depends on the building type and the construction
-/// age; the values are stored in `warm-water-fractions.csv`. The heat demand
-/// and the peak load of a building always include the warm water demand, which
-/// is derived from that fraction with [#addTo].
+/// The warm water fraction is the share of the warm water demand in the total
+/// annual heat demand of a building, in percent. It depends on the building
+/// type and the construction age. The heat demand and the peak load of a
+/// building always include the warm water demand.
+///
+/// The warm water demand is modelled as a constant base load over all hours of
+/// the year, below the temperature dependent space heating load. Thus, it adds
+/// its full share to the annual heat demand but only this constant base load
+/// to the peak load. This is the same model that Sophena uses to calculate the
+/// load curve of a consumer.
 public final class WarmWater {
+
+	/// The number of hours of a year over which the warm water demand is
+	/// distributed as a constant base load.
+	private static final double HOURS_PER_YEAR = 8760;
 
 	/// The warm water fraction in percent that is used when no other value is
 	/// available.
@@ -37,16 +47,28 @@ public final class WarmWater {
 		return value != null ? value : DEFAULT;
 	}
 
-	/// Adds the warm water demand to a space heating demand or peak load of the
-	/// building: `y = x / (1 - f / 100)` with the warm water fraction `f` of the
-	/// building in percent of the total demand. Returns the total value; the
-	/// building is not modified.
-	public static double addTo(Building building, double spaceHeating) {
-		if (building == null) return spaceHeating;
+	/// Adds the warm water demand to the annual space heating demand of the
+	/// building: `Q = Q_space / (1 - f / 100)` with the warm water fraction `f`
+	/// of the building. Returns the total annual heat demand in the unit of the
+	/// given value; the building is not modified.
+	public static double addToDemand(Building building, double spaceDemand) {
+		if (building == null) return spaceDemand;
 		var fraction = building.warmWaterFraction();
 		return fraction > 0 && fraction < 100
-			? spaceHeating / (1 - fraction / 100)
-			: spaceHeating;
+			? spaceDemand / (1 - fraction / 100)
+			: spaceDemand;
+	}
+
+	/// Adds the constant warm water base load to the space heating peak load of
+	/// the building: `P = P_space + (Q - Q_space) / 8760`, where `Q - Q_space` is
+	/// the annual warm water demand derived from the annual space heating demand
+	/// `Q_space`. The peak load is expected in kW and the demand in kWh. Returns
+	/// the total peak load in kW; the building is not modified.
+	public static double addToPeakLoad(
+		Building building, double spacePeakLoad, double spaceDemand
+	) {
+		var waterDemand = addToDemand(building, spaceDemand) - spaceDemand;
+		return spacePeakLoad + waterDemand / HOURS_PER_YEAR;
 	}
 
 	private static Map<Key, Double> load() {

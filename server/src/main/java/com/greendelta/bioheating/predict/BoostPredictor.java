@@ -45,8 +45,10 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 	}
 
 	/// Predicts both targets for the given buildings. The raw model outputs are
-	/// corrected with the configured correction of the target and scaled with the
-	/// warm water fraction of the building.
+	/// corrected with the configured correction of the target. As the models
+	/// predict space heating values, the warm water demand of the building is
+	/// added afterwards: its full share to the heat demand and its constant base
+	/// load to the peak load.
 	public Res<List<Prediction>> predictAll(
 		ClimateRegion region,
 		List<Building> buildings
@@ -64,16 +66,12 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 			var predictions = new ArrayList<Prediction>(demands.length);
 			for (var i = 0; i < demands.length; i++) {
 				var building = buildings.get(i);
+				var spaceDemand = demandCorrection.apply(demands[i]);
+				var spacePeakLoad = peakCorrection.apply(peaks[i]);
 				predictions.add(
 					new Prediction(
-						WarmWater.addTo(
-							building,
-							demandCorrection.apply(demands[i])
-						),
-						WarmWater.addTo(
-							building,
-							peakCorrection.apply(peaks[i])
-						)
+						WarmWater.addToDemand(building, spaceDemand),
+						WarmWater.addToPeakLoad(building, spacePeakLoad, spaceDemand)
 					)
 				);
 			}
