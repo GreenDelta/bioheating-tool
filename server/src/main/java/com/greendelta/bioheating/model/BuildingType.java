@@ -33,27 +33,23 @@ public enum BuildingType {
 		return MULTI_GENERATION;
 	}
 
-	/// The height in m that is used when no height is provided for a building of
-	/// this type. The value is chosen so that [#estimateFrom(double, double,
-	/// IntSupplier)] with the [#defaultGroundArea()] of this type estimates this
-	/// type again (with the neighbor counts that map to this type).
+	/// Returns the default height in m of the respective building type.
 	public double defaultHeight() {
 		return switch (this) {
 			case HIGH_RISE -> 30;
 			case MULTI_FAMILY_SMALL -> 14;
 			case MULTI_FAMILY_MEDIUM -> 15;
 			case MULTI_FAMILY_LARGE -> 20;
-			case BUILDING_PART -> 8;
-			case SINGLE_FAMILY -> 8;
-			case END_TERRACE -> 8;
-			case MID_TERRACE -> 8;
+			case BUILDING_PART,
+			     SINGLE_FAMILY,
+			     END_TERRACE,
+			     MID_TERRACE -> 8;
 			case HOUSE_GROUP -> 9;
 			case MULTI_GENERATION -> 12;
 		};
 	}
 
-	/// The ground area in m2 that is used when no ground area is provided for a
-	/// building of this type. See [#defaultHeight()] for the consistency rule.
+	/// Returns the default ground area in m2 of the respective building type.
 	public double defaultGroundArea() {
 		return switch (this) {
 			case HIGH_RISE -> 400;
@@ -64,7 +60,7 @@ public enum BuildingType {
 			case SINGLE_FAMILY -> 100;
 			case END_TERRACE -> 90;
 			case MID_TERRACE -> 80;
-			case HOUSE_GROUP -> 150;
+			case HOUSE_GROUP -> 130;
 			case MULTI_GENERATION -> 250;
 		};
 	}
@@ -112,18 +108,23 @@ public enum BuildingType {
 		// both values are known
 		if (height > 25)
 			return BuildingType.HIGH_RISE;
+		var volume = height * groundArea;
 		if (height > 12) {
-			var block = height * groundArea;
-			if (block < 2000)
+			if (volume < 2000)
 				return BuildingType.MULTI_FAMILY_SMALL;
-			if (block < 5000)
+			if (volume < 5000)
 				return BuildingType.MULTI_FAMILY_MEDIUM;
 			else
 				return BuildingType.MULTI_FAMILY_LARGE;
 		}
 
-		if (groundArea > 150)
+		// low-rise buildings (height <= 12 m)
+		if (volume > 2000)
 			return BuildingType.MULTI_FAMILY_SMALL;
+		if (volume > 1200)
+			return BuildingType.MULTI_GENERATION;
+		if (groundArea > 150)
+			return BuildingType.MULTI_GENERATION;
 		if (groundArea < 30)
 			return BuildingType.BUILDING_PART;
 		else

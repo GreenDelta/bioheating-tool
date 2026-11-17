@@ -70,11 +70,25 @@ class BuildingTypeTest {
 	}
 
 	@Test
-	void testSmallAndByNeighbors() {
-		// a ground area above 150 m2 is a small multi-family house
+	void testLowRiseByVolumeAndArea() {
+		// low-rise with a volume above 2000 m3 is a small multi-family house
 		assertEquals(
 			BuildingType.MULTI_FAMILY_SMALL,
-			BuildingType.estimateFrom(10, 200, () -> 0)
+			BuildingType.estimateFrom(10, 210, () -> 0) // volume 2100
+		);
+		// a volume between 1200 m3 and 2000 m3 is a multi-generation house
+		assertEquals(
+			BuildingType.MULTI_GENERATION,
+			BuildingType.estimateFrom(10, 200, () -> 0) // volume 2000
+		);
+		assertEquals(
+			BuildingType.MULTI_GENERATION,
+			BuildingType.estimateFrom(10, 130, () -> 0) // volume 1300
+		);
+		// volume <= 1200 m3 and a ground area above 150 m2: multi-generation
+		assertEquals(
+			BuildingType.MULTI_GENERATION,
+			BuildingType.estimateFrom(5, 200, () -> 0) // volume 1000
 		);
 		// a ground area below 30 m2 is a building part
 		assertEquals(
@@ -112,10 +126,20 @@ class BuildingTypeTest {
 			BuildingType.SINGLE_FAMILY,
 			BuildingType.estimateFrom(12, 100)
 		);
-		// area == 150 is not small multi-family, it falls through to the neighbors
+		// volume == 1200 is not multi-generation, it falls through
 		assertEquals(
 			BuildingType.SINGLE_FAMILY,
-			BuildingType.estimateFrom(10, 150)
+			BuildingType.estimateFrom(10, 120)
+		);
+		// area == 150 is not multi-generation, it falls through to the neighbors
+		assertEquals(
+			BuildingType.SINGLE_FAMILY,
+			BuildingType.estimateFrom(7, 150)
+		);
+		// volume == 2000 is not a small multi-family house
+		assertEquals(
+			BuildingType.MULTI_GENERATION,
+			BuildingType.estimateFrom(10, 200)
 		);
 		// area == 30 is not a building part, it falls through to the neighbors
 		assertEquals(
@@ -180,25 +204,6 @@ class BuildingTypeTest {
 	}
 
 	@Test
-	void testOldCompatibility() {
-		double[] heights = {6, 12, 12.1, 20, 25, 25.1, 30};
-		double[] areas = {20, 30, 30.1, 100, 150, 150.1, 250, 400};
-		for (var height : heights) {
-			for (var area : areas) {
-				for (int neighbors = 0; neighbors < 5; neighbors++) {
-					int n = neighbors;
-					assertEquals(
-						legacyTypeFrom(height, area, neighbors),
-						BuildingType.estimateFrom(height, area, () -> n),
-						"height=" + height + ", area=" + area
-							+ ", neighbors=" + neighbors
-					);
-				}
-			}
-		}
-	}
-
-	@Test
 	void testDefaultsAreConsistentWithEstimation() {
 		assertRoundTrip(BuildingType.HIGH_RISE, 0);
 		assertRoundTrip(BuildingType.MULTI_FAMILY_SMALL, 0);
@@ -224,33 +229,5 @@ class BuildingTypeTest {
 			"default height and ground area of " + type
 				+ " must estimate back to that type"
 		);
-	}
-
-	/// This was the logic of the type detection in the old building processor
-	/// that we ported from the initial Matlab code.
-	private static BuildingType legacyTypeFrom(
-		double height, double groundArea, int neighborCount
-	) {
-		if (height > 25)
-			return BuildingType.HIGH_RISE;
-		if (height > 12) {
-			var blockVolume = height * groundArea;
-			if (blockVolume < 2000)
-				return BuildingType.MULTI_FAMILY_SMALL;
-			return blockVolume < 5000
-				? BuildingType.MULTI_FAMILY_MEDIUM
-				: BuildingType.MULTI_FAMILY_LARGE;
-		}
-		if (groundArea > 150)
-			return BuildingType.MULTI_FAMILY_SMALL;
-		if (groundArea < 30)
-			return BuildingType.BUILDING_PART;
-
-		return switch (neighborCount) {
-			case 0 -> BuildingType.SINGLE_FAMILY;
-			case 1 -> BuildingType.END_TERRACE;
-			case 2 -> BuildingType.MID_TERRACE;
-			default -> BuildingType.HOUSE_GROUP;
-		};
 	}
 }
