@@ -29,7 +29,7 @@ class XlsBuildingPatchTest {
 		var patch = XlsBuildingPatch.of(row(
 			"b-1", "Main Street 1", 8.68, 50.11, 6.0, "1979-1994",
 			9.0, 120.0, true, 15.0, 14000.0, 6.5,
-			"Berlin", "10115", "Main Street", "1"
+			"Berlin", "10115", "Main Street", "1", false
 		));
 
 		assertEquals("b-1", patch.cityId());
@@ -48,6 +48,8 @@ class XlsBuildingPatchTest {
 		assertEquals("10115", patch.postalCode());
 		assertEquals("Main Street", patch.street());
 		assertEquals("1", patch.streetNumber());
+		assertEquals(Boolean.FALSE, patch.heated());
+		assertFalse(patch.isHeated());
 	}
 
 	@Test
@@ -64,6 +66,7 @@ class XlsBuildingPatchTest {
 		assertNull(empty.heatDemand());
 		assertNull(empty.peakLoad());
 		assertNull(empty.locality());
+		assertNull(empty.heated());
 
 		var blank = patch(8.68, 50.11);
 		blank.createCell(0).setCellValue("");
@@ -88,6 +91,28 @@ class XlsBuildingPatchTest {
 		assertEquals(Boolean.TRUE, value(8, "yes").flatRoof());
 		assertEquals(Boolean.TRUE, value(8, "ja").flatRoof());
 		assertEquals(Boolean.FALSE, value(8, "no").flatRoof());
+	}
+
+	@Test
+	void parsesTheHeatedFlag() {
+		assertEquals(Boolean.TRUE, value(16, true).heated());
+		assertEquals(Boolean.FALSE, value(16, false).heated());
+		assertEquals(Boolean.TRUE, value(16, "x").heated());
+		assertEquals(Boolean.FALSE, value(16, "no").heated());
+		assertFalse(value(16, false).isHeated());
+		assertFalse(value(16, 0.0).isHeated());
+		assertTrue(value(16, 1.0).isHeated());
+	}
+
+	@Test
+	void treatsAMissingHeatedColumnAsHeated() {
+		// older files do not have the `heated` column
+		var old = XlsBuildingPatch.of(row("b-1", "name", 8.68, 50.11));
+		assertNull(old.heated());
+		assertTrue(old.isHeated());
+		// a blank cell means: not set
+		assertNull(value(16, "").heated());
+		assertTrue(value(16, "").isHeated());
 	}
 
 	@Test
@@ -152,7 +177,7 @@ class XlsBuildingPatchTest {
 	}
 
 	private XlsBuildingPatch value(int column, Object cellValue) {
-		var values = new Object[16];
+		var values = new Object[17];
 		values[0] = "b-1";
 		values[1] = "name";
 		values[2] = 8.68;

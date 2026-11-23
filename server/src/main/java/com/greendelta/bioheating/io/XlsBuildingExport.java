@@ -56,7 +56,7 @@ public class XlsBuildingExport {
 				var row = sheet.createRow(rowIndex++);
 				append(row, b, wgs84.value());
 			}
-			for (int i = 0; i < 16; i++) {
+			for (int i = 0; i < 17; i++) {
 				sheet.autoSizeColumn(i);
 			}
 			workbook.write(stream);
@@ -83,6 +83,7 @@ public class XlsBuildingExport {
 		putString(row, 13, "postal code");
 		putString(row, 14, "street");
 		putString(row, 15, "number");
+		putString(row, 16, "heated");
 	}
 
 	private void append(Row row, Building building, CoordinateTransformer wgs84) {
@@ -111,6 +112,7 @@ public class XlsBuildingExport {
 		putString(row, 13, building.postalCode());
 		putString(row, 14, building.street());
 		putString(row, 15, building.streetNumber());
+		row.createCell(16).setCellValue(building.isHeated());
 	}
 
 	private Coordinate centerOf(Building building) {

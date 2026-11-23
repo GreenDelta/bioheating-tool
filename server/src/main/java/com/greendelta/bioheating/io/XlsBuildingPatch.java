@@ -29,7 +29,8 @@ record XlsBuildingPatch(
 	String locality,
 	String postalCode,
 	String street,
-	String streetNumber
+	String streetNumber,
+	Boolean heated
 ) {
 
 	/// Parses the given row, or returns `null` when the row is `null`.
@@ -51,8 +52,16 @@ record XlsBuildingPatch(
 			textOf(row, 12),
 			textOf(row, 13),
 			textOf(row, 14),
-			textOf(row, 15)
+			textOf(row, 15),
+			boolOf(row, 16)
 		);
+	}
+
+	/// Returns `true` if the building is heated. The `heated` column was added
+	/// later to the format; when it is missing or blank (e.g. in older files),
+	/// the building is considered as heated, as before.
+	boolean isHeated() {
+		return heated == null || heated;
 	}
 
 	/// The name that should be used when the name is not provided: the street

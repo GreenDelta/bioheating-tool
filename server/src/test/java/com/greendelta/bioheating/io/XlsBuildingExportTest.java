@@ -1,6 +1,7 @@
 package com.greendelta.bioheating.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.greendelta.bioheating.model.Building;
@@ -76,6 +77,28 @@ class XlsBuildingExportTest {
 	}
 
 	@Test
+	void roundTripsTheHeatedFlag() throws Exception {
+		var source = project();
+		source.map().buildings().add(
+			squareBuilding("heated", 500000, 5500000, 100)
+				.name("heated").isHeated(true).isIncluded(true)
+				.heatDemand(1000).peakLoad(1));
+		source.map().buildings().add(
+			squareBuilding("unheated", 500200, 5500000, 100)
+				.name("unheated").isHeated(false).isIncluded(true)
+				.heatDemand(1000).peakLoad(1));
+
+		var target = project();
+		var res = new XlsBuildingImport(null, target, export(source)).call();
+		assertTrue(res.isOk());
+		assertEquals(2, target.map().buildings().size());
+		for (var b : target.map().buildings()) {
+			assertEquals("heated".equals(b.cityId()), b.isHeated());
+			assertTrue(b.isIncluded());
+		}
+	}
+
+	@Test
 	void writesTheHeaderInTheDocumentedOrder() throws Exception {
 		var file = export(project());
 
@@ -85,7 +108,7 @@ class XlsBuildingExportTest {
 		) {
 			var row = workbook.getSheetAt(0).getRow(0);
 			var headers = new ArrayList<String>();
-			for (int i = 0; i < 16; i++) {
+			for (int i = 0; i < 17; i++) {
 				headers.add(row.getCell(i).getStringCellValue());
 			}
 			assertEquals(
@@ -93,7 +116,7 @@ class XlsBuildingExportTest {
 					"id", "name", "longitude", "latitude", "building type",
 					"construction year", "height", "ground area", "flat roof",
 					"warm water fraction", "heat demand", "peak load",
-					"city", "postal code", "street", "number"
+					"city", "postal code", "street", "number", "heated"
 				),
 				headers
 			);

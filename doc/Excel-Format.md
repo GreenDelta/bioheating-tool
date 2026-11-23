@@ -8,7 +8,7 @@ exported file can be edited and re-imported to efficiently update building data.
 
 ## General rules
 
-- The buildings provided by the Excel-Sheet are expected to be all heated and to be all included in the solution.
+- The buildings provided by the Excel-Sheet are all included in the solution. They are heated unless the `heated` column says otherwise (see below).
 - Only the first sheet of the workbook is read; the sheet name does not matter.
 - The first row contains the column headers and is ignored.
 - The column order matters; fields are mapped by their column position.
@@ -44,6 +44,7 @@ the fields by their column position, so only the order matters:
 | N | `postal code`         | Postal code         | –         | no       | –                     |
 | O | `street`              | Street              | –         | no       | –                     |
 | P | `number`              | Number              | –         | no       | –                     |
+| Q | `heated`              | Heated              | bool      | no       | `true`                |
 
 
 ### ID
@@ -132,3 +133,10 @@ The annual heat demand  (kWh/a) and peak heating load (kW) can be provided as nu
 ### Address of the building
 
 It is recommended to provide at least the street name and number here.
+
+
+### Heated
+
+Indicates whether the building is heated, i.e. whether it is a heat consumer in the network. If the value evaluates to `false`, the building is still included in the map but does not contribute heat demand or peak load to the network design.
+
+This column was added later to the format. To stay backwards compatible, a missing column (as in older files) or a blank cell means that the building is heated. The export always writes this column. Supply centers are never heated, regardless of this value.

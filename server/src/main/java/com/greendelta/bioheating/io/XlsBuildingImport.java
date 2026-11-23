@@ -213,7 +213,7 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 	}
 
 	/// Counts the heated neighbors of the entry: the existing buildings from the
-	/// index and the other rows of the file (which are all heated).
+	/// index and the other heated rows of the file.
 	private static int countNeighbors(
 		Entry entry,
 		List<Entry> entries,
@@ -223,7 +223,7 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 			? index.countHeatedNeighbors(entry.building())
 			: index.countHeatedNeighbors(entry.square());
 		for (var other : entries) {
-			if (other == entry) continue;
+			if (other == entry || !other.patch().isHeated()) continue;
 			if (isWithinDistance(entry.square(), other.square())) {
 				count++;
 			}
@@ -322,12 +322,13 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 			building.coordinates(entry.square().getCoordinates());
 		}
 
-		// all buildings from an Excel file are heated and included (supply
-		// centers stay excluded per the model invariants)
+		// all buildings from an Excel file are included; they are heated unless
+		// the `heated` column says otherwise (supply centers stay excluded and
+		// not heated per the model invariants)
 		if (building.isSupplyCenter()) {
 			building.isHeated(false).isIncluded(false);
 		} else {
-			building.isHeated(true).isIncluded(true);
+			building.isHeated(patch.isHeated()).isIncluded(true);
 		}
 
 		if (isNew) {

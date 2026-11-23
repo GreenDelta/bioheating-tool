@@ -105,6 +105,67 @@ class XlsBuildingImportTest {
 	}
 
 	@Test
+	void appliesTheHeatedColumn() throws Exception {
+		var project = project();
+		var map = project.map();
+		var existing = building("b-1", 500000, 5500000, 100)
+			.name("existing")
+			.isHeated(true)
+			.isIncluded(true);
+		map.buildings().add(existing);
+
+		var p1 = toWgs84(map, 500000, 5500000);
+		var p2 = toWgs84(map, 500200, 5500000);
+		var p3 = toWgs84(map, 500400, 5500000);
+		var file = excel(
+			// existing building set to not heated
+			new Object[] {
+				"b-1", null, p1.x, p1.y, null, null, null, 100.0, null, null,
+				12000.0, 5.0, null, null, null, null, false
+			},
+			// new building, not heated (text value)
+			new Object[] {
+				"b-2", "new unheated", p2.x, p2.y, null, null, null, 100.0, null,
+				null, 12000.0, 5.0, null, null, null, null, "no"
+			},
+			// new building, blank cell -> heated (as before)
+			new Object[] {
+				"b-3", "new heated", p3.x, p3.y, null, null, null, 100.0, null,
+				null, 12000.0, 5.0, null, null, null, null, ""
+			}
+		);
+
+		var res = new XlsBuildingImport(null, project, file).call();
+		assertTrue(res.isOk());
+		assertEquals(3, map.buildings().size());
+		for (var b : map.buildings()) {
+			assertEquals("b-3".equals(b.cityId()), b.isHeated(), b.cityId());
+			assertTrue(b.isIncluded());
+		}
+	}
+
+	@Test
+	void keepsSupplyCentersNotHeated() throws Exception {
+		var project = project();
+		var map = project.map();
+		var center = building("sc", 500000, 5500000, 100)
+			.name("supply")
+			.isSupplyCenter(true);
+		map.buildings().add(center);
+
+		var point = toWgs84(map, 500000, 5500000);
+		var file = excel(new Object[] {
+			"sc", null, point.x, point.y, null, null, null, 100.0, null, null,
+			12000.0, 5.0, null, null, null, null, true
+		});
+
+		var res = new XlsBuildingImport(null, project, file).call();
+		assertTrue(res.isOk());
+		assertFalse(center.isHeated());
+		assertFalse(center.isIncluded());
+	}
+
+	@Test
 	void matchesAnExistingBuildingByGeometry() throws Exception {
 		var project = project();
 		var map = project.map();
