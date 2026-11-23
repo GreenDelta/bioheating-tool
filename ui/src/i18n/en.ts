@@ -101,6 +101,15 @@ export const en = {
 		creatingMessage:
 			'Creating project "{{name}}" and processing uploaded files...',
 	},
+	projectUpdate: {
+		title: "Update data",
+		excelFile: "Excel file with building data",
+		updateStreets: "Load new streets from OpenStreetMap",
+		estimateDemand: "Re-estimate the heat demands",
+		submit: "Update",
+		updating: "Updating...",
+		updatingMessage: 'Updating project "{{name}}"...',
+	},
 	editor: {
 		save: "Save",
 		saving: "Saving...",
@@ -128,6 +137,8 @@ export const en = {
 		includedBuildings: "included buildings",
 		totalHeatDemand: "Total heat demand",
 		annualDemand: "annual demand",
+		updateData: "Update data",
+		saveFirst: "Save your changes first",
 		selectHint:
 			"Select buildings or streets on the map to view and edit their properties.",
 	},
@@ -285,6 +296,8 @@ export const en = {
 		PROJECT_SAVE_FAILED: "The project could not be saved.",
 		PROJECT_DELETE_FAILED: "The project could not be deleted.",
 		PROJECT_IMPORT_FAILED: "The uploaded files could not be imported.",
+		PROJECT_UPDATE_FAILED: "The project could not be updated.",
+		NO_UPDATE_SELECTED: "No update was selected.",
 		UPLOAD_FAILED: "The uploaded files could not be saved.",
 		NO_VALID_FILES: "No valid files were provided.",
 		INVALID_BUILDING_DATA: "The building data is missing or invalid.",

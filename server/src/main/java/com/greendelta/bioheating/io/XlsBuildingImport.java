@@ -12,7 +12,9 @@ import com.greendelta.bioheating.predict.BoostPredictor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -36,6 +38,8 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 	private final Project project;
 	private final File file;
 	private final BoostPredictor predictor;
+	private final Set<Building> providedHeatDemands = new HashSet<>();
+	private final Set<Building> providedPeakLoads = new HashSet<>();
 
 	/// Creates a new import. The predictor is only used for buildings without
 	/// heat demand or peak load.
@@ -49,6 +53,18 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 		this.project = project;
 		this.file = file;
 		this.predictor = predictor;
+	}
+
+	/// The buildings for which the Excel file provided the heat demand; this is
+	/// available after the import was executed.
+	public Set<Building> providedHeatDemands() {
+		return providedHeatDemands;
+	}
+
+	/// The buildings for which the Excel file provided the peak load; this is
+	/// available after the import was executed.
+	public Set<Building> providedPeakLoads() {
+		return providedPeakLoads;
 	}
 
 	public Res<Project> call() {
@@ -316,9 +332,11 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 		// keep the existing value (estimation is done in a later step)
 		if (patch.heatDemand() != null) {
 			building.heatDemand(patch.heatDemand());
+			providedHeatDemands.add(building);
 		}
 		if (patch.peakLoad() != null) {
 			building.peakLoad(patch.peakLoad());
+			providedPeakLoads.add(building);
 		}
 
 		// geometry: replace the polygon with the square when it is larger

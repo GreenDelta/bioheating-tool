@@ -20,6 +20,11 @@ public class Street extends BaseEntity {
 	@Column(name = "is_excluded")
 	private boolean isExcluded;
 
+	/// The ID of the OSM way from which the street was imported. It is used to
+	/// only add new streets when the streets of a project are fetched again.
+	@Column(name = "osm_id")
+	private long osmId;
+
 	public String name() {
 		return name;
 	}
@@ -44,6 +49,15 @@ public class Street extends BaseEntity {
 
 	public Street isExcluded(boolean isExcluded) {
 		this.isExcluded = isExcluded;
+		return this;
+	}
+
+	public long osmId() {
+		return osmId;
+	}
+
+	public Street osmId(long osmId) {
+		this.osmId = osmId;
 		return this;
 	}
 }

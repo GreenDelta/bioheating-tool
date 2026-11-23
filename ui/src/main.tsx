@@ -15,7 +15,13 @@ import { User } from "./model";
 import { applyUserLanguage } from "./i18n";
 import * as api from "./api";
 import { LoginPage } from "./login";
-import { ProjectList, ProjectForm, ProjectEditor, SolutionView } from "./projects";
+import {
+	ProjectList,
+	ProjectForm,
+	ProjectEditor,
+	ProjectUpdatePage,
+	SolutionView,
+} from "./projects";
 import { UserList, UserForm, AccountPage } from "./users";
 import { HomePage } from "./home";
 import { AboutPage } from "./about";
@@ -117,6 +123,11 @@ function main() {
 						{
 							path: "projects/:id",
 							Component: ProjectEditor,
+							loader: loadProjectData,
+						},
+						{
+							path: "projects/:id/update",
+							Component: ProjectUpdatePage,
 							loader: loadProjectData,
 						},
 						{

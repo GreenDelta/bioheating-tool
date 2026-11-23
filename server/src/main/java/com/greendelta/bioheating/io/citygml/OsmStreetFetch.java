@@ -3,6 +3,8 @@ package com.greendelta.bioheating.io.citygml;
 import com.greendelta.bioheating.io.CoordinateTransformer;
 import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Street;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.locationtech.jts.geom.Coordinate;
 import org.openlca.commons.Res;
@@ -18,6 +20,9 @@ public class OsmStreetFetch {
 		this.map = map;
 	}
 
+	/// Fetches the streets within the bounds of the buildings of the given map
+	/// and adds the streets with an OSM ID that is not yet contained in the
+	/// map. Existing streets are not changed or removed.
 	public static Res<Void> into(GeoMap map) {
 		return map == null || map.buildings().isEmpty()
 			? Res.error("no buildings found")
@@ -43,8 +48,9 @@ public class OsmStreetFetch {
 		if (osm.isError()) return osm.wrapError("Failed to fetch OSM streets");
 		var streets = osm.value();
 
-		// convert the streets
+		// convert the streets and add the new ones
 		log.info("Fetched {} streets; convert them", streets.size());
+		var converted = new ArrayList<Street>(streets.size());
 		for (var s : streets) {
 			var geometry = s.geometry();
 			if (geometry == null || geometry.isEmpty()) continue;
@@ -53,11 +59,28 @@ public class OsmStreetFetch {
 				log.debug("Error in street conversion: {}", street.error());
 				continue;
 			}
-			map.streets().add(street.value());
+			converted.add(street.value());
 		}
-		log.info("Added {} streets to map", map.streets().size());
+		int added = addNew(map, converted);
+		log.info("Added {} new streets to map", added);
 
 		return Res.ok();
+	}
+
+	/// Adds the streets with an OSM ID that is not yet contained in the map and
+	/// returns the number of added streets. This is package-private for testing.
+	static int addNew(GeoMap map, List<Street> streets) {
+		var known = new HashSet<Long>();
+		for (var street : map.streets()) {
+			known.add(street.osmId());
+		}
+		int added = 0;
+		for (var street : streets) {
+			if (!known.add(street.osmId())) continue;
+			map.streets().add(street);
+			added++;
+		}
+		return added;
 	}
 
 	/// Fetch streets from OSM. Trys several times if it failes (the OSM servers
@@ -110,6 +133,7 @@ public class OsmStreetFetch {
 		}
 
 		var street = new Street()
+			.osmId(s.id())
 			.name(name)
 			.isExcluded(false)
 			.coordinates(transformed.value());

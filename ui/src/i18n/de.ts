@@ -101,6 +101,15 @@ export const de: Messages = {
 		creatingMessage:
 			"Projekt „{{name}}“ wird angelegt und die hochgeladenen Dateien werden verarbeitet...",
 	},
+	projectUpdate: {
+		title: "Daten aktualisieren",
+		excelFile: "Excel-Datei mit Gebäudedaten",
+		updateStreets: "Neue Straßen aus OpenStreetMap laden",
+		estimateDemand: "Wärmebedarfe neu schätzen",
+		submit: "Aktualisieren",
+		updating: "Wird aktualisiert...",
+		updatingMessage: "Projekt „{{name}}“ wird aktualisiert...",
+	},
 	editor: {
 		save: "Speichern",
 		saving: "Speichert...",
@@ -128,6 +137,8 @@ export const de: Messages = {
 		includedBuildings: "einbezogene Gebäude",
 		totalHeatDemand: "Gesamtwärmebedarf",
 		annualDemand: "Jahresbedarf",
+		updateData: "Daten aktualisieren",
+		saveFirst: "Bitte speichern Sie zuerst Ihre Änderungen",
 		selectHint:
 			"Wählen Sie Gebäude oder Straßen auf der Karte aus, um ihre Eigenschaften anzuzeigen und zu bearbeiten.",
 	},
@@ -283,6 +294,8 @@ export const de: Messages = {
 		PROJECT_LOAD_FAILED: "Das Projekt konnte nicht geladen werden.",
 		PROJECT_SAVE_FAILED: "Das Projekt konnte nicht gespeichert werden.",
 		PROJECT_DELETE_FAILED: "Das Projekt konnte nicht gelöscht werden.",
+		PROJECT_UPDATE_FAILED: "Das Projekt konnte nicht aktualisiert werden.",
+		NO_UPDATE_SELECTED: "Es wurde keine Aktualisierung ausgewählt.",
 		PROJECT_IMPORT_FAILED:
 			"Die hochgeladenen Dateien konnten nicht importiert werden.",
 		UPLOAD_FAILED: "Die hochgeladenen Dateien konnten nicht gespeichert werden.",

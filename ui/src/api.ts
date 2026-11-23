@@ -222,6 +222,28 @@ export async function createProject(
 	});
 }
 
+export interface ProjectUpdateData {
+	file?: File | null;
+	updateStreets: boolean;
+	estimateDemand: boolean;
+}
+
+export async function updateProjectData(
+	projectId: number,
+	d: ProjectUpdateData,
+): Promise<Res<TaskState>> {
+	const data = new FormData();
+	if (d.file) {
+		data.append("file", d.file);
+	}
+	data.append("updateStreets", String(d.updateStreets));
+	data.append("estimateDemand", String(d.estimateDemand));
+	return getJson<TaskState>(`/api/projects/${projectId}/data-update`, {
+		method: "POST",
+		body: data,
+	});
+}
+
 export async function getProject(id: number): Promise<Res<Project>> {
 	return getJson<Project>(`/api/projects/${id}`);
 }

@@ -121,6 +121,7 @@ const SelectionPanel = ({ ctx }: Props) => {
 		return (
 			<OverviewPanel
 				project={ctx.project}
+				isDirty={ctx.isDirty}
 				onChange={ctx.updateProject}
 			/>
 		);

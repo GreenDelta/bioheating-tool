@@ -52,7 +52,8 @@ create table tbl_streets (
     name varchar,
     coordinates bytea,
     f_map int,
-    is_excluded boolean
+    is_excluded boolean,
+    osm_id bigint
 );
 
 drop table if exists tbl_maps cascade;

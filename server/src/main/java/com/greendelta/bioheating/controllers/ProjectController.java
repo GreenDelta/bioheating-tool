@@ -1,6 +1,8 @@
 package com.greendelta.bioheating.controllers;
 
+import com.greendelta.bioheating.io.ImportFileType;
 import com.greendelta.bioheating.io.ProjectCreator;
+import com.greendelta.bioheating.io.ProjectUpdate;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
@@ -26,6 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.function.Function;
+
+import org.openlca.commons.Res;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -140,6 +144,56 @@ public class ProjectController {
 				? Http.serverError(ErrorCode.PROJECT_SAVE_FAILED, res.error())
 				: Http.ok(ProjectInfo.of(project));
 		});
+	}
+
+	/// Updates the data of a project in a background task, see `ProjectUpdate`.
+	/// The update steps are optional but at least one has to be selected.
+	@PostMapping("/{id}/data-update")
+	public ResponseEntity<?> updateProjectData(
+		Authentication auth,
+		@PathVariable long id,
+		@RequestParam(value = "file", required = false) MultipartFile upload,
+		@RequestParam(value = "updateStreets", defaultValue = "false")
+		boolean updateStreets,
+		@RequestParam(value = "estimateDemand", defaultValue = "false")
+		boolean estimateDemand
+	) {
+		var user = users.getCurrentUser(auth).orElse(null);
+		if (user == null) return Http.unauthorized();
+		var project = projects.getProject(user, id).orElse(null);
+		if (project == null)
+			return Http.notFound(ErrorCode.PROJECT_NOT_FOUND, "project not found: " + id);
+
+		boolean hasFile = upload != null && !upload.isEmpty();
+		if (!hasFile && !updateStreets && !estimateDemand)
+			return Http.badRequest(ErrorCode.NO_UPDATE_SELECTED);
+		if (hasFile && ImportFileType.ofName(upload.getOriginalFilename())
+				!= ImportFileType.EXCEL)
+			return Http.badRequest(ErrorCode.NO_VALID_FILES);
+
+		var update = new ProjectUpdate(db, project, model.predictor())
+			.withStreets(updateStreets)
+			.withEstimation(estimateDemand);
+
+		NewTask<ProjectInfo> task;
+		if (hasFile) {
+			// the upload must be saved within the request thread
+			var saved = files.saveUploads(new MultipartFile[]{upload});
+			if (saved.isError())
+				return Http.badRequest(ErrorCode.UPLOAD_FAILED, saved.error());
+			if (saved.value().size() != 1)
+				return Http.badRequest(ErrorCode.NO_VALID_FILES);
+			task = NewTask.of(user, ErrorCode.PROJECT_UPDATE_FAILED, () ->
+				files.useFiles(saved.value(), excel -> update
+					.withExcelFile(excel.getFirst())
+					.call()
+					.then(p -> Res.ok(ProjectInfo.of(p)))));
+		} else {
+			task = NewTask.of(user, ErrorCode.PROJECT_UPDATE_FAILED, () ->
+				update.call().then(p -> Res.ok(ProjectInfo.of(p))));
+		}
+		tasks.schedule(task);
+		return Http.ok(task.toState());
 	}
 
 	@PostMapping("/{id}/estimate-building")

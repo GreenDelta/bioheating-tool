@@ -7,6 +7,7 @@ import { BuildingData } from "./panel-data";
 
 interface Props {
 	project: Project;
+	isDirty: boolean;
 	onChange: (change: Partial<Project>) => void;
 }
 
@@ -27,7 +28,7 @@ function keyFiguresOf(project: Project) {
 	return { buildingCount, totalDemand };
 }
 
-export const OverviewPanel = ({ project, onChange }: Props) => {
+export const OverviewPanel = ({ project, isDirty, onChange }: Props) => {
 	const { t } = useTranslation();
 	const { buildingCount, totalDemand } = keyFiguresOf(project);
 
@@ -95,24 +96,43 @@ export const OverviewPanel = ({ project, onChange }: Props) => {
 						<hr />
 					</div>
 
-					<div className="col-6">
-						<label className="form-label fw-bold">{t("overview.buildings")}</label>
-						<p className="form-control-plaintext">
-							<span className="fs-4 text-primary">{buildingCount}</span>
-							<br />
-							<small className="text-muted">{t("overview.includedBuildings")}</small>
-						</p>
+					<div className="row">
+						<div className="col-6">
+							<label className="form-label fw-bold">{t("overview.buildings")}</label>
+							<p className="form-control-plaintext mb-0">
+								<span className="fs-4 text-primary">{buildingCount}</span>
+								<br />
+								<small className="text-muted">{t("overview.includedBuildings")}</small>
+							</p>
+						</div>
+						<div className="col-6">
+							<label className="form-label fw-bold">{t("overview.totalHeatDemand")}</label>
+							<p className="form-control-plaintext mb-0">
+								<span className="fs-4 text-success">
+									{formatHeatDemand(totalDemand)}
+								</span>
+								<br />
+								<small className="text-muted">{t("overview.annualDemand")}</small>
+							</p>
+						</div>
 					</div>
 
-					<div className="col-6">
-						<label className="form-label fw-bold">{t("overview.totalHeatDemand")}</label>
-						<p className="form-control-plaintext">
-							<span className="fs-4 text-success">
-								{formatHeatDemand(totalDemand)}
-							</span>
-							<br />
-							<small className="text-muted">{t("overview.annualDemand")}</small>
-						</p>
+					<div className="col-12">
+						{isDirty ? (
+							// the update works on the saved project
+							<button
+								className="btn btn-outline-primary w-100"
+								disabled
+								title={t("overview.saveFirst")}>
+								{t("overview.updateData")}
+							</button>
+						) : (
+							<Link
+								to={`/ui/projects/${project.id}/update`}
+								className="btn btn-outline-primary w-100">
+								{t("overview.updateData")}
+							</Link>
+						)}
 					</div>
 
 					{buildingCount === 0 && (
