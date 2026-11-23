@@ -3,11 +3,16 @@ package com.greendelta.bioheating.predict;
 import com.greendelta.bioheating.model.Building;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.WarmWater;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import ml.dmlc.xgboost4j.java.Booster;
 import ml.dmlc.xgboost4j.java.XGBoost;
+
 import org.openlca.commons.Res;
 
 /// Loads the two trained models and predicts the heat demand and the peak
@@ -15,15 +20,40 @@ import org.openlca.commons.Res;
 ///
 /// @param heatDemand the model for the annual heat demand in kWh
 /// @param peakLoad the model for the peak heating load in kW
-public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
+/// @param config the configuration with the corrections of the raw outputs
+public record BoostPredictor(
+	Booster heatDemand,
+	Booster peakLoad,
+	ModelConfig config
+) {
 
-	/// Loads the models that are packaged with the application.
-	public static Res<BoostPredictor> getDefault() {
-		var heatDemand = load(Target.HEAT_DEMAND);
-		if (heatDemand.isError()) return heatDemand.castError();
-		var peakLoad = load(Target.PEAK_LOAD);
-		if (peakLoad.isError()) return peakLoad.castError();
-		return Res.ok(new BoostPredictor(heatDemand.value(), peakLoad.value()));
+	/// Creates a predictor without corrections of the model outputs.
+	public BoostPredictor(Booster heatDemand, Booster peakLoad) {
+		this(heatDemand, peakLoad, ModelConfig.NONE);
+	}
+
+	/// Loads the two trained models and the model configuration from the
+	/// given model directory, see `ModelConfig`.
+	public static Res<BoostPredictor> load(File dir) {
+		if (dir == null || !dir.isDirectory()) {
+			return Res.error("Model directory not found: "
+				+ (dir != null ? dir.getAbsolutePath() : "null"));
+		}
+		var heatDemand = load(dir, Target.HEAT_DEMAND);
+		if (heatDemand.isError())
+			return heatDemand.castError();
+
+		var peakLoad = load(dir, Target.PEAK_LOAD);
+		if (peakLoad.isError())
+			return peakLoad.castError();
+
+		var config = ModelConfig.read(dir);
+		if (config.isError())
+			return config.castError();
+
+		return Res.ok(
+			new BoostPredictor(heatDemand.value(), peakLoad.value(), config.value())
+		);
 	}
 
 	/// The booster of the given target.
@@ -61,8 +91,8 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 			var matrix = encoded.value();
 			var demands = firstColumn(heatDemand.predict(matrix));
 			var peaks = firstColumn(peakLoad.predict(matrix));
-			var demandCorrection = ModelCorrection.of(Target.HEAT_DEMAND);
-			var peakCorrection = ModelCorrection.of(Target.PEAK_LOAD);
+			var demandCorrection = config.correctionOf(Target.HEAT_DEMAND);
+			var peakCorrection = config.correctionOf(Target.PEAK_LOAD);
 			var predictions = new ArrayList<Prediction>(demands.length);
 			for (var i = 0; i < demands.length; i++) {
 				var building = buildings.get(i);
@@ -89,17 +119,15 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 		return values;
 	}
 
-	private static Res<Booster> load(Target target) {
-		var stream = BoostPredictor.class.getResourceAsStream(
-			target.modelFile()
+	private static Res<Booster> load(File dir, Target target) {
+		var file = new File(dir, target.modelFile());
+		if (!file.isFile()) return Res.error(
+			"Model file not found: " + file.getAbsolutePath()
 		);
-		if (stream == null) return Res.error(
-			"Model file not found: " + target.modelFile()
-		);
-		try (InputStream in = stream) {
+		try (InputStream in = new FileInputStream(file)) {
 			return Res.ok(XGBoost.loadModel(in));
 		} catch (Exception e) {
-			return Res.error("Failed to load model: " + target.modelFile(), e);
+			return Res.error("Failed to load model: " + file.getAbsolutePath(), e);
 		}
 	}
 
@@ -108,5 +136,6 @@ public record BoostPredictor(Booster heatDemand, Booster peakLoad) {
 	///
 	/// @param heatDemand the total annual heat demand in kWh
 	/// @param peakLoad the total peak heating load in kW
-	public record Prediction(double heatDemand, double peakLoad) {}
+	public record Prediction(double heatDemand, double peakLoad) {
+	}
 }

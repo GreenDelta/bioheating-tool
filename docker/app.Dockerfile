@@ -10,8 +10,10 @@ RUN apt-get install -y libc6 libgomp1
 COPY app/server.jar /app/server.jar
 COPY app/static/ /app/static/
 
-# create uploads directory for work.dir
-RUN mkdir -p /app/uploads
+# the data directory with the prediction model (model/) and uploads (uploads/);
+# it is mounted from the host, see docker-compose.yaml
+ENV APP_DATA_DIR=/app/data
+RUN mkdir -p /app/data
 
 EXPOSE 3000
 

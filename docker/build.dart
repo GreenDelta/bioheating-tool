@@ -148,8 +148,8 @@ class Build {
 
   Future<void> _ensureDataDirs() async {
     final dirs = [
-      join(dockerDir, "data/bioheating-db"),
-      join(dockerDir, "data/uploads"),
+      join(dockerDir, "data/db"),
+      join(dockerDir, "data/app/uploads"),
     ];
 
     for (final path in dirs) {
@@ -159,9 +159,43 @@ class Build {
         await d.create(recursive: true);
       }
     }
+
+    // copy the model into the local Docker data folder when it is not there
+    // yet; an existing (possibly calibrated) model is not overwritten
+    final localModel = Dir(join(dockerDir, "data/app/model"));
+    if (!await localModel.exists()) {
+      await _checkModel();
+      print("Copying the prediction model to ${localModel.path} ...");
+      await copyDir(modelDir, localModel);
+    }
+  }
+
+  /// The prediction model that is written by the training.
+  Dir get modelDir => Dir(join(serverDir, "app/model"));
+
+  /// Checks that the model folder contains all files the server needs.
+  Future<void> _checkModel() async {
+    for (final name in ["demand-model.ubj", "peak-model.ubj", "config.json"]) {
+      if (!await File(join(modelDir, name)).exists()) {
+        print("Error: ${join(modelDir, name)} is missing; train the model "
+            "first (see server/model-training/README.md)");
+        exit(1);
+      }
+    }
+  }
+
+  /// Exports the model folder as `model.tar.gz` into the given folder. On the
+  /// server, it is extracted into `data/app`: `tar -xzf model.tar.gz -C data/app`
+  Future<void> _exportModel(Dir outDir) async {
+    await _checkModel();
+    final gzFile = join(outDir, "model.tar.gz");
+    print("Exporting the prediction model to $gzFile ...");
+    await run("tar", ["-czf", gzFile, "-C", modelDir.parent.path, "model"],
+        outDir);
   }
 
   Future<void> dockerAll() async {
+    await _checkModel();
     await app();
     await db();
 
@@ -170,6 +204,7 @@ class Build {
       await imagesDir.create(recursive: true);
     }
 
+    await _exportModel(imagesDir);
     await DockerImage.db(dockerDir).save(imagesDir);
     await DockerImage.app(dockerDir).save(imagesDir);
   }
