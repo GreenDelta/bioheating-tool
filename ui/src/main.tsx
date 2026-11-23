@@ -18,8 +18,9 @@ import { LoginPage } from "./login";
 import { ProjectList, ProjectForm, ProjectEditor, SolutionView } from "./projects";
 import { UserList, UserForm, AccountPage } from "./users";
 import { HomePage } from "./home";
+import { AboutPage } from "./about";
 import errors, { ErrorPage } from "./components/errors";
-import { MainMenu } from "./components/navi";
+import { MainMenu, Footer } from "./components/navi";
 import { NavigationLoading } from "./components/navigation-loading";
 
 /// The root component of the application. It contains the main menu and the
@@ -57,6 +58,7 @@ const Root = () => {
 			<div className="container-fluid px-5">
 				<Outlet context={[user, setUser]} />
 			</div>
+			<Footer />
 			<NavigationLoading />
 		</>
 	);
@@ -89,6 +91,10 @@ function main() {
 				{
 					path: "/ui/error",
 					element: <ErrorPage />,
+				},
+				{
+					path: "/ui/about",
+					element: <AboutPage />,
 				},
 				{
 					path: "/ui",

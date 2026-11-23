@@ -22,6 +22,8 @@ export const en = {
 		projects: "Projects",
 		users: "Users",
 		account: "Account",
+		about: "About",
+		project: "The BIOHEATING project 2025",
 	},
 	home: {
 		welcome: "Welcome to BIOHEATING",
@@ -30,6 +32,23 @@ export const en = {
 		p3: "Once the demand is calculated, the tool enables users to design a complete heating network layout. This includes determining optimal pipe routing, calculating pipe diameters and other key technical specifications. All of this takes place within a streamlined and visually intuitive interface that guides users through each stage of the planning process.",
 		p4: "A key strength of BIOHEATING is its integration with existing energy planning tools. Projects developed within the platform can be exported directly to Sophena, a well-established software used for detailed analysis and simulation of heating networks. This ensures that the preliminary designs created in BIOHEATING can seamlessly transition into technical and economic feasibility studies.",
 		p5: "By bringing together intelligent demand estimation, network planning, and interoperability with established tools, BIOHEATING supports a more sustainable, data-driven approach to heating infrastructure development. Whether you are a planner, engineer, or decision-maker, BIOHEATING helps turn ideas into energy-efficient, climate-conscious solutions.",
+	},
+	about: {
+		title: "About",
+		intro:
+			"The BIOHEATING tool estimates the heat demand of buildings and helps to draft local heating networks. It was developed in the <1>BIOHEATING project</1>.",
+		features: "Features",
+		featureCityGml: "Import of building data from CityGML and Excel files",
+		featureOsm: "Import of street data from OpenStreetMap",
+		featurePrediction: "Machine learning model for heat demand predictions",
+		featureMap: "Interactive map for editing buildings and streets",
+		featureNetwork: "Calculation and export of the heating network layout",
+		sophena: "Sophena export",
+		sophenaText:
+			"Projects can be exported to <1>Sophena</1> for detailed planning and simulation of the heating network.",
+		license: "License",
+		licenseText:
+			"The BIOHEATING tool is open source software, licensed under the Mozilla Public License 2.0.",
 	},
 	login: {
 		user: "User",

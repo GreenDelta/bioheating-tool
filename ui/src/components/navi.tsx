@@ -94,3 +94,24 @@ export const FluidBreadcrumbRow = (props: BreadcrumbProps) => {
 		</div>
 	);
 }
+
+/// The footer at the bottom of each page.
+export const Footer = () => {
+	const { t } = useTranslation();
+	return (
+		<footer>
+			<div className="container-fluid px-5">
+				<nav className="navbar navbar-expand">
+					<div className="navbar-nav me-auto">
+						<span className="navbar-text">{t("nav.project")}</span>
+					</div>
+					<div className="navbar-nav">
+						<Link className="nav-link" to="/ui/about">
+							{t("nav.about")}
+						</Link>
+					</div>
+				</nav>
+			</div>
+		</footer>
+	);
+};

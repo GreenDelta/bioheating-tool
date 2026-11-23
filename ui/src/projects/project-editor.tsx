@@ -175,7 +175,7 @@ const SaveButton = ({ ctx }: Props) => {
 			onClick={handleSave}
 			disabled={!ctx.isDirty || isSaving}
 			title={ctx.isDirty ? t("editor.saveTitle") : t("editor.noChanges")}
-			style={{ width: "120px" }}>
+			style={{ minWidth: "120px", whiteSpace: "nowrap" }}>
 			<SaveIcon />
 			{isSaving ? ` ${t("editor.saving")}` : ` ${t("editor.save")}`}
 		</button>
@@ -212,7 +212,7 @@ const CalculateButton = ({ ctx }: Props) => {
 			onClick={handleCalculate}
 			disabled={isCalculating}
 			title={t("editor.calculateTitle")}
-			style={{ width: "120px" }}>
+			style={{ minWidth: "120px", whiteSpace: "nowrap" }}>
 			{isCalculating ? t("editor.calculating") : t("editor.calculate")}
 		</button>
 	);
