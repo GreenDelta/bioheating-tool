@@ -27,6 +27,12 @@ class TrainingTest {
 		assertTrue(new File(tempDir, Target.HEAT_DEMAND.modelFile()).isFile());
 		assertTrue(new File(tempDir, Target.PEAK_LOAD.modelFile()).isFile());
 
+		// a new config without corrections is written with the models
+		var config = ModelConfig.read(tempDir).orElseThrow();
+		assertEquals(Correction.NONE, config.heatDemand());
+		assertEquals(Correction.NONE, config.peakLoad());
+		assertTrue(config.description().startsWith("trained at"));
+
 		var predictor = new BoostPredictor(
 			models.heatDemand(),
 			models.peakLoad()

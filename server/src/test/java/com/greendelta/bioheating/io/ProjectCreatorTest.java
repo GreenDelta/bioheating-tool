@@ -9,7 +9,7 @@ import com.greendelta.bioheating.io.citygml.CityGmlImport;
 import com.greendelta.bioheating.model.BuildingType;
 import com.greendelta.bioheating.model.ClimateRegion;
 import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.predict.BoostPredictor;
+import com.greendelta.bioheating.TestModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,7 +37,8 @@ public class ProjectCreatorTest {
 		var creator = new ProjectCreator(
 			null,
 			new Project().name("test project"),
-			List.of(tempFile("notes.txt"), tempFile("data.csv")));
+			List.of(tempFile("notes.txt"), tempFile("data.csv")),
+			null);
 
 		var res = creator.importFiles();
 
@@ -50,7 +51,7 @@ public class ProjectCreatorTest {
 	@Test
 	public void testNoFilesProvided() {
 		var creator = new ProjectCreator(
-			null, new Project().name("test project"), List.of());
+			null, new Project().name("test project"), List.of(), null);
 
 		var res = creator.importFiles();
 
@@ -75,10 +76,7 @@ public class ProjectCreatorTest {
 
 	@Test
 	public void testExcelUpdatesTheImportedCityGmlBuilding() throws IOException {
-		assumeTrue(
-			BoostPredictor.class.getResource("demand-model.ubj") != null,
-			"the prediction model files are not available"
-		);
+		assumeTrue(TestModel.isAvailable(), TestModel.MISSING);
 
 		var gml = tempFile("example.xml");
 		try (
@@ -92,7 +90,7 @@ public class ProjectCreatorTest {
 		// find the ID and position of the GML building with a probe project
 		var region = new ClimateRegion().number(13);
 		var probe = new Project().name("probe").climateRegion(region);
-		var probeRes = new CityGmlImport(null, probe, List.of(gml)).call();
+		var probeRes = new CityGmlImport(null, probe, List.of(gml), TestModel.get()).call();
 		assertTrue(probeRes.isOk());
 		var gmlBuilding = probe.map().buildings().getFirst();
 		var id = gmlBuilding.cityId();
@@ -114,7 +112,7 @@ public class ProjectCreatorTest {
 		});
 
 		var project = new Project().name("test").climateRegion(region);
-		var res = new ProjectCreator(null, project, List.of(excel, gml))
+		var res = new ProjectCreator(null, project, List.of(excel, gml), TestModel.get())
 			.importFiles();
 		assertTrue(res.isOk());
 

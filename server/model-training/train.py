@@ -8,8 +8,10 @@ are trained, one per target:
 * ``peak-model.ubj`` predicts the peak load in kW
 
 All raw values and codes are used directly, no factor mappings are applied.
-Each model is saved as a single ``.ubj`` file in the server resources.  Use
-``validate.py`` to validate the trained models.
+Each model is saved as a single ``.ubj`` file in the model folder of the server
+(``server/app/model``).  A new ``config.json`` without corrections is written
+next to them, as the corrections of a previous model do not apply to the new
+models.  Use ``validate.py`` to validate the trained models.
 
 Usage::
 
@@ -17,12 +19,19 @@ Usage::
 """
 
 import argparse
+import json
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import xgboost as xgb
 
-from common import DEMAND_MODEL_FILE, PEAK_MODEL_FILE, read_csv_data
+from common import (
+    DEMAND_MODEL_FILE,
+    MODEL_CONFIG_FILE,
+    PEAK_MODEL_FILE,
+    read_csv_data,
+)
 
 # XGBoost training parameters, shared by both models.
 PARAMS = {
@@ -50,6 +59,25 @@ def train_model(
     return model
 
 
+def write_config(training_data: Path):
+    """Write a new ``config.json`` without corrections (``y = 1 * x + 0``).
+
+    An existing configuration is overwritten, as its corrections were
+    calibrated for the previous models.
+    """
+    trained_at = datetime.now().isoformat(timespec="minutes")
+    config = {
+        "description": f"trained at {trained_at} with {training_data.name}",
+        "corrections": {
+            "heatDemand": {"a": 1.0, "b": 0.0},
+            "peakLoad": {"a": 1.0, "b": 0.0},
+        },
+    }
+    print(f"Writing model configuration to: {MODEL_CONFIG_FILE}")
+    MODEL_CONFIG_FILE.parent.mkdir(exist_ok=True, parents=True)
+    MODEL_CONFIG_FILE.write_text(json.dumps(config, indent=2) + "\n")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Train the heat demand and peak load prediction models."
@@ -64,6 +92,7 @@ def main():
 
     train_model(features, labels[:, 0], DEMAND_MODEL_FILE)
     train_model(features, labels[:, 1], PEAK_MODEL_FILE)
+    write_config(args.training_data)
 
     print("All done!")
 

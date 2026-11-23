@@ -15,7 +15,17 @@ This is the server application developed in the [BIOHEATING](https://biogas.fnr.
 
 First, you need to create a Postgres database with the [database schema](./server/schema.sql) and settings as defined in the [application.properties](./server/src/main/resources/application.properties).
 
-The back-end is a SpringBoot application and is located in the `server` folder. You can just run the `App` in your favourite IDE or from the command line:
+The server also needs a data directory that contains the trained prediction model. The path is set by the property `app.data-dir` or the environment variable `APP_DATA_DIR`. It defaults to `./app`, relative to the folder from which the server is started. When you start the server from the `server` folder, as shown below, the data directory is `server/app`:
+
+```
+server/app/
+  model/      # demand-model.ubj, peak-model.ubj, config.json
+  uploads/    # temporary upload files, created automatically
+```
+
+The [model training](./server/model-training/README.md) writes the model files into `server/app/model`. The server does not start without them.
+
+The back-end is a SpringBoot application and is located in the `server` folder. You can just run the `App` in your favourite IDE (with `server` as working directory) or from the command line:
 
 ```bash
 cd server

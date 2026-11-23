@@ -52,7 +52,7 @@ class XlsBuildingExportTest {
 		var file = export(source);
 
 		var target = project();
-		var res = new XlsBuildingImport(null, target, file).call();
+		var res = new XlsBuildingImport(null, target, file, null).call();
 		assertTrue(res.isOk());
 		assertEquals(1, target.map().buildings().size());
 
@@ -89,7 +89,7 @@ class XlsBuildingExportTest {
 				.heatDemand(1000).peakLoad(1));
 
 		var target = project();
-		var res = new XlsBuildingImport(null, target, export(source)).call();
+		var res = new XlsBuildingImport(null, target, export(source), null).call();
 		assertTrue(res.isOk());
 		assertEquals(2, target.map().buildings().size());
 		for (var b : target.map().buildings()) {

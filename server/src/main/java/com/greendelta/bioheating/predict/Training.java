@@ -35,13 +35,17 @@ public class Training {
 	}
 
 	/// Writes both models into the given directory, using the file names of
-	/// their targets.
+	/// their targets. A new `config.json` without corrections is written as
+	/// the corrections of a previous model do not apply to the new models.
 	public static Res<Void> save(Models models, File dir) {
+		if (!dir.isDirectory() && !dir.mkdirs()) return Res.error(
+			"Failed to create model directory: " + dir.getAbsolutePath()
+		);
 		for (var target : Target.values()) {
 			var res = save(models.of(target), new File(dir, target.modelFile()));
 			if (res.isError()) return res;
 		}
-		return Res.ok();
+		return ModelConfig.ofTraining().write(dir);
 	}
 
 	private Res<Booster> train(Target target) {

@@ -35,11 +35,20 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 	private final Database db;
 	private final Project project;
 	private final File file;
+	private final BoostPredictor predictor;
 
-	public XlsBuildingImport(Database db, Project project, File file) {
+	/// Creates a new import. The predictor is only used for buildings without
+	/// heat demand or peak load.
+	public XlsBuildingImport(
+		Database db,
+		Project project,
+		File file,
+		BoostPredictor predictor
+	) {
 		this.db = db;
 		this.project = project;
 		this.file = file;
+		this.predictor = predictor;
 	}
 
 	public Res<Project> call() {
@@ -113,11 +122,7 @@ public class XlsBuildingImport implements Callable<Res<Project>> {
 			project.climateRegion(region);
 		}
 
-		var predictor = BoostPredictor.getDefault();
-		if (predictor.isError()) {
-			return predictor.wrapError("Failed to load the heat demand predictor");
-		}
-		var predictions = predictor.value().predictAll(region, missing);
+		var predictions = predictor.predictAll(region, missing);
 		if (predictions.isError()) {
 			return predictions.wrapError(
 				"Failed to predict the heat demand and the peak load");

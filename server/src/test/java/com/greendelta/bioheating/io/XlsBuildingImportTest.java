@@ -15,7 +15,7 @@ import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.RoofType;
 import com.greendelta.bioheating.model.WarmWater;
-import com.greendelta.bioheating.predict.BoostPredictor;
+import com.greendelta.bioheating.TestModel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,7 +49,7 @@ class XlsBuildingImportTest {
 			"Berlin", "10115", "Main Street", "1"
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 
 		assertEquals(1, map.buildings().size());
@@ -84,7 +84,7 @@ class XlsBuildingImportTest {
 			null, null, "Main Street", "2"
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 
 		assertEquals(1, map.buildings().size());
@@ -135,7 +135,7 @@ class XlsBuildingImportTest {
 			}
 		);
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 		assertEquals(3, map.buildings().size());
 		for (var b : map.buildings()) {
@@ -159,7 +159,7 @@ class XlsBuildingImportTest {
 			12000.0, 5.0, null, null, null, null, true
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 		assertFalse(center.isHeated());
 		assertFalse(center.isIncluded());
@@ -181,7 +181,7 @@ class XlsBuildingImportTest {
 			null, null, null, null
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 
 		assertEquals(1, map.buildings().size());
@@ -210,7 +210,7 @@ class XlsBuildingImportTest {
 			null, null, null, null
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 
 		assertEquals("keep", existing.name());
@@ -252,7 +252,7 @@ class XlsBuildingImportTest {
 			null, null, null, null
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 
 		assertEquals(20.0, existing.height(), 1e-6);
@@ -280,7 +280,7 @@ class XlsBuildingImportTest {
 			null, null, null, null
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 		assertTrue(res.isOk());
 
 		assertEquals(2, map.buildings().size());
@@ -301,7 +301,7 @@ class XlsBuildingImportTest {
 			null, null, null, null
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, null).call();
 
 		assertTrue(res.isError());
 		assertTrue(res.error().contains("climate region"));
@@ -309,10 +309,7 @@ class XlsBuildingImportTest {
 
 	@Test
 	void estimatesMissingHeatDemandAndPeakLoad() throws Exception {
-		assumeTrue(
-			BoostPredictor.class.getResource("demand-model.ubj") != null,
-			"the prediction model files are not available"
-		);
+		assumeTrue(TestModel.isAvailable(), TestModel.MISSING);
 
 		var project = project();
 		project.climateRegion(new ClimateRegion().number(1));
@@ -324,7 +321,7 @@ class XlsBuildingImportTest {
 			null, null, null, null
 		});
 
-		var res = new XlsBuildingImport(null, project, file).call();
+		var res = new XlsBuildingImport(null, project, file, TestModel.get()).call();
 		assertTrue(res.isOk());
 
 		var created = map.buildings().getFirst();

@@ -111,16 +111,36 @@ target:
 uv run train.py data/training-data.csv
 ```
 
-The trained models are saved to:
+The trained models are saved to the model folder of the local data directory
+of the server (`server/app`, which is not under version control):
 
 ```
-../src/main/resources/com/greendelta/bioheating/predict/demand-model.ubj
-../src/main/resources/com/greendelta/bioheating/predict/peak-model.ubj
+../app/model/demand-model.ubj
+../app/model/peak-model.ubj
+../app/model/config.json
 ```
 
-These are the locations expected by the server application, which loads both
-models at runtime: `demand-model.ubj` predicts the annual heat demand in kWh and
+The server loads the models from there at startup and does not start when
+they are missing: `demand-model.ubj` predicts the annual heat demand in kWh and
 `peak-model.ubj` predicts the peak load in kW.
+
+`config.json` contains the linear corrections `y = a * x + b` that are applied
+to the raw model outputs. The training always writes a new `config.json`
+without corrections (`a = 1`, `b = 0`), as the corrections of a previous model
+do not apply to new models. To calibrate the model, edit the values afterward:
+
+```json
+{
+  "description": "trained at 2026-11-23T10:15 with training-data.csv",
+  "corrections": {
+    "heatDemand": { "a": 1.0, "b": 0.0 },
+    "peakLoad": { "a": 1.0, "b": 0.0 }
+  }
+}
+```
+
+For a deployment, the model folder is exported with the Docker images (see
+`docker/README.md`) and needs to be copied to `data/app/model` on the server.
 
 ## Validation
 

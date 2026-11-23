@@ -61,8 +61,9 @@ docker compose down
 The `docker-compose.yml` file automatically configures:
 
 - Required environment variables for the database
-- Volume mapping for PostgreSQL data (`./data/bioheating-db`)
-- Volume mapping for file uploads (`./data/uploads`)
+- Volume mapping for PostgreSQL data (`./data/db`)
+- Volume mapping for the application data directory (`./data/app`), which
+  contains the prediction model (`model/`) and the uploads (`uploads/`)
 - Proper service dependencies and health checks
 - `network_mode: host` to allow the containers to communicate easily
 
@@ -70,23 +71,37 @@ The `docker-compose.yml` file automatically configures:
 ### External Deployment (Server)
 
 To deploy to a remote server run `dart run docker/build.dart docker-all` locally.
-Copy these files** to your server:
+This requires a trained model in `server/app/model` (see
+`server/model-training/README.md`). Copy these files to your server:
 
 + `docker/images/bioheating-db.tar.gz`
 + `docker/images/bioheating-app.tar.gz`
++ `docker/images/model.tar.gz`
 + `docker/docker-compose.yaml`
 
 Then, on the server:
 
 ```bash
 # Decompress and load the images
-gunzip *.tar.gz
+gunzip bioheating-db.tar.gz bioheating-app.tar.gz
 
 docker load < bioheating-db.tar
 docker load < bioheating-app.tar
+
+# Install the prediction model into data/app/model; this replaces an existing
+# model including its config.json
+sudo mkdir -p data/app
+sudo tar -xzf model.tar.gz -C data/app
 
 # Start the application
 docker compose up -d
 ```
 
-When you run `docker compose up`, the `data/bioheating-db` and `data/uploads` folders will be created automatically if they don't exist. When uploading a new version, you do not need to delete the `data/` folder. Keeping it ensures your database and uploaded files persist across updates. Only delete the `data/` folder if you want to wipe the database and start with a clean installation. Note that you may need `sudo` to delete these folders as Docker creates them with root permissions.
+The application does not start when the prediction model is missing in
+`data/app/model`; check the logs with `docker logs bioheating-app`. The model
+consists of the files `demand-model.ubj`, `peak-model.ubj`, and `config.json`.
+The `config.json` contains the corrections that are applied to the model
+outputs and can be edited on the server (restart the app afterwards with
+`docker compose restart bioheating-app`).
+
+When you run `docker compose up`, the `data/db` and `data/app/uploads` folders will be created automatically if they don't exist. When uploading a new version, you do not need to delete the `data/` folder. Keeping it ensures your database and uploaded files persist across updates. Only delete the `data/` folder if you want to wipe the database and start with a clean installation. Note that you may need `sudo` to delete these folders as Docker creates them with root permissions.
