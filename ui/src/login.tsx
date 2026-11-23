@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import * as api from "./api";
 import { User } from "./model";
 
@@ -32,7 +33,7 @@ function useLoginContext(): LoginContext {
 	const setError = () => {
 		_setUserName("");
 		_setPassword("");
-		_setError("Wrong user name or password");
+		_setError("login.wrongCredentials");
 	};
 
 	const setUserName = (name: string) => {
@@ -121,20 +122,24 @@ export const LoginPage = () => {
 type Props = { ctx: LoginContext };
 
 const ErrorRow = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	if (!ctx.error) {
 		return null;
 	}
 	return (
 		<div className="alert alert-danger" role="alert">
-			{ctx.error}
+			{t(ctx.error as any)}
 		</div>
 	);
 };
 
 const UserRow = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	return (
 		<div className="form-group row mt-3">
-			<label className="col-sm-3 col-form-label col-form-label-lg">User</label>
+			<label className="col-sm-3 col-form-label col-form-label-lg">
+				{t("login.user")}
+			</label>
 			<div className="col-sm-9">
 				<input
 					type="text"
@@ -151,10 +156,11 @@ const UserRow = ({ ctx }: Props) => {
 };
 
 const PasswordRow = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	return (
 		<div className="form-group row mt-3">
 			<label className="col-sm-3 col-form-label col-form-label-lg">
-				Password
+				{t("login.password")}
 			</label>
 			<div className="col-sm-9">
 				<input
@@ -172,6 +178,7 @@ const PasswordRow = ({ ctx }: Props) => {
 };
 
 const LoginButton = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	return (
 		<div className="form-group row mt-3">
 			<div className="col-sm-3" />
@@ -181,7 +188,7 @@ const LoginButton = ({ ctx }: Props) => {
 					className="btn btn-lg btn-outline-primary"
 					onClick={() => ctx.onLogin()}
 					disabled={ctx.isProgressing}>
-					Login
+					{t("login.submit")}
 				</button>
 			</div>
 		</div>

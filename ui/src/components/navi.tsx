@@ -1,6 +1,7 @@
 import React from "react";
 import { User } from "../model";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface MenuProps {
 	user: User | null;
@@ -21,11 +22,12 @@ export const MainMenu = ({ user, onLogout }: MenuProps) => {
 };
 
 const MainLinks = ({ user, onLogout }: MenuProps) => {
+	const { t } = useTranslation();
 	if (!user) {
 		return (
 			<div className="navbar-nav ms-auto">
 				<Link className="nav-link" to="/ui/login">
-					Login
+					{t("nav.login")}
 				</Link>
 			</div>
 		);
@@ -35,15 +37,15 @@ const MainLinks = ({ user, onLogout }: MenuProps) => {
 		<>
 			<div className="navbar-nav me-auto">
 				<Link className="nav-link" to="/ui/projects">
-					Projects
+					{t("nav.projects")}
 				</Link>
 				{user.isAdmin ? (
 					<Link className="nav-link" to="/ui/users">
-						Users
+						{t("nav.users")}
 					</Link>
 				) : null}
 				<Link className="nav-link" to="/ui/account">
-					Account
+					{t("nav.account")}
 				</Link>
 			</div>
 			<div className="navbar-nav">
@@ -51,7 +53,7 @@ const MainLinks = ({ user, onLogout }: MenuProps) => {
 					className="nav-link"
 					onClick={onLogout}
 					style={{ cursor: "pointer" }}>
-					Logout
+					{t("nav.logout")}
 				</a>
 			</div>
 		</>

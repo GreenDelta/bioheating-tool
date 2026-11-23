@@ -3,6 +3,8 @@ export interface User {
 	name: string;
 	fullName: string;
 	isAdmin: boolean;
+	/** The preferred UI language; `null` means: use the browser language. */
+	language?: string | null;
 }
 
 export interface UserData {

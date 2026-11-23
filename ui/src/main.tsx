@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import "./i18n"; // initialize i18n before any component renders
 import {
 	useNavigate,
 	Outlet,
@@ -11,10 +12,11 @@ import {
 } from "react-router-dom";
 
 import { User } from "./model";
+import { applyUserLanguage } from "./i18n";
 import * as api from "./api";
 import { LoginPage } from "./login";
 import { ProjectList, ProjectForm, ProjectEditor, SolutionView } from "./projects";
-import { UserList, UserForm } from "./users";
+import { UserList, UserForm, AccountPage } from "./users";
 import { HomePage } from "./home";
 import errors, { ErrorPage } from "./components/errors";
 import { MainMenu } from "./components/navi";
@@ -25,6 +27,15 @@ import { NavigationLoading } from "./components/navigation-loading";
 const Root = () => {
 	const navigate = useNavigate();
 	const [user, setUser] = React.useState<User | null>(null);
+
+	// apply the language setting of the user when it is loaded or changed;
+	// when there is no user, the detected browser language is kept
+	useEffect(() => {
+		if (user) {
+			applyUserLanguage(user.language);
+		}
+	}, [user?.id, user?.language]);
+
 	useEffect(() => {
 		api.getCurrentUser().then(u => {
 			if (u.isErr) {
@@ -52,11 +63,11 @@ const Root = () => {
 };
 
 const ProtectedRoutes = () => {
-	const [user] = useOutletContext<[User | null, any]>();
+	const [user, setUser] = useOutletContext<[User | null, any]>();
 	if (!user) {
 		return <Navigate to="/ui/login" replace />;
 	}
-	return <Outlet context={[user]} />;
+	return <Outlet context={[user, setUser]} />;
 };
 
 function main() {
@@ -109,7 +120,7 @@ function main() {
 						},
 						{
 							path: "account",
-							element: <UserForm />,
+							element: <AccountPage />,
 							loader: async () => {
 								const res = await api.getCurrentUser();
 								return res.isErr

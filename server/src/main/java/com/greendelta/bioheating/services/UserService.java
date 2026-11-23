@@ -5,6 +5,7 @@ import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
@@ -13,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+
+	/// The UI languages that are currently supported.
+	public static final Set<String> LANGUAGES = Set.of("en", "de");
 
 	private final Database db;
 
@@ -72,6 +76,19 @@ public class UserService {
 		return apply(user, data);
 	}
 
+	/// Sets the preferred UI language of the given user. A `null` or blank
+	/// language resets it so that the UI uses the browser language again.
+	public Res<UserInfo> setLanguage(User user, String language) {
+		if (user == null) return Res.error("No user provided");
+		var lang = Strings.isBlank(language) ? null : language.strip();
+		if (lang != null && !LANGUAGES.contains(lang)) return Res.error(
+			"Unsupported language: " + lang
+		);
+		user.language(lang);
+		var updated = db.update(user);
+		return Res.ok(UserInfo.of(updated));
+	}
+
 	public Res<Void> delete(User user) {
 		if (user == null) return Res.error("No user provided");
 		if (user.isAdmin()) return Res.error("Admins cannot be deleted");
@@ -116,14 +133,16 @@ public class UserService {
 		long id,
 		String name,
 		String fullName,
-		boolean isAdmin
+		boolean isAdmin,
+		String language
 	) {
 		public static UserInfo of(User user) {
 			return new UserInfo(
 				user.id(),
 				user.name(),
 				user.fullName(),
-				user.isAdmin()
+				user.isAdmin(),
+				user.language()
 			);
 		}
 	}

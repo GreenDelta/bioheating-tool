@@ -22,6 +22,11 @@ public class User extends BaseEntity {
 	@Column(name = "is_admin")
 	private boolean isAdmin;
 
+	/// The preferred UI language of the user (e.g. `en`, `de`). If this is
+	/// `null`, the UI uses the language of the browser.
+	@Column(name = "language")
+	private String language;
+
 	public String name() {
 		return name;
 	}
@@ -55,6 +60,15 @@ public class User extends BaseEntity {
 
 	public User isAdmin(boolean isAdmin) {
 		this.isAdmin = isAdmin;
+		return this;
+	}
+
+	public String language() {
+		return language;
+	}
+
+	public User language(String language) {
+		this.language = language;
 		return this;
 	}
 

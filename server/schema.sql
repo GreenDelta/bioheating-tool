@@ -14,7 +14,8 @@ create table tbl_users (
     username varchar not null unique,
     password varchar,
     full_name varchar,
-    is_admin boolean
+    is_admin boolean,
+    language varchar
 );
 
 drop table if exists tbl_buildings cascade;

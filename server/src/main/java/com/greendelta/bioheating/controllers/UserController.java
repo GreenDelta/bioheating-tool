@@ -33,6 +33,22 @@ public class UserController {
 			: Http.unauthorized();
 	}
 
+	@PutMapping("/current/language")
+	public ResponseEntity<?> setLanguage(
+		Authentication auth,
+		@RequestBody LanguageData data
+	) {
+		var user = users.getCurrentUser(auth).orElse(null);
+		if (user == null) return Http.unauthorized();
+		var res = users.setLanguage(user, data != null ? data.language() : null);
+		return res.isError()
+			? Http.badRequest(res.error())
+			: Http.ok(res.value());
+	}
+
+	public record LanguageData(String language) {
+	}
+
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getUser(Authentication auth, @PathVariable int id) {
 		var req = UserRequest.of(this, auth, id);

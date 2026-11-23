@@ -152,6 +152,15 @@ export async function updateUser(
 	return getJson<User>(`/api/users/${id}`, jsonRequest("PUT", userData));
 }
 
+export async function setLanguage(
+	language: string | null,
+): Promise<Res<User>> {
+	return getJson<User>(
+		"/api/users/current/language",
+		jsonRequest("PUT", { language }),
+	);
+}
+
 export async function getUsers(): Promise<Res<User[]>> {
 	return getJson<User[]>("/api/users");
 }
