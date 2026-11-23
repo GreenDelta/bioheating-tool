@@ -274,7 +274,6 @@ export const en = {
 		INVALID_BUILDING_DATA: "The building data is missing or invalid.",
 		NO_CLIMATE_REGION: "The project does not have a climate region.",
 		BUILDING_NOT_HEATED: "The building is not heated.",
-		ESTIMATOR_UNAVAILABLE: "The heat demand estimator could not be loaded.",
 		ESTIMATION_FAILED: "The heat demand could not be estimated.",
 		SOLUTION_NOT_FOUND: "The solution could not be found.",
 		SOLUTION_IMAGE_NOT_FOUND: "The solution image could not be found.",

@@ -6,8 +6,8 @@ import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.client.ClientProject;
 import com.greendelta.bioheating.model.client.GeoFeature;
-import com.greendelta.bioheating.predict.BuildingEstimator;
 import com.greendelta.bioheating.services.FileService;
+import com.greendelta.bioheating.services.ModelService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
@@ -36,19 +36,22 @@ public class ProjectController {
 	private final UserService users;
 	private final FileService files;
 	private final TaskService tasks;
+	private final ModelService model;
 
 	public ProjectController(
 		Database db,
 		ProjectService projects,
 		UserService users,
 		FileService files,
-		TaskService tasks
+		TaskService tasks,
+		ModelService model
 	) {
 		this.db = db;
 		this.projects = projects;
 		this.users = users;
 		this.files = files;
 		this.tasks = tasks;
+		this.model = model;
 	}
 
 	@GetMapping
@@ -105,7 +108,7 @@ public class ProjectController {
 			.user(user);
 		var task = NewTask.of(user, ErrorCode.PROJECT_IMPORT_FAILED, () ->
 			files.useFiles(geoFiles.value(),
-				gmlFiles -> new ProjectCreator(db, project, gmlFiles).call())
+				gmlFiles -> new ProjectCreator(db, project, gmlFiles, model.predictor()).call())
 		);
 		tasks.schedule(task);
 		return Http.ok(task.toState());
@@ -159,14 +162,7 @@ public class ProjectController {
 				return Http.badRequest(ErrorCode.BUILDING_NOT_HEATED);
 			}
 
-			var estimator = BuildingEstimator.getDefault();
-			if (estimator.isError()) {
-				return Http.serverError(
-					ErrorCode.ESTIMATOR_UNAVAILABLE, estimator.error()
-				);
-			}
-
-			var result = estimator.value().estimate(project.climateRegion(), building);
+			var result = model.predictor().predict(project.climateRegion(), building);
 			return result.isError()
 				? Http.serverError(ErrorCode.ESTIMATION_FAILED, result.error())
 				: Http.ok(result.value());

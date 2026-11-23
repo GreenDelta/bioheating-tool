@@ -1,9 +1,9 @@
 package com.greendelta.bioheating.services;
 
+import com.greendelta.bioheating.config.DataDir;
 import com.greendelta.bioheating.io.ImportFileType;
 import org.openlca.commons.Res;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,15 +22,8 @@ public class FileService {
 
 	private final Path workDir;
 
-	public FileService(@Value("${work.dir}") String path) {
-		workDir = Paths.get(path);
-		try {
-			if (!Files.exists(workDir)) {
-				Files.createDirectories(workDir);
-			}
-		} catch (IOException e) {
-			throw new RuntimeException("failed to create work directory: " + path, e);
-		}
+	public FileService(DataDir dataDir) {
+		workDir = dataDir.uploads();
 	}
 
 	/// Saves the uploaded files in the work directory. Note that multi-part files

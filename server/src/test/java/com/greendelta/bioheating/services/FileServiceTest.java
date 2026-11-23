@@ -1,5 +1,6 @@
 package com.greendelta.bioheating.services;
 
+import com.greendelta.bioheating.config.DataDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,13 +23,16 @@ import org.springframework.mock.web.MockMultipartFile;
 
 public class FileServiceTest {
 
+	private Path dataDir;
 	private Path workDir;
 	private FileService service;
 
 	@BeforeEach
 	public void setup() throws IOException {
-		workDir = Files.createTempDirectory("bioheating-file-service");
-		service = new FileService(workDir.toString());
+		dataDir = Files.createTempDirectory("bioheating-file-service");
+		var dir = new DataDir(dataDir.toString());
+		workDir = dir.uploads();
+		service = new FileService(dir);
 	}
 
 	@AfterEach
@@ -39,6 +43,7 @@ public class FileServiceTest {
 			}
 		}
 		Files.deleteIfExists(workDir);
+		Files.deleteIfExists(dataDir);
 	}
 
 	@Test

@@ -25,13 +25,13 @@ COL_COUNT = 8
 FEATURE_COUNT = 6
 TARGET_NAMES = ["heat demand", "peak load"]
 
-# Locations of the two trained models expected by the server application.
-MODEL_DIR = (
-    Path(__file__).parent
-    / "../src/main/resources/com/greendelta/bioheating/predict"
-)
+# The model folder in the local data directory of the server (`server/app`,
+# see `app.data-dir` in the server configuration). The server loads the two
+# models and the model configuration from there.
+MODEL_DIR = (Path(__file__).parent / "../app/model").resolve()
 DEMAND_MODEL_FILE = MODEL_DIR / "demand-model.ubj"
 PEAK_MODEL_FILE = MODEL_DIR / "peak-model.ubj"
+MODEL_CONFIG_FILE = MODEL_DIR / "config.json"
 
 
 def read_csv_data(csv_file: Path) -> tuple[np.ndarray, np.ndarray]:

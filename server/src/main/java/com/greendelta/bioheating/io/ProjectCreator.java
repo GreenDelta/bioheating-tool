@@ -1,5 +1,6 @@
 package com.greendelta.bioheating.io;
 
+import com.greendelta.bioheating.predict.BoostPredictor;
 import com.greendelta.bioheating.io.citygml.CityGmlImport;
 import com.greendelta.bioheating.io.citygml.OsmStreetFetch;
 import com.greendelta.bioheating.model.Database;
@@ -18,12 +19,19 @@ public class ProjectCreator {
 	private final Database db;
 	private final Project project;
 	private final List<File> files;
+	private final BoostPredictor predictor;
 	private boolean withOsmImport = true;
 
-	public ProjectCreator(Database db, Project project, List<File> files) {
+	public ProjectCreator(
+		Database db,
+		Project project,
+		List<File> files,
+		BoostPredictor predictor
+	) {
 		this.db = db;
 		this.project = project;
 		this.files = files;
+		this.predictor = predictor;
 	}
 
 	public ProjectCreator withOsmImport(boolean withOsmImport) {
@@ -102,7 +110,7 @@ public class ProjectCreator {
 		if (files.isEmpty())
 			return Res.error("No CityGML file provided");
 		try {
-			return new CityGmlImport(db, project, files).call();
+			return new CityGmlImport(db, project, files, predictor).call();
 		} catch (Exception e) {
 			return Res.error("project creation failed during CityGML import", e);
 		}
@@ -110,7 +118,7 @@ public class ProjectCreator {
 
 	private Res<Project> importExcelFile(File file) {
 		try {
-			return new XlsBuildingImport(db, project, file).call();
+			return new XlsBuildingImport(db, project, file, predictor).call();
 		} catch (Exception e) {
 			return Res.error("project creation failed during Excel import", e);
 		}

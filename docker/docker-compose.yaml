@@ -5,13 +5,21 @@
 #   docker compose up -d     # detached mode
 #   docker compose down      # stop (detached)
 #
-# Database data is stored in ./data/bioheating-db (persistent across restarts).
-# Application uploads are stored in ./data/uploads.
+# Data folders (persistent across restarts):
+#
+#   data/
+#     db/          # the database files
+#     app/         # the application data directory (APP_DATA_DIR)
+#       model/     # the prediction model: *.ubj files and config.json
+#       uploads/   # temporary files of uploads and exports
+#
+# The application does not start when the prediction model is missing in
+# data/app/model (see docker/README.md).
 #
 # Note: The data/ folders may be owned by Docker (root), so you
 # may need sudo to delete them if needed:
-#   sudo rm -rf ./data/bioheating-db
-#   sudo rm -rf ./data/uploads
+#   sudo rm -rf ./data/db
+#   sudo rm -rf ./data/app/uploads
 #
 # Also note, that the memory settings (mem_limit, Xmx) are for a small server
 # currently. It makes sense to adjust them when moving to a more powerfull
@@ -22,7 +30,7 @@ services:
     image: bioheating-db:latest
     container_name: bioheating-db
     volumes:
-      - ./data/bioheating-db:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data
     mem_limit: 768m
     restart: unless-stopped
     environment:
@@ -41,10 +49,11 @@ services:
     image: bioheating-app:latest
     container_name: bioheating-app
     volumes:
-      - ./data/uploads:/app/uploads
+      - ./data/app:/app/data
     mem_limit: 2560m
     restart: unless-stopped
     environment:
+      APP_DATA_DIR: /app/data
       JAVA_TOOL_OPTIONS: "-Xmx2176m -XX:MaxMetaspaceSize=384m -XX:+ExitOnOutOfMemoryError -XX:+UseG1GC -XX:+UseStringDeduplication"
     depends_on:
       bioheating-db:

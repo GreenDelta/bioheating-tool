@@ -9,8 +9,8 @@ import java.io.PrintWriter;
 
 public class ModelValidationExample {
 
-	public static void main(String[] args) {
-		var predictor = BoostPredictor.getDefault().orElseThrow();
+	static void main(String[] args) {
+		var predictor = BoostPredictor.load(new File("./app/model")).orElseThrow();
 		var dataDir = new File("./model-training/data");
 
 		validate(predictor, dataDir, "training-data.csv", "self-check.txt");

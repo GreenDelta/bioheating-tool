@@ -274,8 +274,6 @@ export const de: Messages = {
 		INVALID_BUILDING_DATA: "Die Gebäudedaten fehlen oder sind ungültig.",
 		NO_CLIMATE_REGION: "Dem Projekt ist keine Klimaregion zugeordnet.",
 		BUILDING_NOT_HEATED: "Das Gebäude ist nicht beheizt.",
-		ESTIMATOR_UNAVAILABLE:
-			"Das Modell zur Wärmebedarfsabschätzung konnte nicht geladen werden.",
 		ESTIMATION_FAILED: "Der Wärmebedarf konnte nicht abgeschätzt werden.",
 		SOLUTION_NOT_FOUND: "Die Lösung wurde nicht gefunden.",
 		SOLUTION_IMAGE_NOT_FOUND: "Das Bild der Lösung wurde nicht gefunden.",

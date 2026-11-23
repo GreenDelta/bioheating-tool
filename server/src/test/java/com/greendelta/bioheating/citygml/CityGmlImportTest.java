@@ -1,7 +1,9 @@
 package com.greendelta.bioheating.citygml;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import com.greendelta.bioheating.TestModel;
 import com.greendelta.bioheating.Tests;
 import com.greendelta.bioheating.io.citygml.CityGmlImport;
 import com.greendelta.bioheating.model.ClimateRegion;
@@ -40,9 +42,10 @@ public class CityGmlImportTest {
 
 	@Test
 	public void testImport() {
+		assumeTrue(TestModel.isAvailable(), TestModel.MISSING);
 		var region = db.insert(new ClimateRegion().number(13));
 		var project = new Project().name("test project").climateRegion(region);
-		project = new CityGmlImport(db, project, List.of(file))
+		project = new CityGmlImport(db, project, List.of(file), TestModel.get())
 			.call()
 			.orElseThrow();
 

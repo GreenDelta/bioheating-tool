@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.jspecify.annotations.NullMarked;
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 
@@ -16,24 +17,29 @@ import com.greendelta.bioheating.model.GeoMap;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.predict.BoostPredictor;
 
+@NullMarked
 public class CityGmlImport implements Callable<Res<Project>> {
 
 	private final Database db;
 	private final Project project;
 	private final List<File> files;
+	private final BoostPredictor predictor;
 
-	public CityGmlImport(Database db, Project project, List<File> files) {
+	public CityGmlImport(
+		Database db,
+		Project project,
+		List<File> files,
+		BoostPredictor predictor
+	) {
 		this.db = db;
 		this.project = project;
 		this.files = files;
+		this.predictor = predictor;
 	}
 
 	@Override
 	public Res<Project> call() {
-		if (project == null) {
-			return Res.error("Project cannot be null");
-		}
-		if (files == null || files.isEmpty()) {
+		if (files.isEmpty()) {
 			return Res.error("No CityGML files provided");
 		}
 
@@ -57,10 +63,9 @@ public class CityGmlImport implements Callable<Res<Project>> {
 				map = mapRes.value();
 			}
 		}
-
-		if (shapes.isEmpty() || map == null) {
+		if (shapes.isEmpty())
 			return Res.error("No valid buildings found in CityGML files");
-		}
+
 
 		// process the building data
 		var naRes = NeighborAnalysis.run(shapes);
@@ -84,11 +89,7 @@ public class CityGmlImport implements Callable<Res<Project>> {
 		}
 
 		// predict the heat demands
-		var predictor = BoostPredictor.getDefault();
-		if (predictor.isError())
-			return predictor.wrapError("Failed to load the heat demand predictor");
 		var predictions = predictor
-			.value()
 			.predictAll(project.climateRegion(), buildings);
 		if (predictions.isError()) return predictions.wrapError(
 			"Failed to predict heat demands"
