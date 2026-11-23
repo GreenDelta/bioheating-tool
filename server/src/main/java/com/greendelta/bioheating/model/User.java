@@ -22,8 +22,9 @@ public class User extends BaseEntity {
 	@Column(name = "is_admin")
 	private boolean isAdmin;
 
-	/// The preferred UI language of the user (e.g. `en`, `de`). If this is
-	/// `null`, the UI uses the language of the browser.
+	/// The selected UI language of the user (`en` or `de`). If this is `null`,
+	/// the user has not selected a language yet and the UI uses German when it
+	/// is the language of the browser, otherwise English.
 	@Column(name = "language")
 	private String language;
 

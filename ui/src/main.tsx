@@ -29,7 +29,7 @@ const Root = () => {
 	const [user, setUser] = React.useState<User | null>(null);
 
 	// apply the language setting of the user when it is loaded or changed;
-	// when there is no user, the detected browser language is kept
+	// when there is no user, the language chosen at startup is kept
 	useEffect(() => {
 		if (user) {
 			applyUserLanguage(user.language);

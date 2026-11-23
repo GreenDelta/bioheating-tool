@@ -240,9 +240,6 @@ export const en = {
 	settings: {
 		title: "Settings",
 		language: "Language",
-		browserLanguage: "Browser language",
-		languageHint:
-			"The language of the user interface. By default, the language of the browser is used.",
 		saveFailed: "Failed to save the language setting",
 	},
 	languages: {

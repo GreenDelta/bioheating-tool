@@ -241,9 +241,6 @@ export const de: Messages = {
 	settings: {
 		title: "Einstellungen",
 		language: "Sprache",
-		browserLanguage: "Browsersprache",
-		languageHint:
-			"Die Sprache der Benutzeroberfläche. Standardmäßig wird die Sprache des Browsers verwendet.",
 		saveFailed: "Die Spracheinstellung konnte nicht gespeichert werden",
 	},
 	languages: {

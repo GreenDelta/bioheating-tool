@@ -9,6 +9,7 @@ import {
 	TaskState,
 	Solution,
 } from "./model";
+import type { Language } from "./i18n";
 
 export interface BuildingEstimate {
 	heatDemand: number;
@@ -176,9 +177,7 @@ export async function updateUser(
 	return getJson<User>(`/api/users/${id}`, jsonRequest("PUT", userData));
 }
 
-export async function setLanguage(
-	language: string | null,
-): Promise<Res<User>> {
+export async function setLanguage(language: Language): Promise<Res<User>> {
 	return getJson<User>(
 		"/api/users/current/language",
 		jsonRequest("PUT", { language }),

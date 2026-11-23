@@ -3,7 +3,10 @@ export interface User {
 	name: string;
 	fullName: string;
 	isAdmin: boolean;
-	/** The preferred UI language; `null` means: use the browser language. */
+	/**
+	 * The selected UI language; `null` means: not selected yet, then German is
+	 * used when it is the browser language, otherwise English.
+	 */
 	language?: string | null;
 }
 

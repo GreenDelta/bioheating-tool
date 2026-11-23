@@ -78,12 +78,12 @@ public class UserService {
 		return apply(user, data);
 	}
 
-	/// Sets the preferred UI language of the given user. A `null` or blank
-	/// language resets it so that the UI uses the browser language again.
+	/// Sets the UI language of the given user; it must be one of the supported
+	/// languages.
 	public Coded<UserInfo> setLanguage(User user, String language) {
 		if (user == null) return ErrorCode.USER_NOT_FOUND.fail("No user provided");
-		var lang = Strings.isBlank(language) ? null : language.strip();
-		if (lang != null && !LANGUAGES.contains(lang)) return ErrorCode
+		var lang = language != null ? language.strip() : null;
+		if (lang == null || !LANGUAGES.contains(lang)) return ErrorCode
 			.UNSUPPORTED_LANGUAGE.fail("Unsupported language: " + lang);
 		user.language(lang);
 		var updated = db.update(user);

@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import * as api from "../api";
 import { User } from "../model";
-import { LANGUAGES, isLanguage } from "../i18n";
+import { LANGUAGES, Language, currentLanguage, isLanguage } from "../i18n";
 import { UserForm } from "./user-form";
 
 /// The account page of the current user: the user data form and the
@@ -26,12 +26,14 @@ const LanguageSettings = () => {
 	const [user, setUser] = useOutletContext<[User, (u: User) => void]>();
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const value = isLanguage(user.language) ? user.language : "";
+	// without a selected language, the default language is active and shown
+	const value = isLanguage(user.language) ? user.language : currentLanguage();
 
 	const onChange = async (lang: string) => {
+		if (!isLanguage(lang)) return;
 		setSaving(true);
 		setError(null);
-		const res = await api.setLanguage(lang || null);
+		const res = await api.setLanguage(lang);
 		setSaving(false);
 		if (res.isErr) {
 			setError(t("settings.saveFailed"));
@@ -60,14 +62,12 @@ const LanguageSettings = () => {
 					value={value}
 					disabled={saving}
 					onChange={e => onChange(e.target.value)}>
-					<option value="">{t("settings.browserLanguage")}</option>
 					{LANGUAGES.map(lang => (
 						<option key={lang} value={lang}>
 							{t(`languages.${lang}`)}
 						</option>
 					))}
 				</select>
-				<div className="form-text">{t("settings.languageHint")}</div>
 			</div>
 		</>
 	);
