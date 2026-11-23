@@ -8,6 +8,7 @@ import org.openlca.commons.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import com.greendelta.bioheating.services.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,7 +45,9 @@ public class ExportController {
 				var export = new XlsBuildingExport(project, out)
 					.withIds(selectedIds)
 					.run();
-				if (export.isError()) return Http.serverError(export.error());
+				if (export.isError()) return Http.serverError(
+					ErrorCode.EXPORT_FAILED, export.error()
+				);
 
 				var fileName = fileNameOf(project);
 				return ResponseEntity.ok()
@@ -59,7 +62,10 @@ public class ExportController {
 					)
 					.body(out.toByteArray());
 			} catch (Exception e) {
-				return Http.serverError("failed to export buildings: " + e.getMessage());
+				return Http.serverError(
+					ErrorCode.EXPORT_FAILED,
+					"failed to export buildings: " + e.getMessage()
+				);
 			}
 		});
 	}
@@ -80,7 +86,7 @@ public class ExportController {
 		if (user == null) return Http.unauthorized();
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
-			? Http.notFound("project not found: " + id)
+			? Http.notFound(ErrorCode.PROJECT_NOT_FOUND, "project not found: " + id)
 			: fn.apply(project);
 	}
 

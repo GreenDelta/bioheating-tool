@@ -3,6 +3,7 @@ package com.greendelta.bioheating.controllers;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.UserService;
 import org.springframework.http.ResponseEntity;
+import com.greendelta.bioheating.services.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +34,7 @@ public class TaskController {
 		var state = tasks.getState(user, id);
 		return state.isPresent()
 			? Http.ok(state.get())
-			: Http.notFound("task not found: " + id);
+			: Http.notFound(ErrorCode.TASK_NOT_FOUND, "task not found: " + id);
 	}
 
 	@DeleteMapping("/{id}")
@@ -47,6 +48,6 @@ public class TaskController {
 		boolean deleted = tasks.remove(user, id);
 		return deleted
 			? Http.ok("task deleted successfully")
-			: Http.notFound("task not found: " + id);
+			: Http.notFound(ErrorCode.TASK_NOT_FOUND, "task not found: " + id);
 	}
 }

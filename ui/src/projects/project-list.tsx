@@ -5,6 +5,7 @@ import {
 	useLoaderData,
 	useNavigate,
 } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { ProjectInfo } from "../model";
 import { AddIcon, DeleteIcon, EditIcon } from "../components/icons";
 import * as api from "../api";
@@ -37,7 +38,7 @@ function useProjectListContext(): ProjectListContext {
 		setDeletable(null);
 		api.deleteProject(p.id).then(res => {
 			if (res.isErr) {
-				errors.navigate("Failed to delete project", res);
+				errors.navigate(navigate, "loadErrors.deleteProject", res);
 			}
 		});
 	};
@@ -52,6 +53,7 @@ function useProjectListContext(): ProjectListContext {
 }
 
 export const ProjectList = () => {
+	const { t } = useTranslation();
 	const ctx = useProjectListContext();
 	const content = !ctx.projects || ctx.projects.length === 0
 		? <NoContentPanel ctx={ctx} />
@@ -60,7 +62,10 @@ export const ProjectList = () => {
 	return (
 		<div>
 			<div className="container-fluid">
-				<FluidBreadcrumbRow active="Projects" path={[["/", "Home"]]} />
+				<FluidBreadcrumbRow
+					active={t("projects.title")}
+					path={[["/", t("common.home")]]}
+				/>
 				<div className="row justify-content-center">
 					<div className="col-12 col-md-10 col-lg-8">
 						{content}
@@ -75,13 +80,14 @@ export const ProjectList = () => {
 type Props = { ctx: ProjectListContext };
 
 const NoContentPanel = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	return (
 		<>
 			<div className="text-center my-3">
-				You do not have any created projects yet.
+				{t("projects.noProjects")}
 				<div className="my-3">
 					<Link to="/ui/projects/new" className="btn btn-outline-primary">
-						Create your first project
+						{t("projects.createFirst")}
 					</Link>
 				</div>
 			</div>
@@ -90,6 +96,7 @@ const NoContentPanel = ({ ctx }: Props) => {
 };
 
 const ProjectTable = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	const rows = ctx.projects.map(p => (
 		<tr key={p.id}>
 			<td>
@@ -101,11 +108,11 @@ const ProjectTable = ({ ctx }: Props) => {
 				<div className="d-flex gap-2 justify-content-end">
 					<EditIcon
 						onClick={() => ctx.navigate(`/ui/projects/${p.id}`)}
-						tooltip="Edit project" />
+						tooltip={t("projects.edit")} />
 					<DeleteIcon
 						color="#dc3545"
 						onClick={() => ctx.setDeletable(p)}
-						tooltip="Delete project" />
+						tooltip={t("projects.delete")} />
 				</div>
 			</td>
 		</tr>
@@ -116,8 +123,8 @@ const ProjectTable = ({ ctx }: Props) => {
 			<table className="table table-hover">
 				<thead>
 					<tr>
-						<th>Project</th>
-						<th className="text-end">Actions</th>
+						<th>{t("projects.project")}</th>
+						<th className="text-end">{t("common.actions")}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -126,7 +133,7 @@ const ProjectTable = ({ ctx }: Props) => {
 						<td></td>
 						<td className="text-end">
 							<AddIcon
-								tooltip="Create a new project"
+								tooltip={t("projects.createNew")}
 								onClick={() => ctx.navigate("/ui/projects/new")}
 							/>
 						</td>
@@ -138,6 +145,7 @@ const ProjectTable = ({ ctx }: Props) => {
 };
 
 const DeleteDialog = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	if (!ctx.deletable) {
 		return <></>;
 	}
@@ -148,13 +156,15 @@ const DeleteDialog = ({ ctx }: Props) => {
 			<div className="modal-dialog">
 				<div className="modal-content">
 					<div className="modal-header">
-						<h5 className="modal-title">Delete project?</h5>
+						<h5 className="modal-title">{t("projects.deleteTitle")}</h5>
 					</div>
 					<div className="modal-body">
 						<p>
-							Do you really want to delete project{" "}
-							<strong>{ctx.deletable.name}</strong>? Note that this cannot be
-							undone.
+							<Trans
+								i18nKey="projects.deleteConfirm"
+								values={{ name: ctx.deletable.name }}
+								components={{ 1: <strong /> }}
+							/>
 						</p>
 					</div>
 					<div className="modal-footer">
@@ -162,13 +172,13 @@ const DeleteDialog = ({ ctx }: Props) => {
 							type="button"
 							className="btn btn-secondary"
 							onClick={() => ctx.onDelete(false)}>
-							Cancel
+							{t("common.cancel")}
 						</button>
 						<button
 							type="button"
 							className="btn btn-danger"
 							onClick={() => ctx.onDelete(true)}>
-							Delete
+							{t("common.delete")}
 						</button>
 					</div>
 				</div>

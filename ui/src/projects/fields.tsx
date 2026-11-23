@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export const StringField = ({
 	label,
@@ -35,7 +36,9 @@ export const NumberField = ({
 	disabled?: boolean;
 	readOnly?: boolean;
 	onChange?: (value: string) => void;
-}) => (
+}) => {
+	const { t } = useTranslation();
+	return (
 	<div className="row mb-1">
 		<label className="col-sm-5 col-form-label">{label}</label>
 		<div className="col-sm-7">
@@ -44,7 +47,7 @@ export const NumberField = ({
 				step={step || "1"}
 				className="form-control"
 				value={disabled ? "" : value}
-				placeholder={disabled ? " - heating disabled - " : ""}
+				placeholder={disabled ? t("building.heatingDisabled") : ""}
 				disabled={disabled || false}
 				readOnly={readOnly}
 				onChange={e => {
@@ -55,7 +58,8 @@ export const NumberField = ({
 			/>
 		</div>
 	</div>
-);
+	);
+};
 
 export const CheckboxField = ({
 	label,

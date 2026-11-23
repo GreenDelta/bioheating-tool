@@ -100,7 +100,7 @@ function main() {
 							loader: async () => {
 								const res = await api.getProjects();
 								return res.isErr
-									? errors.redirect("Failed to load projects", res)
+									? errors.redirect("loadErrors.projects", res)
 									: res.value;
 							},
 						},
@@ -124,7 +124,7 @@ function main() {
 							loader: async () => {
 								const res = await api.getCurrentUser();
 								return res.isErr
-									? errors.redirect("Failed to load user", res)
+									? errors.redirect("loadErrors.user", res)
 									: res.value;
 							},
 						},
@@ -134,7 +134,7 @@ function main() {
 							loader: async () => {
 								const res = await api.getUsers();
 								return res.isErr
-									? errors.redirect("Failed to load users", res)
+									? errors.redirect("loadErrors.users", res)
 									: res.value;
 							},
 						},
@@ -149,7 +149,7 @@ function main() {
 								const id = parseInt(params.id!);
 								const res = await api.getUser(id);
 								return res.isErr
-									? errors.redirect("Failed to load user", res)
+									? errors.redirect("loadErrors.user", res)
 									: res.value;
 							},
 						},
@@ -171,7 +171,7 @@ async function loadProjectData({ params }: LoaderFunctionArgs) {
 	const projectId = parseInt(params.id || "0", 10);
 	const projectRes = await api.getProject(projectId);
 	if (projectRes.isErr) {
-		return errors.redirect("Failed to load project", projectRes);
+		return errors.redirect("loadErrors.project", projectRes);
 	}
 	return { project: projectRes.value };
 }
@@ -180,7 +180,7 @@ async function loadSolution({ params }: LoaderFunctionArgs) {
 	const solutionId = parseInt(params.solutionId || "0", 10);
 	const solutionRes = await api.getSolution(solutionId);
 	return solutionRes.isErr
-		? errors.redirect("Failed to load solution", solutionRes)
+		? errors.redirect("loadErrors.solution", solutionRes)
 		: solutionRes.value;
 }
 

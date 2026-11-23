@@ -13,6 +13,7 @@ import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
 import com.greendelta.bioheating.services.UserService;
 import org.springframework.http.ResponseEntity;
+import com.greendelta.bioheating.services.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,7 +71,7 @@ public class ProjectController {
 		return withProject(auth, id, project -> {
 			var res = ClientProject.of(db, project);
 			return res.isError()
-				? Http.serverError("failed to convert project: " + res.error())
+				? Http.serverError(ErrorCode.PROJECT_LOAD_FAILED, res.error())
 				: Http.ok(res.value());
 		});
 	}
@@ -91,11 +92,10 @@ public class ProjectController {
 		// upload geo-data
 		var geoFiles = files.saveUploads(uploads);
 		if (geoFiles.isError()) {
-			return Http.badRequest(
-				"Failed to save uploaded files: " + geoFiles.error());
+			return Http.badRequest(ErrorCode.UPLOAD_FAILED, geoFiles.error());
 		}
 		if (geoFiles.value().isEmpty()) {
-			return Http.badRequest(	"No valid files provided");
+			return Http.badRequest(ErrorCode.NO_VALID_FILES);
 		}
 
 		// create the project and start the import task
@@ -103,7 +103,7 @@ public class ProjectController {
 			.name(name)
 			.description(description)
 			.user(user);
-		var task = NewTask.of(user, () ->
+		var task = NewTask.of(user, ErrorCode.PROJECT_IMPORT_FAILED, () ->
 			files.useFiles(geoFiles.value(),
 				gmlFiles -> new ProjectCreator(db, project, gmlFiles).call())
 		);
@@ -119,7 +119,7 @@ public class ProjectController {
 		return withProject(auth, id, project -> {
 			var err = projects.delete(project);
 			return err.isError()
-				? Http.badRequest("failed to delete project: " + err.error())
+				? Http.badRequest(ErrorCode.PROJECT_DELETE_FAILED, err.error())
 				: Http.ok("project deleted successfully");
 		});
 	}
@@ -134,7 +134,7 @@ public class ProjectController {
 			data.writeUpdatesTo(project);
 			var res = projects.updateProject(project);
 			return res.isError()
-				? Http.serverError("failed to save project: " + res.error())
+				? Http.serverError(ErrorCode.PROJECT_SAVE_FAILED, res.error())
 				: Http.ok(ProjectInfo.of(project));
 		});
 	}
@@ -147,28 +147,28 @@ public class ProjectController {
 	) {
 		return withProject(auth, id, project -> {
 			if (data == null || !data.isBuilding()) {
-				return Http.badRequest("building data missing or invalid");
+				return Http.badRequest(ErrorCode.INVALID_BUILDING_DATA);
 			}
 			if (project.climateRegion() == null) {
-				return Http.badRequest("project does not have a climate region");
+				return Http.badRequest(ErrorCode.NO_CLIMATE_REGION);
 			}
 
 			var building = new Building();
 			data.applyOn(building);
 			if (!building.isHeated()) {
-				return Http.badRequest("building is not heated");
+				return Http.badRequest(ErrorCode.BUILDING_NOT_HEATED);
 			}
 
 			var estimator = BuildingEstimator.getDefault();
 			if (estimator.isError()) {
 				return Http.serverError(
-					"failed to load heat demand estimator: " + estimator.error()
+					ErrorCode.ESTIMATOR_UNAVAILABLE, estimator.error()
 				);
 			}
 
 			var result = estimator.value().estimate(project.climateRegion(), building);
 			return result.isError()
-				? Http.serverError("failed to estimate building: " + result.error())
+				? Http.serverError(ErrorCode.ESTIMATION_FAILED, result.error())
 				: Http.ok(result.value());
 		});
 	}
@@ -182,7 +182,7 @@ public class ProjectController {
 		if (user == null) return Http.unauthorized();
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
-			? Http.notFound("project not found: " + id)
+			? Http.notFound(ErrorCode.PROJECT_NOT_FOUND, "project not found: " + id)
 			: fn.apply(project);
 	}
 

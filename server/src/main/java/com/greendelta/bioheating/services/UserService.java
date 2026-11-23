@@ -3,11 +3,11 @@ package com.greendelta.bioheating.services;
 import com.greendelta.bioheating.model.Database;
 import com.greendelta.bioheating.model.Project;
 import com.greendelta.bioheating.model.User;
+import com.greendelta.bioheating.services.ErrorCode.Coded;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Optional;
-import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -50,14 +50,16 @@ public class UserService {
 		return Optional.empty();
 	}
 
-	public Res<UserInfo> create(UserData data) {
+	public Coded<UserInfo> create(UserData data) {
 		return data == null
-			? Res.error("No user data provided")
+			? ErrorCode.INVALID_USER_DATA.fail("No user data provided")
 			: apply(new User(), data);
 	}
 
-	public Res<UserInfo> update(User user, UserData data) {
-		if (user == null || data == null) return Res.error("No user data provided");
+	public Coded<UserInfo> update(User user, UserData data) {
+		if (user == null || data == null) return ErrorCode.INVALID_USER_DATA.fail(
+			"No user data provided"
+		);
 
 		// check that we always have an admin
 		if (user.isAdmin() && !data.isAdmin()) {
@@ -69,7 +71,7 @@ public class UserService {
 				}
 			}
 			if (!otherAdmin) {
-				return Res.error("At least one admin must exist");
+				return ErrorCode.LAST_ADMIN.fail("At least one admin must exist");
 			}
 		}
 
@@ -78,20 +80,21 @@ public class UserService {
 
 	/// Sets the preferred UI language of the given user. A `null` or blank
 	/// language resets it so that the UI uses the browser language again.
-	public Res<UserInfo> setLanguage(User user, String language) {
-		if (user == null) return Res.error("No user provided");
+	public Coded<UserInfo> setLanguage(User user, String language) {
+		if (user == null) return ErrorCode.USER_NOT_FOUND.fail("No user provided");
 		var lang = Strings.isBlank(language) ? null : language.strip();
-		if (lang != null && !LANGUAGES.contains(lang)) return Res.error(
-			"Unsupported language: " + lang
-		);
+		if (lang != null && !LANGUAGES.contains(lang)) return ErrorCode
+			.UNSUPPORTED_LANGUAGE.fail("Unsupported language: " + lang);
 		user.language(lang);
 		var updated = db.update(user);
-		return Res.ok(UserInfo.of(updated));
+		return Coded.ok(UserInfo.of(updated));
 	}
 
-	public Res<Void> delete(User user) {
-		if (user == null) return Res.error("No user provided");
-		if (user.isAdmin()) return Res.error("Admins cannot be deleted");
+	public Coded<Void> delete(User user) {
+		if (user == null) return ErrorCode.USER_NOT_FOUND.fail("No user provided");
+		if (user.isAdmin()) return ErrorCode.ADMIN_NOT_DELETABLE.fail(
+			"Admins cannot be deleted"
+		);
 		// delete all projects of that user
 		for (var p : db.getAll(Project.class)) {
 			if (user.equals(p.user())) {
@@ -99,20 +102,21 @@ public class UserService {
 			}
 		}
 		db.delete(user);
-		return Res.ok();
+		return Coded.ok(null);
 	}
 
-	private Res<UserInfo> apply(User user, UserData data) {
+	private Coded<UserInfo> apply(User user, UserData data) {
 		var err = data.validate();
-		if (err != null) return Res.error("Invalid user data: " + err);
+		if (err != null) return ErrorCode.INVALID_USER_DATA.fail(err);
 
 		var other = getForName(data.name).orElse(null);
-		if (other != null && !user.equals(other)) return Res.error(
-			"Another user with this name exists"
-		);
+		if (other != null && !user.equals(other)) return ErrorCode
+			.USER_NAME_EXISTS.fail("Another user with this name exists");
 
 		var hash = User.hashPassword(data.password.strip());
-		if (hash.isError()) return Res.error("Failed to process password");
+		if (hash.isError()) return ErrorCode.INVALID_USER_DATA.fail(
+			"Failed to process password"
+		);
 
 		user
 			.name(data.name.strip())
@@ -122,11 +126,11 @@ public class UserService {
 
 		if (user.id() == 0) {
 			db.insert(user);
-			return Res.ok(UserInfo.of(user));
+			return Coded.ok(UserInfo.of(user));
 		}
 
 		var updated = db.update(user);
-		return Res.ok(UserInfo.of(updated));
+		return Coded.ok(UserInfo.of(updated));
 	}
 
 	public record UserInfo(

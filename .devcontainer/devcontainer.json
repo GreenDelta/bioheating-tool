@@ -8,6 +8,9 @@
 			"installMaven": "true",
 			"installGradle": "false"
 		},
-		"ghcr.io/devcontainers/features/python:1.8.1": {}
+		"ghcr.io/devcontainers/features/python:1.8.1": {},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "22"
+		}
 	}
 }

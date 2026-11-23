@@ -23,6 +23,7 @@ import org.openlca.commons.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import com.greendelta.bioheating.services.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,7 +74,9 @@ public class SolutionController {
 			var image = solution.image();
 			if (
 				image == null || image.length == 0
-			) return Http.notFound("solution image not found: " + id);
+			) return Http.notFound(
+				ErrorCode.SOLUTION_IMAGE_NOT_FOUND, "solution image not found: " + id
+			);
 			return ResponseEntity.ok()
 				.contentType(MediaType.IMAGE_PNG)
 				.header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
@@ -88,11 +91,15 @@ public class SolutionController {
 	) {
 		return withSolution(auth, id, solution -> {
 			var treeRes = NetworkTree.of(solution);
-			if (treeRes.isError()) return Http.serverError(treeRes.error());
+			if (treeRes.isError()) return Http.serverError(
+				ErrorCode.EXPORT_FAILED, treeRes.error()
+			);
 
 			var config = PipeConfig.forPlastic().get();
 			var xls = PipePlanXls.create(config, treeRes.value());
-			if (xls.isError()) return Http.serverError(xls.error());
+			if (xls.isError()) return Http.serverError(
+				ErrorCode.EXPORT_FAILED, xls.error()
+			);
 
 			var fileName = "pipe-plan-" + solution.id() + ".xlsx";
 			return ResponseEntity.ok()
@@ -127,7 +134,9 @@ public class SolutionController {
 					return Res.error("Failed to read exported Sophena package", e);
 				}
 			});
-			if (bytes.isError()) return Http.serverError(bytes.error());
+			if (bytes.isError()) return Http.serverError(
+				ErrorCode.EXPORT_FAILED, bytes.error()
+			);
 
 			var project = solution.project();
 			var name =
@@ -153,7 +162,7 @@ public class SolutionController {
 			var user = users.getCurrentUser(auth).orElse(null);
 			if (user == null) return Http.unauthorized();
 
-			var task = NewTask.of(user, () -> {
+			var task = NewTask.of(user, ErrorCode.CALCULATION_FAILED, () -> {
 				var graph = Graph.buildFrom(project);
 				if (graph.isError()) return graph.wrapError(
 					"failed to create project graph"
@@ -180,7 +189,7 @@ public class SolutionController {
 		if (user == null) return Http.unauthorized();
 		var project = projects.getProject(user, id).orElse(null);
 		return project == null
-			? Http.notFound("project not found: " + id)
+			? Http.notFound(ErrorCode.PROJECT_NOT_FOUND, "project not found: " + id)
 			: fn.apply(project);
 	}
 
@@ -192,10 +201,12 @@ public class SolutionController {
 		var user = users.getCurrentUser(auth).orElse(null);
 		if (user == null) return Http.unauthorized();
 		var solution = db.getForId(Solution.class, id);
-		if (solution == null) return Http.notFound("solution not found: " + id);
+		if (solution == null) return Http.notFound(
+			ErrorCode.SOLUTION_NOT_FOUND, "solution not found: " + id
+		);
 		var project = solution.project();
 		return project == null || !user.equals(project.user())
-			? Http.forbidden("access denied")
+			? Http.forbidden(ErrorCode.ACCESS_DENIED)
 			: fn.apply(solution);
 	}
 }

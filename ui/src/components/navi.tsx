@@ -69,7 +69,7 @@ export const BreadcrumbRow = ({ active, path }: BreadcrumbProps) => {
 	const links = !path
 		? null
 		: path.map(([seg, label]) => (
-			<li className="breadcrumb-item">
+			<li className="breadcrumb-item" key={seg}>
 				<Link to={seg}>{label}</Link>
 			</li>
 		));

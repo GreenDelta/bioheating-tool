@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { errorText, formatNumber } from "../i18n";
 import * as api from "../api";
 import { BreadcrumbRow } from "../components/navi";
 import { TaskPanel } from "../components/tasks";
@@ -26,12 +28,13 @@ type Props = { ctx: FormContext };
 
 function useFormContext(): FormContext {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const [isLoading, setLoading] = useState(false);
 	const [isComplete, setComplete] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [taskId, setTaskId] = useState<string | null>(null);
 	const [data, setData] = useState<FormData>({
-		name: "New project",
+		name: t("projectForm.defaultName"),
 		files: [],
 	});
 
@@ -60,7 +63,7 @@ function useFormContext(): FormContext {
 		setLoading(false);
 
 		if (res.isErr) {
-			setError("Failed to create project: " + res.error);
+			setError(errorText(res.error));
 		} else {
 			setTaskId(res.value.id);
 		}
@@ -92,6 +95,7 @@ function useFormContext(): FormContext {
 }
 
 export const ProjectForm = () => {
+	const { t } = useTranslation();
 	const ctx = useFormContext();
 	if (ctx.taskId) {
 		return <CreationTaskPanel ctx={ctx} />;
@@ -102,17 +106,17 @@ export const ProjectForm = () => {
 			<div className="row justify-content-center">
 				<div className="col-12 col-md-10 col-lg-8">
 					<BreadcrumbRow
-						active="New"
+						active={t("common.new")}
 						path={[
-							["/", "Home"],
-							["/ui/projects", "Projects"],
+							["/", t("common.home")],
+							["/ui/projects", t("projects.title")],
 						]}
 					/>
 
 					<ErrorRow ctx={ctx} />
 
 					<div className="mb-3">
-						<label className="form-label">Name</label>
+						<label className="form-label">{t("common.name")}</label>
 						<input
 							type="text"
 							className="form-control"
@@ -122,7 +126,7 @@ export const ProjectForm = () => {
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Description</label>
+						<label className="form-label">{t("common.description")}</label>
 						<textarea
 							className="form-control"
 							value={ctx.data.description || ""}
@@ -132,7 +136,7 @@ export const ProjectForm = () => {
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">CityGML, Excel, or ZIP files</label>
+						<label className="form-label">{t("projectForm.files")}</label>
 						<input
 							type="file"
 							className="form-control"
@@ -143,18 +147,17 @@ export const ProjectForm = () => {
 								ctx.update({ files });
 							}}
 						/>
-						<div className="form-text">
-							Upload one or more CityGML or Excel files directly, or ZIP archives that
-							contain any mix of those files.
-						</div>
+						<div className="form-text">{t("projectForm.filesHint")}</div>
 						{ctx.data.files && ctx.data.files.length > 0 && (
 							<div className="form-text">
-								{ctx.data.files.length} file(s) selected (
-								{(
-									ctx.data.files.reduce((sum, f) => sum + f.size, 0) /
-									1024 ** 2
-								).toFixed(1)}{" "}
-								MB)
+								{t("projectForm.filesSelected", {
+									count: ctx.data.files.length,
+									size: formatNumber(
+										ctx.data.files.reduce((sum, f) => sum + f.size, 0) /
+										1024 ** 2,
+										{ minimumFractionDigits: 1, maximumFractionDigits: 1 },
+									),
+								})}
 								<ul className="mt-1 mb-0 ps-3">
 									{ctx.data.files.map((f, i) => (
 										<li key={i}>{f.name}</li>
@@ -170,14 +173,14 @@ export const ProjectForm = () => {
 							disabled={ctx.isLoading}
 							onClick={ctx.onCancel}
 							style={{ width: "120px" }}>
-							Cancel
+							{t("common.cancel")}
 						</button>
 						<button
 							className="btn btn-outline-primary"
 							disabled={ctx.isLoading || !ctx.isComplete}
 							onClick={ctx.onOk}
 							style={{ width: "120px" }}>
-							OK
+							{t("common.ok")}
 						</button>
 					</div>
 				</div>
@@ -198,23 +201,24 @@ const ErrorRow = ({ ctx }: Props) => {
 };
 
 const CreationTaskPanel = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	return (
 		<div className="container-fluid">
 			<div className="row justify-content-center">
 				<div className="col-12 col-md-10 col-lg-8">
 					<BreadcrumbRow
-						active="Creating..."
+						active={t("projectForm.creating")}
 						path={[
-							["/", "Home"],
-							["/ui/projects", "Projects"],
-							["/ui/projects/new", "New"],
+							["/", t("common.home")],
+							["/ui/projects", t("projects.title")],
+							["/ui/projects/new", t("common.new")],
 						]}
 					/>
 
 					<div className="mt-4">
 						<TaskPanel
 							taskId={ctx.taskId!}
-							message={`Creating project "${ctx.data.name}" and processing uploaded files...`}
+							message={t("projectForm.creatingMessage", { name: ctx.data.name })}
 							getTargetUrl={ctx.getTaskTargetUrl}
 						/>
 					</div>

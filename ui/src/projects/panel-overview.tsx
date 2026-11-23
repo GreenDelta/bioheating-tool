@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { formatNumber } from "../i18n";
 import { Project, isBuilding } from "../model";
 import { BuildingData } from "./panel-data";
 
@@ -26,26 +28,28 @@ function keyFiguresOf(project: Project) {
 }
 
 export const OverviewPanel = ({ project, onChange }: Props) => {
+	const { t } = useTranslation();
 	const { buildingCount, totalDemand } = keyFiguresOf(project);
 
 	const formatHeatDemand = (value: number): string => {
+		const fmt = (v: number) => formatNumber(v, { maximumFractionDigits: 0 });
 		if (value >= 1000000) {
-			return `${(value / 1000000).toFixed()} GWh`;
+			return `${fmt(value / 1000000)} GWh`;
 		} else if (value >= 1000) {
-			return `${(value / 1000).toFixed()} MWh`;
+			return `${fmt(value / 1000)} MWh`;
 		}
-		return `${value.toFixed()} kWh`;
+		return `${fmt(value)} kWh`;
 	};
 
 	return (
 		<div className="card">
 			<div className="card-header">
-				<h5 className="card-title mb-0">Project overview</h5>
+				<h5 className="card-title mb-0">{t("overview.title")}</h5>
 			</div>
 			<div className="card-body">
 				<div className="d-flex flex-column gap-3">
 					<div className="col-12">
-						<label className="form-label fw-bold">Project name</label>
+						<label className="form-label fw-bold">{t("overview.projectName")}</label>
 						<input
 							type="text"
 							className="form-control"
@@ -55,7 +59,7 @@ export const OverviewPanel = ({ project, onChange }: Props) => {
 					</div>
 
 					<div className="col-12">
-						<label className="form-label fw-bold">Description</label>
+						<label className="form-label fw-bold">{t("common.description")}</label>
 						<textarea
 							className="form-control"
 							value={project.description || ""}
@@ -65,23 +69,23 @@ export const OverviewPanel = ({ project, onChange }: Props) => {
 					</div>
 
 					<div className="col-12">
-						<label className="form-label fw-bold">Climate region</label>
+						<label className="form-label fw-bold">{t("overview.climateRegion")}</label>
 						<p className="form-control-plaintext mb-0">
 							{project.climateRegion
 								? `${project.climateRegion.name}`
-								: "No climate region assigned"}
+								: t("overview.noClimateRegion")}
 						</p>
 					</div>
 
 				{project.solutionId && (
 						<div className="col-12">
-							<label className="form-label fw-bold">Solution</label>
+							<label className="form-label fw-bold">{t("overview.solution")}</label>
 							<p className="form-control-plaintext">
 								<Link
 									to={`/ui/solutions/${project.solutionId}`}
 									className="text-decoration-none"
 								>
-									Last calculated solution
+									{t("overview.lastSolution")}
 								</Link>
 							</p>
 						</div>
@@ -92,32 +96,29 @@ export const OverviewPanel = ({ project, onChange }: Props) => {
 					</div>
 
 					<div className="col-6">
-						<label className="form-label fw-bold">Buildings</label>
+						<label className="form-label fw-bold">{t("overview.buildings")}</label>
 						<p className="form-control-plaintext">
 							<span className="fs-4 text-primary">{buildingCount}</span>
 							<br />
-							<small className="text-muted">included buildings</small>
+							<small className="text-muted">{t("overview.includedBuildings")}</small>
 						</p>
 					</div>
 
 					<div className="col-6">
-						<label className="form-label fw-bold">Total heat demand</label>
+						<label className="form-label fw-bold">{t("overview.totalHeatDemand")}</label>
 						<p className="form-control-plaintext">
 							<span className="fs-4 text-success">
 								{formatHeatDemand(totalDemand)}
 							</span>
 							<br />
-							<small className="text-muted">annual demand</small>
+							<small className="text-muted">{t("overview.annualDemand")}</small>
 						</p>
 					</div>
 
 					{buildingCount === 0 && (
 						<div className="col-12">
 							<div className="alert alert-info mb-0">
-								<small>
-									Select buildings or streets on the map to view and edit their
-									properties.
-								</small>
+								<small>{t("overview.selectHint")}</small>
 							</div>
 						</div>
 					)}

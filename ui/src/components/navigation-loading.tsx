@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const barCss = `
 @keyframes bh-loading-stripes {
@@ -22,6 +23,7 @@ const barCss = `
 /// project with its map) does not appear to hang without any feedback.
 export const NavigationLoading = () => {
 	const navigation = useNavigation();
+	const { t } = useTranslation();
 	if (navigation.state !== "loading") {
 		return null;
 	}
@@ -31,7 +33,7 @@ export const NavigationLoading = () => {
 			<div
 				className="bh-navigation-bar"
 				role="progressbar"
-				aria-label="Loading"
+				aria-label={t("common.loading")}
 				style={{
 					position: "fixed",
 					top: 0,

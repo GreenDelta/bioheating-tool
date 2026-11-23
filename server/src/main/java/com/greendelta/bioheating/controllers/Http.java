@@ -1,34 +1,57 @@
 package com.greendelta.bioheating.controllers;
 
+import com.greendelta.bioheating.services.ErrorCode;
+import com.greendelta.bioheating.services.ErrorCode.ApiError;
+import com.greendelta.bioheating.services.ErrorCode.Coded;
 import com.greendelta.bioheating.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
+/// Helper methods for creating HTTP responses. Error responses always carry
+/// an `ApiError` with an error code that is translated in the client.
 final class Http {
 
 	private Http() {}
 
-	static ResponseEntity<?> badRequest(String message) {
-		return ResponseEntity.badRequest().body(message);
+	static ResponseEntity<?> error(
+		HttpStatus status,
+		ErrorCode code,
+		String details
+	) {
+		return ResponseEntity.status(status).body(new ApiError(code, details));
+	}
+
+	static ResponseEntity<?> badRequest(ErrorCode code, String details) {
+		return error(HttpStatus.BAD_REQUEST, code, details);
+	}
+
+	static ResponseEntity<?> badRequest(ErrorCode code) {
+		return badRequest(code, null);
+	}
+
+	static ResponseEntity<?> badRequest(Coded<?> res) {
+		return ResponseEntity.badRequest().body(res.apiError());
 	}
 
 	static ResponseEntity<?> unauthorized() {
-		return ResponseEntity
-			.status(HttpStatus.UNAUTHORIZED)
-			.body("Not authenticated");
+		return error(
+			HttpStatus.UNAUTHORIZED,
+			ErrorCode.NOT_AUTHENTICATED,
+			"Not authenticated"
+		);
 	}
 
-	static ResponseEntity<?> serverError(String message) {
-		return ResponseEntity.internalServerError().body(message);
+	static ResponseEntity<?> serverError(ErrorCode code, String details) {
+		return error(HttpStatus.INTERNAL_SERVER_ERROR, code, details);
 	}
 
-	static ResponseEntity<?> notFound(String message) {
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+	static ResponseEntity<?> notFound(ErrorCode code, String details) {
+		return error(HttpStatus.NOT_FOUND, code, details);
 	}
 
-	static ResponseEntity<?> forbidden(String message) {
-		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(message);
+	static ResponseEntity<?> forbidden(ErrorCode code) {
+		return error(HttpStatus.FORBIDDEN, code, null);
 	}
 
 	static <T> ResponseEntity<T> ok(T entity) {

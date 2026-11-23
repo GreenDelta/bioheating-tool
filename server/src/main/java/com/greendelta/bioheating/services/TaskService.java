@@ -38,7 +38,10 @@ public class TaskService {
 	public void schedule(NewTask<?> task) {
 		if (task == null || Strings.isBlank(task.id)) return;
 		if (task.func == null) {
-			store.put(task.id, task.toError("No function provided"));
+			store.put(
+				task.id,
+				task.toError(ErrorCode.TASK_FAILED, "No function provided")
+			);
 			return;
 		}
 		store.put(task.id, task);
@@ -49,14 +52,17 @@ public class TaskService {
 		try {
 			var res = task.func.get();
 			if (res.isError()) {
-				store.put(task.id, task.toError(res.error()));
+				store.put(task.id, task.toError(task.errorCode, res.error()));
 			} else {
 				store.put(task.id, task.toResult(res.value()));
 			}
 		} catch (Exception e) {
 			store.put(
 				task.id,
-				task.toError("failed to execute task: " + e.getMessage())
+				task.toError(
+					task.errorCode,
+					"failed to execute task: " + e.getMessage()
+				)
 			);
 		}
 	}
@@ -92,9 +98,13 @@ public class TaskService {
 		return true;
 	}
 
+	/// The state of a task as returned to the client. In case of an error,
+	/// `errorCode` is the code that is translated in the client and `error`
+	/// contains technical details.
 	public record TaskState(
 		String id,
 		Status status,
+		ErrorCode errorCode,
 		String error,
 		Object result
 	) {}
@@ -118,11 +128,13 @@ public class TaskService {
 					id(),
 					Status.RUNNING,
 					null,
+					null,
 					null
 				);
 				case Error error -> new TaskState(
 					id(),
 					Status.ERROR,
+					error.code(),
 					error.message(),
 					null
 				);
@@ -130,29 +142,43 @@ public class TaskService {
 					id(),
 					Status.READY,
 					null,
+					null,
 					result.value()
 				);
 			};
 		}
 
-		default Error toError(String message) {
-			return new Error(id(), System.currentTimeMillis(), userId(), message);
+		default Error toError(ErrorCode code, String message) {
+			return new Error(
+				id(),
+				System.currentTimeMillis(),
+				userId(),
+				code != null ? code : ErrorCode.TASK_FAILED,
+				message
+			);
 		}
 
 		default <T> Result<T> toResult(T value) {
 			return new Result<>(id(), System.currentTimeMillis(), userId(), value);
 		}
 
+		/// A new task. `errorCode` is the code that is reported to the client
+		/// when the task fails.
 		record NewTask<T>(
 			String id,
 			long time,
 			long userId,
+			ErrorCode errorCode,
 			Supplier<Res<T>> func
 		) implements Task {
-			public static <T> NewTask<T> of(User user, Supplier<Res<T>> func) {
+			public static <T> NewTask<T> of(
+				User user,
+				ErrorCode errorCode,
+				Supplier<Res<T>> func
+			) {
 				var id = UUID.randomUUID().toString();
 				long time = System.currentTimeMillis();
-				return new NewTask<>(id, time, user.id(), func);
+				return new NewTask<>(id, time, user.id(), errorCode, func);
 			}
 		}
 
@@ -160,6 +186,7 @@ public class TaskService {
 			String id,
 			long time,
 			long userId,
+			ErrorCode code,
 			String message
 		) implements Task {}
 

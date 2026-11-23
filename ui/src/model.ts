@@ -177,18 +177,12 @@ export function roofTypeFromString(value: string): RoofType {
 	}
 }
 
-export function roofTypeToString(roofType: RoofType): string {
-	switch (roofType) {
-		case RoofType.FLAT:
-			return "Flat";
-		case RoofType.PITCHED:
-		default:
-			return "Pitched";
-	}
-}
 export interface TaskState {
 	id: string;
 	status: TaskStatus;
+	/** The error code if the task failed; translate it with `errorText`. */
+	errorCode?: string;
+	/** Technical details of the error, if any. */
 	error?: string;
 	result?: any;
 }

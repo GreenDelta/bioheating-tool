@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { useLoaderData, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Solution, round } from "../model";
+import { errorText, formatDateTime, formatNumber } from "../i18n";
 import { DownloadIcon } from "../components/icons";
 import { BreadcrumbRow } from "../components/navi";
 import * as api from "../api";
 
 
 export function SolutionView() {
+	const { t } = useTranslation();
 	const solution: Solution = useLoaderData();
 	const [error, setError] = useState<string | null>(null);
 	const [isDownloading, setDownloading] = useState(false);
@@ -18,7 +21,7 @@ export function SolutionView() {
 		setError(null);
 		const res = await api.getSophenaPackage(solution.id);
 		if (!res.isOk) {
-			setError(res.error);
+			setError(errorText(res.error));
 		}
 		setDownloading(false);
 	};
@@ -29,7 +32,7 @@ export function SolutionView() {
 		setError(null);
 		const res = await api.getSolutionXls(solution.id);
 		if (!res.isOk) {
-			setError(res.error);
+			setError(errorText(res.error));
 		}
 		setDownloadingXls(false);
 	};
@@ -38,9 +41,9 @@ export function SolutionView() {
 		<div>
 			<div className="d-flex justify-content-between align-items-center mb-3">
 				<BreadcrumbRow
-					active={`Solution`}
+					active={t("solution.title")}
 					path={[
-						["/ui/projects", "Projects"],
+						["/ui/projects", t("projects.title")],
 						[`/ui/projects/${solution.projectId}`, solution.name]
 					]}
 				/>
@@ -49,31 +52,31 @@ export function SolutionView() {
 						className="btn btn-outline-secondary"
 						onClick={handleDownloadXls}
 						disabled={isDownloadingXls}
-						title="Download pipe plan as Excel file"
+						title={t("solution.excelTitle")}
 						style={{ width: "140px" }}>
 						<DownloadIcon />
-						{isDownloadingXls ? " Downloading..." : " Excel"}
+						{isDownloadingXls ? ` ${t("common.downloading")}` : " Excel"}
 					</button>
 					<button
 						className="btn btn-outline-secondary"
 						onClick={handleDownload}
 						disabled={isDownloading}
-						title="Download Sophena package"
+						title={t("solution.sophenaTitle")}
 						style={{ width: "140px" }}>
 						<DownloadIcon />
-						{isDownloading ? " Downloading..." : " Sophena"}
+						{isDownloading ? ` ${t("common.downloading")}` : " Sophena"}
 					</button>
 				</div>
 			</div>
 
 			{error && (
 				<div className="alert alert-danger alert-dismissible fade show" role="alert">
-					<strong>An error occurred:</strong> {error}
+					<strong>{t("common.errorOccurred")}</strong> {error}
 					<button
 						type="button"
 						className="btn-close"
 						onClick={() => setError(null)}
-						aria-label="Close"></button>
+						aria-label={t("common.close")}></button>
 				</div>
 			)}
 
@@ -92,41 +95,43 @@ export function SolutionView() {
 }
 
 const ImagePanel = ({ solution }: { solution: Solution }) => {
+	const { t } = useTranslation();
+	const [hasImage, setHasImage] = useState(true);
 	return (
 		<div className="card h-100">
 			<div className="card-header">
-				<h5 className="card-title mb-0">Network solution</h5>
+				<h5 className="card-title mb-0">{t("solution.network")}</h5>
 			</div>
 			<div className="card-body d-flex align-items-center justify-content-center">
-				<img
-					src={api.getSolutionImageUrl(solution.id)}
-					alt={`Solution visualization for ${solution.name}`}
-					className="img-fluid border rounded"
-					style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain" }}
-					onError={(e) => {
-						const target = e.target as HTMLImageElement;
-						target.style.display = "none";
-						const parent = target.parentElement;
-						if (parent) {
-							parent.innerHTML = '<div class="text-muted p-4 text-center border rounded">No image available</div>';
-						}
-					}}
-				/>
+				{hasImage ? (
+					<img
+						src={api.getSolutionImageUrl(solution.id)}
+						alt={t("solution.imageAlt", { name: solution.name })}
+						className="img-fluid border rounded"
+						style={{ maxWidth: "100%", maxHeight: "70vh", objectFit: "contain" }}
+						onError={() => setHasImage(false)}
+					/>
+				) : (
+					<div className="text-muted p-4 text-center border rounded">
+						{t("solution.noImage")}
+					</div>
+				)}
 			</div>
 		</div>
 	);
 };
 
 const DetailsPanel = ({ solution }: { solution: Solution }) => {
+	const { t } = useTranslation();
 	return (
 		<div className="card">
 			<div className="card-header">
-				<h5 className="card-title mb-0">Details</h5>
+				<h5 className="card-title mb-0">{t("solution.details")}</h5>
 			</div>
 			<div className="card-body">
 				<div className="row g-3">
 					<div className="col-12">
-						<label className="form-label fw-bold">Project</label>
+						<label className="form-label fw-bold">{t("solution.project")}</label>
 						<p className="form-control-plaintext">
 							<Link
 								to={`/ui/projects/${solution.projectId}`}
@@ -138,36 +143,36 @@ const DetailsPanel = ({ solution }: { solution: Solution }) => {
 
 					{solution.calculatedAt && (
 						<div className="col-12">
-							<label className="form-label fw-bold">Calculated at</label>
+							<label className="form-label fw-bold">{t("solution.calculatedAt")}</label>
 							<p className="form-control-plaintext">
-								{new Date(solution.calculatedAt).toLocaleString()}
+								{formatDateTime(solution.calculatedAt)}
 							</p>
 						</div>
 					)}
 
 					{solution.heatDemand != null && (
 						<div className="col-12">
-							<label className="form-label fw-bold">Heat demand</label>
+							<label className="form-label fw-bold">{t("solution.heatDemand")}</label>
 							<p className="form-control-plaintext">
-								{round(solution.heatDemand / 1000, 2).toLocaleString()} MWh
+								{formatNumber(round(solution.heatDemand / 1000, 2))} MWh
 							</p>
 						</div>
 					)}
 
 					{solution.length != null && (
 						<div className="col-12">
-							<label className="form-label fw-bold">Network length</label>
+							<label className="form-label fw-bold">{t("solution.networkLength")}</label>
 							<p className="form-control-plaintext">
-								{round(solution.length, 2).toLocaleString()} m
+								{formatNumber(round(solution.length, 2))} m
 							</p>
 						</div>
 					)}
 
 					{solution.heatDemand != null && solution.length != null && solution.length > 0 && (
 						<div className="col-12">
-							<label className="form-label fw-bold">Linear heat density</label>
+							<label className="form-label fw-bold">{t("solution.linearHeatDensity")}</label>
 							<p className="form-control-plaintext">
-								{round(solution.heatDemand / (1000 * solution.length), 2).toLocaleString()} MWh/(m·a)
+								{formatNumber(round(solution.heatDemand / (1000 * solution.length), 2))} MWh/(m·a)
 							</p>
 						</div>
 					)}

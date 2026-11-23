@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { GeoFeature, isBuilding } from "../model";
+import { errorText } from "../i18n";
 import * as api from "../api";
 import { DownloadIcon } from "../components/icons";
 import { NumberField, CheckboxField } from "./fields";
@@ -26,12 +28,12 @@ export const MultiPanel: React.FC<Props> = ({ projectId, features, onChange }) =
 };
 
 const BuildingSection = ({ projectId, features, onChange }: Props) => {
+	const { t } = useTranslation();
 	const buildings = features.filter(isBuilding);
-	if (!buildings || buildings.length === 0) return <></>;
-
 	const [isIncluded, setIsIncluded] = useState(commonIsIncluded(buildings));
 	const [isExporting, setIsExporting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	if (buildings.length === 0) return <></>;
 	const stats = buildingStatsOf(buildings);
 	const onUpdate = (checked: boolean) => {
 		putIsIncluded(buildings, checked);
@@ -44,7 +46,7 @@ const BuildingSection = ({ projectId, features, onChange }: Props) => {
 		}
 		const ids = buildingIdsOf(buildings);
 		if (ids.length === 0) {
-			setError("No selected buildings can be exported.");
+			setError(t("multi.noExportable"));
 			return;
 		}
 
@@ -52,7 +54,7 @@ const BuildingSection = ({ projectId, features, onChange }: Props) => {
 		setError(null);
 		const res = await api.exportProjectBuildingsXls(projectId, ids);
 		if (!res.isOk) {
-			setError(res.error);
+			setError(errorText(res.error));
 		}
 		setIsExporting(false);
 	};
@@ -60,7 +62,10 @@ const BuildingSection = ({ projectId, features, onChange }: Props) => {
 	return (
 		<div className="mb-3">
 			<h6 className="text-muted">
-				{buildings.length} Buildings, {stats.heatedCount} heated
+				{t("multi.summary", {
+					count: buildings.length,
+					heated: stats.heatedCount,
+				})}
 			</h6>
 			{error && (
 				<div className="alert alert-danger py-2" role="alert">
@@ -68,12 +73,12 @@ const BuildingSection = ({ projectId, features, onChange }: Props) => {
 				</div>
 			)}
 			<NumberField
-				label="Total heat demand [kWh/a]"
+				label={t("multi.totalHeatDemand")}
 				readOnly
 				value={stats.totalDemand}
 			/>
 			<CheckboxField
-				label="Include all in solution"
+				label={t("multi.includeAll")}
 				checked={isIncluded}
 				onChange={onUpdate}
 			/>
@@ -86,7 +91,7 @@ const BuildingSection = ({ projectId, features, onChange }: Props) => {
 						onClick={onExport}
 						disabled={isExporting}>
 						<DownloadIcon />
-						{isExporting ? " Exporting..." : " Export Excel"}
+						{isExporting ? ` ${t("multi.exporting")}` : ` ${t("multi.export")}`}
 					</button>
 				</div>
 			</div>

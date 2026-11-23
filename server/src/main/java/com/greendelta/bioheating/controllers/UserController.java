@@ -1,6 +1,7 @@
 package com.greendelta.bioheating.controllers;
 
 import com.greendelta.bioheating.model.User;
+import com.greendelta.bioheating.services.ErrorCode;
 import com.greendelta.bioheating.services.UserService;
 import com.greendelta.bioheating.services.UserService.UserData;
 import com.greendelta.bioheating.services.UserService.UserInfo;
@@ -42,7 +43,7 @@ public class UserController {
 		if (user == null) return Http.unauthorized();
 		var res = users.setLanguage(user, data != null ? data.language() : null);
 		return res.isError()
-			? Http.badRequest(res.error())
+			? Http.badRequest(res)
 			: Http.ok(res.value());
 	}
 
@@ -60,12 +61,12 @@ public class UserController {
 		Authentication auth,
 		@RequestBody UserData data
 	) {
-		if (Http.isNotAdmin(users, auth)) return Http.badRequest(
-			"only admins can create or update users"
+		if (Http.isNotAdmin(users, auth)) return Http.forbidden(
+			ErrorCode.ADMIN_REQUIRED
 		);
 		var res = users.create(data);
 		return res.isError()
-			? Http.badRequest("invalid user data: " + res.error())
+			? Http.badRequest(res)
 			: Http.ok(res.value());
 	}
 
@@ -79,14 +80,14 @@ public class UserController {
 		if (req.isError()) return req.error();
 		var res = users.update(req.user(), data);
 		return res.isError()
-			? Http.badRequest("invalid user data: " + res.error())
+			? Http.badRequest(res)
 			: Http.ok(res.value());
 	}
 
 	@GetMapping
 	public ResponseEntity<?> getUsers(Authentication auth) {
 		if (Http.isNotAdmin(users, auth)) return Http.forbidden(
-			"Only allowed for admins"
+			ErrorCode.ADMIN_REQUIRED
 		);
 		var infos = users.getUserInfos();
 		return Http.ok(infos);
@@ -99,13 +100,13 @@ public class UserController {
 	) {
 		var current = users.getCurrentUser(auth).orElse(null);
 		if (current == null || !current.isAdmin()) return Http.forbidden(
-			"Only allowed for admins"
+			ErrorCode.ADMIN_REQUIRED
 		);
 		var req = UserRequest.of(this, auth, id);
 		if (req.isError()) return req.error();
 		var res = users.delete(req.user());
 		return res.isError()
-			? Http.badRequest(res.error())
+			? Http.badRequest(res)
 			: Http.ok("User deleted successfully");
 	}
 
@@ -125,12 +126,12 @@ public class UserController {
 			// fine for every user to get its own data;
 			// otherwise only allowed for admins
 			if (id == caller.id()) return ok(caller);
-			if (!caller.isAdmin()) return error(Http.forbidden("Not allowed"));
+			if (!caller.isAdmin()) return error(Http.forbidden(ErrorCode.ACCESS_DENIED));
 
 			var user = self.users.get(id).orElse(null);
 			return user != null
 				? ok(user)
-				: error(Http.notFound("That user does not exist"));
+				: error(Http.notFound(ErrorCode.USER_NOT_FOUND, "user not found: " + id));
 		}
 
 		boolean isError() {

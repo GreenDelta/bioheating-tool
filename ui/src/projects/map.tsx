@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as L from "leaflet";
 import { GeoFeature, GeoMap, isBuilding } from "../model";
 import { DeleteIcon } from "../components/icons";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import "leaflet-draw";
 import "leaflet-lasso";
 
@@ -12,6 +14,7 @@ interface MapProps {
 }
 
 export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
+	const { t } = useTranslation();
 	const divRef = useRef<HTMLDivElement>(null);
 	const isDrawingRef = useRef(false);
 	const isLassoingRef = useRef(false);
@@ -48,8 +51,8 @@ export const Map: React.FC<MapProps> = ({ data, onSelect, onChange }) => {
 				onClick={deleteSelection}
 				title={
 					selectedCount > 0
-						? `Delete ${selectedCount} selected building(s)`
-						: "Select building(s) to delete"
+						? t("map.deleteSelected", { count: selectedCount })
+						: t("map.selectToDelete")
 				}
 				style={{
 					position: "absolute",
@@ -148,7 +151,7 @@ function useLeafletMap(
 			(L.control as any)
 				.lasso({
 					intersect: true,
-					title: "Select multiple features",
+					title: i18n.t("map.lasso"),
 				})
 				.addTo(map);
 		}
@@ -304,6 +307,7 @@ function usePolygonDrawing(
 
 		const drawnItems = new L.FeatureGroup();
 		map.addLayer(drawnItems);
+		applyDrawTranslations();
 
 		const drawControl = new L.Control.Draw({
 			edit: {
@@ -450,4 +454,30 @@ function addTileLayer(map: L.Map) {
 			attribution: "© Esri, Maxar, Earthstar Geographics",
 		},
 	).addTo(map);
+}
+
+/// Sets the texts of the leaflet-draw tools (toolbar buttons and drawing
+/// tooltips) for the current UI language. Only the polygon tool is used.
+function applyDrawTranslations() {
+	const t = i18n.t;
+	const draw = L.drawLocal.draw;
+	draw.toolbar.actions = {
+		title: t("map.draw.cancelTitle"),
+		text: t("map.draw.cancel"),
+	};
+	draw.toolbar.finish = {
+		title: t("map.draw.finishTitle"),
+		text: t("map.draw.finish"),
+	};
+	draw.toolbar.undo = {
+		title: t("map.draw.undoTitle"),
+		text: t("map.draw.undo"),
+	};
+	draw.toolbar.buttons.polygon = t("map.draw.polygon");
+	draw.handlers.polygon.tooltip = {
+		start: t("map.draw.polygonStart"),
+		cont: t("map.draw.polygonCont"),
+		end: t("map.draw.polygonEnd"),
+	};
+	draw.handlers.polyline.error = t("map.draw.crossingError");
 }

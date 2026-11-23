@@ -39,12 +39,30 @@ async function request<T>(
 		if (response.status === 200) {
 			return Res.ok(await decode(response));
 		}
-		const err = await response.text();
-		return Res.err(err || `HTTP ${response.status}`);
+		return await errorOf<T>(response);
 	} catch (error) {
 		const err = error instanceof Error ? error.message : String(error);
 		return Res.err(err);
 	}
+}
+
+/// Converts an error response into a `Res`. The server returns errors as
+/// `{ code, details }` where `code` is translated in the UI (see `errorText`);
+/// other responses are passed through as plain text.
+async function errorOf<T>(response: Response): Promise<Res<T>> {
+	const text = await response.text();
+	try {
+		const body = JSON.parse(text);
+		if (body && typeof body.code === "string") {
+			if (body.details) {
+				console.warn(`server error ${body.code}: ${body.details}`);
+			}
+			return Res.err(body.code, body.details || undefined);
+		}
+	} catch {
+		// not JSON
+	}
+	return Res.err(text || `HTTP ${response.status}`);
 }
 
 function getJson<T>(
@@ -65,14 +83,22 @@ export class Res<T> {
 	private constructor(
 		private readonly _val?: T,
 		private readonly _err?: string,
+		private readonly _details?: string,
 	) {}
 
 	static ok<T>(val: T): Res<T> {
 		return new Res(val, undefined);
 	}
 
-	static err<T>(err: string): Res<T> {
-		return new Res(undefined as T, err);
+	/// Creates an error result. `err` is typically an error code of the server
+	/// (translate it with `errorText`) and `details` an optional technical
+	/// description.
+	static err<T>(err: string, details?: string): Res<T> {
+		return new Res(undefined as T, err, details);
+	}
+
+	get details(): string | undefined {
+		return this._details;
 	}
 
 	get value(): T {
@@ -109,8 +135,7 @@ export async function postLogin(
 		if (response.status === 200) {
 			return Res.ok(true);
 		}
-		const err = await response.text();
-		return Res.err(err || `HTTP ${response.status}`);
+		return await errorOf(response);
 	} catch (error) {
 		const err = error instanceof Error ? error.message : String(error);
 		return Res.err(err);
@@ -123,8 +148,7 @@ export async function getCurrentUser(): Promise<Res<User>> {
 		if (response.status === 200) {
 			return Res.ok(await response.json());
 		}
-		const err = await response.text();
-		return Res.err(err || `HTTP ${response.status}`);
+		return await errorOf(response);
 	} catch (error) {
 		const err = error instanceof Error ? error.message : String(error);
 		return Res.err(err);

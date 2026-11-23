@@ -1,11 +1,14 @@
 import React from "react";
 import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { User } from "../model";
+import errors from "../components/errors";
 import { AddIcon, DeleteIcon, EditIcon } from "../components/icons";
 import * as api from "../api";
 import { FluidBreadcrumbRow } from "../components/navi";
 
 export const UserList = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [currentUser] = useOutletContext<[User]>();
 	const users: User[] = useLoaderData();
@@ -21,11 +24,7 @@ export const UserList = () => {
 		const res = await api.deleteUser(u.id);
 
 		if (res.isErr) {
-			const params = new URLSearchParams({
-				message: "Failed to delete user",
-				details: res.error,
-			});
-			navigate(`/ui/error?${params.toString()}`);
+			errors.navigate(navigate, "loadErrors.deleteUser", res);
 		} else {
 			// Remove user from the local list on successful deletion
 			const idx = users.indexOf(u);
@@ -42,7 +41,10 @@ export const UserList = () => {
 	return (
 		<div>
 			<div className="container-fluid">
-				<FluidBreadcrumbRow active="Users" path={[["/", "Home"]]} />
+				<FluidBreadcrumbRow
+					active={t("users.title")}
+					path={[["/", t("common.home")]]}
+				/>
 				<div className="row justify-content-center">
 					<div className="col-12 col-md-10 col-lg-8">
 						<UserTable
@@ -68,15 +70,16 @@ const UserTable = ({
 	currentUser: User;
 }) => {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 
 	if (!users || users.length === 0) {
 		return (
 			<div className="text-center">
-				<p>No users found.</p>
+				<p>{t("users.noUsers")}</p>
 				<button
 					className="btn btn-primary"
 					onClick={() => navigate("/ui/users/new")}>
-					Create first user
+					{t("users.createFirst")}
 				</button>
 			</div>
 		);
@@ -88,22 +91,22 @@ const UserTable = ({
 			<td>{u.fullName}</td>
 			<td>
 				{u.isAdmin ? (
-					<span className="badge bg-primary">Admin</span>
+					<span className="badge bg-primary">{t("users.admin")}</span>
 				) : (
-					<span className="badge bg-secondary">User</span>
+					<span className="badge bg-secondary">{t("users.user")}</span>
 				)}
 			</td>
 			<td className="text-end">
 				<div className="d-flex gap-2 justify-content-end">
 					<EditIcon
 						onClick={() => navigate(`/ui/users/${u.id}/edit`)}
-						tooltip="Edit user"
+						tooltip={t("users.edit")}
 					/>
 					{u.id !== currentUser.id && (
 						<DeleteIcon
 							color="#dc3545"
 							onClick={() => onDelete(u)}
-							tooltip="Delete user"
+							tooltip={t("users.delete")}
 						/>
 					)}
 				</div>
@@ -116,10 +119,10 @@ const UserTable = ({
 			<table className="table table-hover">
 				<thead>
 					<tr>
-						<th>User</th>
-						<th>Full name</th>
-						<th>Role</th>
-						<th className="text-end">Actions</th>
+						<th>{t("users.user")}</th>
+						<th>{t("users.fullName")}</th>
+						<th>{t("users.role")}</th>
+						<th className="text-end">{t("common.actions")}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -128,7 +131,7 @@ const UserTable = ({
 						<td colSpan={3}></td>
 						<td className="text-end">
 							<AddIcon
-								tooltip="Create a new user"
+								tooltip={t("users.createNew")}
 								onClick={() => navigate("/ui/users/new")}
 							/>
 						</td>
@@ -146,6 +149,7 @@ const DeleteDialog = ({
 	user: User | null;
 	doIt: (b: boolean) => void;
 }) => {
+	const { t } = useTranslation();
 	if (!user) {
 		return <></>;
 	}
@@ -156,13 +160,15 @@ const DeleteDialog = ({
 			<div className="modal-dialog">
 				<div className="modal-content">
 					<div className="modal-header">
-						<h5 className="modal-title">Delete user?</h5>
+						<h5 className="modal-title">{t("users.deleteTitle")}</h5>
 					</div>
 					<div className="modal-body">
 						<p>
-							Do you really want to delete user <strong>{user.name}</strong> (
-							{user.fullName})? Note that this will delete all user data and
-							cannot be undone.
+							<Trans
+								i18nKey="users.deleteConfirm"
+								values={{ name: user.name, fullName: user.fullName }}
+								components={{ 1: <strong /> }}
+							/>
 						</p>
 					</div>
 					<div className="modal-footer">
@@ -170,13 +176,13 @@ const DeleteDialog = ({
 							type="button"
 							className="btn btn-secondary"
 							onClick={() => doIt(false)}>
-							Cancel
+							{t("common.cancel")}
 						</button>
 						<button
 							type="button"
 							className="btn btn-danger"
 							onClick={() => doIt(true)}>
-							Delete
+							{t("common.delete")}
 						</button>
 					</div>
 				</div>

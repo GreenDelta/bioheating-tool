@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useLoaderData } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n, { errorText } from "../i18n";
 import { GeoFeature, Project, isBuilding } from "../model";
 import { Map } from "./map";
 import { BuildingPanel } from "./panel-building";
@@ -66,6 +68,7 @@ function useEditorContext(): EditorContext {
 }
 
 export const ProjectEditor = () => {
+	const { t } = useTranslation();
 	const ctx = useEditorContext();
 	if (ctx.taskId) {
 		return <CalculationTaskPanel ctx={ctx} />;
@@ -77,8 +80,8 @@ export const ProjectEditor = () => {
 				<BreadcrumbRow
 					active={ctx.project.name}
 					path={[
-						["/", "Home"],
-						["/ui/projects", "Projects"],
+						["/", t("common.home")],
+						["/ui/projects", t("projects.title")],
 					]}
 				/>
 				<div className="d-flex gap-2">
@@ -145,6 +148,7 @@ const SelectionPanel = ({ ctx }: Props) => {
 };
 
 const SaveButton = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	const [isSaving, setSaving] = useState(false);
 	const handleSave = async () => {
 		if (!ctx.isDirty || isSaving) {
@@ -156,7 +160,7 @@ const SaveButton = ({ ctx }: Props) => {
 		if (res.isOk) {
 			ctx.setDirty(false);
 		} else {
-			ctx.setError(`Failed to save project: ${res.error}`);
+			ctx.setError(errorText(res.error));
 		}
 		setSaving(false);
 	};
@@ -170,15 +174,16 @@ const SaveButton = ({ ctx }: Props) => {
 			}
 			onClick={handleSave}
 			disabled={!ctx.isDirty || isSaving}
-			title={ctx.isDirty ? "Save changes" : "No changes to save"}
+			title={ctx.isDirty ? t("editor.saveTitle") : t("editor.noChanges")}
 			style={{ width: "120px" }}>
 			<SaveIcon />
-			{isSaving ? " Saving..." : " Save"}
+			{isSaving ? ` ${t("editor.saving")}` : ` ${t("editor.save")}`}
 		</button>
 	);
 };
 
 const CalculateButton = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	const [isCalculating, setCalculating] = useState(false);
 	const handleCalculate = async () => {
 		if (isCalculating) return;
@@ -196,7 +201,7 @@ const CalculateButton = ({ ctx }: Props) => {
 		if (res.isOk) {
 			ctx.setTaskId(res.value.id);
 		} else {
-			ctx.setError(res.error);
+			ctx.setError(errorText(res.error));
 		}
 		setCalculating(false);
 	};
@@ -206,9 +211,9 @@ const CalculateButton = ({ ctx }: Props) => {
 			className="btn btn-primary"
 			onClick={handleCalculate}
 			disabled={isCalculating}
-			title="Calculate solution"
+			title={t("editor.calculateTitle")}
 			style={{ width: "120px" }}>
-			{isCalculating ? " Calculating..." : " Calculate"}
+			{isCalculating ? t("editor.calculating") : t("editor.calculate")}
 		</button>
 	);
 };
@@ -240,21 +245,22 @@ function validateProject(project: Project): string | null {
 	}
 
 	if (!hasSupplyCenter) {
-		return "No supply center defined. Please set at least one building as supply hub in the network status.";
+		return i18n.t("editor.noSupplyCenter");
 	}
 
 	if (!hasIncludedHeatedBuildings) {
-		return "No heated buildings included in the network. Please mark at least one heated building as connected.";
+		return i18n.t("editor.noHeatedBuildings");
 	}
 
 	if (!hasIncludedStreets) {
-		return "All streets are excluded. Please include at least one street in the network.";
+		return i18n.t("editor.noStreets");
 	}
 
 	return null;
 }
 
 const ErrorPanel = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	if (!ctx.error) {
 		return null;
 	}
@@ -262,17 +268,18 @@ const ErrorPanel = ({ ctx }: Props) => {
 		<div
 			className="alert alert-danger alert-dismissible fade show"
 			role="alert">
-			<strong>An error occured:</strong> {ctx.error}
+			<strong>{t("common.errorOccurred")}</strong> {ctx.error}
 			<button
 				type="button"
 				className="btn-close"
 				onClick={() => ctx.setError(null)}
-				aria-label="Close"></button>
+				aria-label={t("common.close")}></button>
 		</div>
 	);
 };
 
 const CalculationTaskPanel = ({ ctx }: Props) => {
+	const { t } = useTranslation();
 	return (
 		<div>
 			<div className="container">
@@ -281,15 +288,15 @@ const CalculationTaskPanel = ({ ctx }: Props) => {
 						<BreadcrumbRow
 							active={ctx.project.name}
 							path={[
-								["/", "Home"],
-								["/ui/projects", "Projects"],
+								["/", t("common.home")],
+								["/ui/projects", t("projects.title")],
 							]}
 						/>
 
 						<div className="mt-4">
 							<TaskPanel
 								taskId={ctx.taskId!}
-								message={`Calculating solution for project "${ctx.project.name}"...`}
+								message={t("editor.calculatingMessage", { name: ctx.project.name })}
 								getTargetUrl={(result: any) =>
 									result && result.id
 										? `/ui/solutions/${result.id}`

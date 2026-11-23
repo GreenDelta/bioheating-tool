@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import * as api from "../api";
+import { errorText } from "../i18n";
 import {
 	GeoFeature,
 	GeoMap,
@@ -7,7 +9,6 @@ import {
 	ConstructionAge,
 	constructionAgeToString,
 	RoofType,
-	roofTypeToString,
 	isBuilding,
 } from "../model";
 import { BuildingData, BuildingProps } from "./panel-data";
@@ -61,6 +62,7 @@ function unsetSupplyCenter(next: GeoFeature, map: GeoMap) {
 }
 
 export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
+	const { t } = useTranslation();
 	const [data, setData] = useState<BuildingData>(BuildingData.of(feature));
 	const [isEstimating, setEstimating] = useState(false);
 	const [estimateError, setEstimateError] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 				peakLoad: res.value.peakLoad,
 			});
 		} else {
-			setEstimateError(`Failed to estimate heat demand: ${res.error}`);
+			setEstimateError(errorText(res.error));
 		}
 		setEstimating(false);
 	};
@@ -106,144 +108,96 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 		<div className="card">
 			<div className="card-body">
 				<StringField
-					label="Building"
+					label={t("building.name")}
 					value={data.name}
 					onChange={value => put({ name: value })}
 				/>
 
 				<SelectField
-					label="Network status"
+					label={t("building.networkStatus")}
 					value={networkStatusOf(data)}
 					options={[
-						{ value: "supply", label: "Supply hub" },
-						{ value: "connected", label: "Connected" },
-						{ value: "excluded", label: "Excluded" },
+						{ value: "supply", label: t("building.status.supply") },
+						{ value: "connected", label: t("building.status.connected") },
+						{ value: "excluded", label: t("building.status.excluded") },
 					]}
 					onChange={value => put(networkStatusToProps(value as NetworkStatus))}
 				/>
 
 				<CheckboxField
-					label="Is heated"
+					label={t("building.isHeated")}
 					checked={data.isHeated}
 					onChange={checked => put({ isHeated: checked })}
 				/>
 
 				<NumberField
-					label="Height (m)"
+					label={t("building.height")}
 					value={round2(data.height)}
 					step="0.1"
 					onChange={value => put({ height: value })}
 				/>
 
 				<NumberField
-					label="Ground Area (m²)"
+					label={t("building.groundArea")}
 					value={round2(data.groundArea)}
 					step="0.1"
 					onChange={value => put({ groundArea: value })}
 				/>
 
 				<SelectField
-					label="Roof Type"
+					label={t("building.roofType")}
 					value={data.roofType}
-					options={[
-						{
-							value: RoofType.FLAT,
-							label: roofTypeToString(RoofType.FLAT),
-						},
-						{
-							value: RoofType.PITCHED,
-							label: roofTypeToString(RoofType.PITCHED),
-						},
-					]}
+					options={Object.values(RoofType).map(value => ({
+						value,
+						label: t(`building.roofTypes.${value}`),
+					}))}
 					onChange={value => put({ roofType: value })}
 				/>
 
 				<StringField
-					label="Function"
+					label={t("building.function")}
 					value={data.functionLabel}
 					onChange={value => put({ functionLabel: value })}
 				/>
 
 				<SelectField
-					label="Building Type"
+					label={t("building.type")}
 					value={data.type}
-					options={[
-						{ value: BuildingType.HIGH_RISE, label: "High Rise" },
-						{
-							value: BuildingType.MULTI_FAMILY_SMALL,
-							label: "Multi Family Small",
-						},
-						{
-							value: BuildingType.MULTI_FAMILY_MEDIUM,
-							label: "Multi Family Medium",
-						},
-						{
-							value: BuildingType.MULTI_FAMILY_LARGE,
-							label: "Multi Family Large",
-						},
-						{ value: BuildingType.BUILDING_PART, label: "Building Part" },
-						{ value: BuildingType.SINGLE_FAMILY, label: "Single Family" },
-						{ value: BuildingType.END_TERRACE, label: "End Terrace" },
-						{ value: BuildingType.MID_TERRACE, label: "Mid Terrace" },
-						{ value: BuildingType.HOUSE_GROUP, label: "House Group" },
-						{
-							value: BuildingType.MULTI_GENERATION,
-							label: "Multi Generation House",
-						},
-					]}
+					options={Object.values(BuildingType).map(value => ({
+						value,
+						label: t(`building.types.${value}`),
+					}))}
 					onChange={value => put({ type: value })}
 				/>
 
 				<SelectField
-					label="Construction Age"
+					label={t("building.constructionAge")}
 					value={data.constructionAge}
-					options={[
-						{
-							value: ConstructionAge.AGE_1900_1919,
-							label: constructionAgeToString(ConstructionAge.AGE_1900_1919),
-						},
-						{
-							value: ConstructionAge.AGE_1919_1948,
-							label: constructionAgeToString(ConstructionAge.AGE_1919_1948),
-						},
-						{
-							value: ConstructionAge.AGE_1949_1978,
-							label: constructionAgeToString(ConstructionAge.AGE_1949_1978),
-						},
-						{
-							value: ConstructionAge.AGE_1979_1995,
-							label: constructionAgeToString(ConstructionAge.AGE_1979_1995),
-						},
-						{
-							value: ConstructionAge.AGE_1995_2009,
-							label: constructionAgeToString(ConstructionAge.AGE_1995_2009),
-						},
-						{
-							value: ConstructionAge.AGE_2010_2030,
-							label: constructionAgeToString(ConstructionAge.AGE_2010_2030),
-						},
-					]}
+					options={Object.values(ConstructionAge).map(value => ({
+						value,
+						label: constructionAgeToString(value),
+					}))}
 					onChange={value => put({ constructionAge: value })}
 				/>
 
 				{data.isHeated && (
 					<>
 						<NumberField
-							label="Warm water fraction (%)"
+							label={t("building.warmWaterFraction")}
 							value={round2(data.warmWaterFraction)}
 							step="0.1"
 							onChange={value => put({ warmWaterFraction: value })}
 						/>
 
 						<NumberField
-							label="Heat demand (kWh)"
+							label={t("building.heatDemand")}
 							value={round2(data.heatDemand)}
 							step="0.1"
 							onChange={value => put({ heatDemand: value })}
 						/>
 
 						<NumberField
-							label="Peak load (kW)"
+							label={t("building.peakLoad")}
 							value={round2(data.peakLoad)}
 							step="0.1"
 							onChange={value => put({ peakLoad: value })}
@@ -265,43 +219,43 @@ export const BuildingPanel = ({ projectId, feature, map, onChange }: Props) => {
 								className="btn btn-outline-primary"
 								onClick={onEstimate}
 								disabled={!data.isHeated || isEstimating}
-								title="Estimate heat demand and peak load"
+								title={t("building.estimateTitle")}
 								style={{ width: "100%" }}>
-								{isEstimating ? " Estimating..." : " Estimate heat demand"}
+								{isEstimating ? t("building.estimating") : t("building.estimate")}
 							</button>
 						</div>
 					</div>
 				)}
 
 				<hr />
-				<h6>Address Information</h6>
+				<h6>{t("building.address")}</h6>
 
 				<StringField
-					label="Country"
+					label={t("building.country")}
 					value={data.country}
 					onChange={value => put({ country: value })}
 				/>
 
 				<StringField
-					label="Locality/City"
+					label={t("building.locality")}
 					value={data.locality}
 					onChange={value => put({ locality: value })}
 				/>
 
 				<StringField
-					label="Postal Code"
+					label={t("building.postalCode")}
 					value={data.postalCode}
 					onChange={value => put({ postalCode: value })}
 				/>
 
 				<StringField
-					label="Street"
+					label={t("building.street")}
 					value={data.street}
 					onChange={value => put({ street: value })}
 				/>
 
 				<StringField
-					label="Street Number"
+					label={t("building.streetNumber")}
 					value={data.streetNumber}
 					onChange={value => put({ streetNumber: value })}
 				/>

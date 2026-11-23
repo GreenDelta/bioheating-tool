@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate, useOutletContext, useLoaderData } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import type { ParseKeys } from "i18next";
 import * as api from "../api";
+import { errorText } from "../i18n";
 import { User, UserData } from "../model";
 import { FluidBreadcrumbRow } from "../components/navi";
 
@@ -50,23 +53,25 @@ function isComplete(data: FormData): boolean {
 	);
 }
 
-function validate(data: FormData): string | null {
+/// Returns the translation key of the validation error, if any.
+function validate(data: FormData): ParseKeys | null {
 	if (!data.name?.trim() || data.name.trim().length < 2) {
-		return "User name is too short";
+		return "userForm.nameTooShort";
 	}
 	if (!data.password?.trim() || data.password.trim().length < 3) {
-		return "Password is too short";
+		return "userForm.passwordTooShort";
 	}
 	if (!data.fullName?.trim()) {
-		return "Full name is required";
+		return "userForm.fullNameRequired";
 	}
 	if (data.password !== data.confirmedPassword) {
-		return "Passwords do not match";
+		return "userForm.passwordsMismatch";
 	}
 	return null;
 }
 
 export const UserForm = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [currentUser] = useOutletContext<[User]>();
 	const existingUser = useLoaderData() as User | undefined;
@@ -79,8 +84,10 @@ export const UserForm = () => {
 	if (!currentUser.isAdmin && !isRestrictedSelfEdit) {
 		return (
 			<div className="alert alert-danger">
-				<h4>Access Denied</h4>
-				<p>Only administrators can {isEdit ? 'edit' : 'create'} users.</p>
+				<h4>{t("userForm.accessDenied")}</h4>
+				<p>
+					{isEdit ? t("userForm.onlyAdminsEdit") : t("userForm.onlyAdminsCreate")}
+				</p>
 			</div>
 		);
 	}
@@ -88,7 +95,7 @@ export const UserForm = () => {
 	const onOk = async () => {
 		const err = validate(data);
 		if (err) {
-			update({ error: err });
+			update({ error: t(err) });
 			return;
 		}
 
@@ -108,7 +115,7 @@ export const UserForm = () => {
 		setLoading(false);
 
 		if (res.isErr) {
-			update({ error: res.error });
+			update({ error: errorText(res.error) });
 		} else {
 			navigate(isRestrictedSelfEdit ? "/" : "/ui/users");
 		}
@@ -117,15 +124,18 @@ export const UserForm = () => {
 	return (
 		<div className="container-fluid">
 			<FluidBreadcrumbRow
-				active={isRestrictedSelfEdit ? "Account" : isEdit ? "Edit" : "New"}
+				active={
+					isRestrictedSelfEdit
+						? t("nav.account")
+						: isEdit
+							? t("userForm.edit")
+							: t("common.new")
+				}
 				path={isRestrictedSelfEdit
-					? [
-						["/", "Home"],
-						["/ui/account", "Account"],
-					]
+					? [["/", t("common.home")]]
 					: [
-						["/", "Home"],
-						["/ui/users", "Users"],
+						["/", t("common.home")],
+						["/ui/users", t("users.title")],
 					]}
 			/>
 			<div className="row justify-content-center">
@@ -134,18 +144,18 @@ export const UserForm = () => {
 					{data.error ? <ErrorRow err={data.error} /> : <></>}
 
 					<div className="mb-3">
-						<label className="form-label">User name</label>
+						<label className="form-label">{t("userForm.userName")}</label>
 						<input
 							type="text"
 							className="form-control"
 							value={data.name || ""}
 							onChange={e => update({ name: e.target.value })}
 						/>
-						<div className="form-text">This will be used for the login</div>
+						<div className="form-text">{t("userForm.userNameHint")}</div>
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Full name</label>
+						<label className="form-label">{t("userForm.fullName")}</label>
 						<input
 							type="text"
 							className="form-control"
@@ -155,7 +165,7 @@ export const UserForm = () => {
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Password</label>
+						<label className="form-label">{t("userForm.password")}</label>
 						<input
 							type="password"
 							className="form-control"
@@ -165,7 +175,7 @@ export const UserForm = () => {
 					</div>
 
 					<div className="mb-3">
-						<label className="form-label">Confirm password</label>
+						<label className="form-label">{t("userForm.confirmPassword")}</label>
 						<input
 							type="password"
 							className="form-control"
@@ -185,13 +195,10 @@ export const UserForm = () => {
 									id="adminCheck"
 								/>
 								<label className="form-check-label" htmlFor="adminCheck">
-									Administrator
+									{t("userForm.administrator")}
 								</label>
 							</div>
-							<div className="form-text">
-								Administrators can manage users and have full access to the
-								system.
-							</div>
+							<div className="form-text">{t("userForm.administratorHint")}</div>
 						</div>
 					)}
 
@@ -201,14 +208,14 @@ export const UserForm = () => {
 							disabled={loading}
 							onClick={() => navigate(isRestrictedSelfEdit ? "/ui/projects" : "/ui/users")}
 							style={{ width: 120 }}>
-							Cancel
+							{t("common.cancel")}
 						</button>
 						<button
 							className="btn btn-outline-primary"
 							disabled={loading || !isComplete(data)}
 							onClick={onOk}
 							style={{ width: 120 }}>
-							{isEdit ? "Update" : "OK"}
+							{isEdit ? t("common.update") : t("common.ok")}
 						</button>
 					</div>
 				</div>

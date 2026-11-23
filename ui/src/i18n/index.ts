@@ -61,15 +61,29 @@ export function applyUserLanguage(language?: string | null) {
 	i18n.changeLanguage(isLanguage(language) ? language : undefined);
 }
 
-/// Translates an error code returned by the server (e.g. `projectNotFound`)
-/// via the `errors.*` keys. Unknown codes (or plain messages from endpoints
-/// that do not return codes yet) are returned unchanged.
+/// Translates an error code returned by the server (e.g. `PROJECT_NOT_FOUND`,
+/// see `ErrorCode.java`) via the `errors.*` keys. Unknown codes or plain
+/// messages (e.g. network errors) are returned unchanged.
 export function errorText(code: string | null | undefined): string {
 	if (!code) {
 		return i18n.t("errors.unknown");
 	}
 	const key = `errors.${code}`;
 	return i18n.exists(key) ? i18n.t(key as any) : code;
+}
+
+/// Formats a number for the current UI language, e.g. `1,234.5` in English
+/// and `1.234,5` in German.
+export function formatNumber(
+	value: number,
+	options?: Intl.NumberFormatOptions,
+): string {
+	return value.toLocaleString(currentLanguage(), options);
+}
+
+/// Formats a date-time for the current UI language.
+export function formatDateTime(value: string | number | Date): string {
+	return new Date(value).toLocaleString(currentLanguage());
 }
 
 export default i18n;

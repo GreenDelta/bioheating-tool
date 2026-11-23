@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { errorText } from "../i18n";
 import * as api from "../api";
 import { TaskState, TaskStatus } from "../model";
 
@@ -14,13 +16,14 @@ export const TaskPanel = ({ taskId, message, getTargetUrl }: Props) => {
 	const [error, setError] = useState<string | null>(null);
 	const timeoutRef = useRef<any>(null);
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		const poll = async () => {
 			try {
 				const res = await api.getTaskState(taskId);
 				if (res.isErr) {
-					setError(res.error);
+					setError(errorText(res.error));
 					return;
 				}
 
@@ -62,39 +65,56 @@ export const TaskPanel = ({ taskId, message, getTargetUrl }: Props) => {
 	}
 
 	if (error || state.status === TaskStatus.ERROR) {
-		return <ErrorPanel message={error || state.error || "unknown error"} />;
+		return (
+			<ErrorPanel
+				message={error || errorText(state.errorCode)}
+				details={error ? undefined : state.error}
+			/>
+		);
 	}
 
 	if (state.status === TaskStatus.READY) {
-		return <ProgressPanel message="Task completed successfully..." />;
+		return <ProgressPanel message={t("tasks.completed")} />;
 	}
 
-	return <ErrorPanel message="Unknown task state" />;
+	return <ErrorPanel message={t("tasks.unknownState")} />;
 };
 
-export const ProgressPanel = ({ message }: { message: string }) => (
+export const ProgressPanel = ({ message }: { message: string }) => {
+	const { t } = useTranslation();
+	return (
 	<div className="d-flex justify-content-center">
 		<div className="card text-center" style={{ maxWidth: "600px" }}>
 			<div className="card-body py-5">
 				<div className="mb-4">
 					<div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
-						<span className="visually-hidden">Loading...</span>
+						<span className="visually-hidden">{t("common.loading")}</span>
 					</div>
 				</div>
 				<h6 className="card-title text-muted mb-0">{message}</h6>
 			</div>
 		</div>
 	</div>
-);
+	);
+};
 
-const ErrorPanel = ({ message }: { message: string }) => (
+const ErrorPanel = ({ message, details }: { message: string; details?: string }) => {
+	const { t } = useTranslation();
+	return (
 	<div className="text-center py-4">
 		<div className="alert alert-danger" role="alert">
 			<h5 className="alert-heading mb-3">
 				<i className="bi bi-exclamation-triangle-fill me-2"></i>
-				Task Failed
+				{t("tasks.failed")}
 			</h5>
 			<p className="mb-0">{message}</p>
+			{details && (
+				<details className="mt-2 text-start">
+					<summary>{t("errorPage.details")}</summary>
+					<small style={{ fontFamily: "monospace" }}>{details}</small>
+				</details>
+			)}
 		</div>
 	</div>
-);
+	);
+};
