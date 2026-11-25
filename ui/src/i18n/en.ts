@@ -285,6 +285,8 @@ export const en = {
 		ADMIN_REQUIRED: "This action is only allowed for administrators.",
 		TASK_NOT_FOUND: "The task could not be found.",
 		TASK_FAILED: "The task failed.",
+		TOO_MANY_TASKS:
+			"The server is currently busy. Please try again later.",
 		USER_NOT_FOUND: "The user could not be found.",
 		INVALID_USER_DATA: "The user data is invalid.",
 		USER_NAME_EXISTS: "Another user with this name already exists.",

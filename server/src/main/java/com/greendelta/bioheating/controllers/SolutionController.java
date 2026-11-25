@@ -15,6 +15,7 @@ import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
+import com.greendelta.bioheating.services.TaskService.TaskType;
 import com.greendelta.bioheating.services.UserService;
 import java.nio.file.Files;
 import java.util.function.Function;
@@ -22,6 +23,7 @@ import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import com.greendelta.bioheating.services.ErrorCode;
 import org.springframework.security.core.Authentication;
@@ -40,19 +42,22 @@ public class SolutionController {
 	private final UserService users;
 	private final TaskService tasks;
 	private final FileService files;
+	private final int calculationThreads;
 
 	public SolutionController(
 		Database db,
 		ProjectService projects,
 		UserService users,
 		TaskService tasks,
-		FileService files
+		FileService files,
+		@Value("${bioheating.calculation.threads:0}") int calculationThreads
 	) {
 		this.db = db;
 		this.projects = projects;
 		this.users = users;
 		this.tasks = tasks;
 		this.files = files;
+		this.calculationThreads = calculationThreads;
 	}
 
 	@GetMapping("/{id}")
@@ -162,13 +167,13 @@ public class SolutionController {
 			var user = users.getCurrentUser(auth).orElse(null);
 			if (user == null) return Http.unauthorized();
 
-			var task = NewTask.of(user, ErrorCode.CALCULATION_FAILED, () -> {
+			var task = NewTask.of(user, TaskType.CALCULATION, () -> {
 				var graph = Graph.buildFrom(project);
 				if (graph.isError()) return graph.wrapError(
 					"failed to create project graph"
 				);
 
-				var tree = SteinerTree.compute(graph.value());
+				var tree = SteinerTree.compute(graph.value(), calculationThreads);
 				if (tree.isError()) return tree.wrapError(
 					"failed to create Steiner-Tree"
 				);

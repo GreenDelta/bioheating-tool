@@ -13,6 +13,7 @@ import com.greendelta.bioheating.services.ModelService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.TaskService;
 import com.greendelta.bioheating.services.TaskService.Task.NewTask;
+import com.greendelta.bioheating.services.TaskService.TaskType;
 import com.greendelta.bioheating.services.UserService;
 import org.springframework.http.ResponseEntity;
 import com.greendelta.bioheating.services.ErrorCode;
@@ -110,7 +111,7 @@ public class ProjectController {
 			.name(name)
 			.description(description)
 			.user(user);
-		var task = NewTask.of(user, ErrorCode.PROJECT_IMPORT_FAILED, () ->
+		var task = NewTask.of(user, TaskType.PROJECT_IMPORT, () ->
 			files.useFiles(geoFiles.value(),
 				gmlFiles -> new ProjectCreator(db, project, gmlFiles, model.predictor()).call())
 		);
@@ -183,13 +184,13 @@ public class ProjectController {
 				return Http.badRequest(ErrorCode.UPLOAD_FAILED, saved.error());
 			if (saved.value().size() != 1)
 				return Http.badRequest(ErrorCode.NO_VALID_FILES);
-			task = NewTask.of(user, ErrorCode.PROJECT_UPDATE_FAILED, () ->
+			task = NewTask.of(user, TaskType.PROJECT_UPDATE, () ->
 				files.useFiles(saved.value(), excel -> update
 					.withExcelFile(excel.getFirst())
 					.call()
 					.then(p -> Res.ok(ProjectInfo.of(p)))));
 		} else {
-			task = NewTask.of(user, ErrorCode.PROJECT_UPDATE_FAILED, () ->
+			task = NewTask.of(user, TaskType.PROJECT_UPDATE, () ->
 				update.call().then(p -> Res.ok(ProjectInfo.of(p))));
 		}
 		tasks.schedule(task);

@@ -105,3 +105,28 @@ outputs and can be edited on the server (restart the app afterwards with
 `docker compose restart bioheating-app`).
 
 When you run `docker compose up`, the `data/db` and `data/app/uploads` folders will be created automatically if they don't exist. When uploading a new version, you do not need to delete the `data/` folder. Keeping it ensures your database and uploaded files persist across updates. Only delete the `data/` folder if you want to wipe the database and start with a clean installation. Note that you may need `sudo` to delete these folders as Docker creates them with root permissions.
+
+### Parallel tasks and server sizing
+
+Project imports, data updates, and calculations run as background tasks. Two
+settings in `docker-compose.yaml` control the CPU load:
+
+* `BIOHEATING_TASKS_MAX_PARALLEL`: the maximum number of tasks that run at the
+  same time (default `2`); further tasks wait in a queue
+* `BIOHEATING_CALCULATION_THREADS`: the threads of a single calculation
+  (default `0` = about the half of the available processors)
+
+The memory is set via `mem_limit` and `-Xmx` in `JAVA_TOOL_OPTIONS`. For each
+task, the application logs the waiting time in the queue, the duration, and
+the used heap memory after the task:
+
+```bash
+docker logs bioheating-app 2>&1 | grep -E "(Started|Finished) .* task"
+```
+
+To size a server, run representative projects (e.g. with 100, 1000, and 5000
+buildings) one after another and in parallel, and compare these values with
+the CPU and memory usage of `docker stats`. A rough estimate is then:
+
+* memory: base heap + parallel tasks × heap peak of a large task
+* CPU cores: parallel calculations × threads per calculation

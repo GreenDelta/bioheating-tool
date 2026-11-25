@@ -34,13 +34,17 @@ public class SteinerTree {
 		}
 	}
 
+	/// Computes the tree with an automatic number of threads, see
+	/// `compute(Graph, int)`.
 	public static Res<SpanningTree<Edge>> compute(Graph g) {
-		var cpus = Runtime.getRuntime().availableProcessors();
-		int n = switch (cpus) {
-			case 0, 1, 2 -> 1;
-			case 3, 4, 5 -> 2;
-			default -> cpus / 2;
-		};
+		return compute(g, 0);
+	}
+
+	/// Computes the tree with the given number of threads. If the number is
+	/// `<= 0`, it is derived from the available processors: about the half of
+	/// them, so that parallel calculations do not block each other.
+	public static Res<SpanningTree<Edge>> compute(Graph g, int threads) {
+		int n = threads > 0 ? threads : defaultThreadCount();
 
 		// same what Executors.newFixedThreadPool(n) would do but we
 		// need a ThreadPoolExecutor, and newFixedThreadPool just returns
@@ -57,6 +61,15 @@ public class SteinerTree {
 		} catch (Exception e) {
 			return Res.error("failed to calculate Steiner-Tree", e);
 		}
+	}
+
+	private static int defaultThreadCount() {
+		var cpus = Runtime.getRuntime().availableProcessors();
+		return switch (cpus) {
+			case 0, 1, 2 -> 1;
+			case 3, 4, 5 -> 2;
+			default -> cpus / 2;
+		};
 	}
 
 	private Res<SpanningTree<Edge>> build(Graph g) {

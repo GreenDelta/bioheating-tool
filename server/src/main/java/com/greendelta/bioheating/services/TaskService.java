@@ -7,32 +7,60 @@ import com.greendelta.bioheating.services.TaskService.Task.Result;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import jakarta.annotation.PreDestroy;
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+/// Executes long-running tasks like project imports and calculations in the
+/// background. At most `bioheating.tasks.max-parallel` tasks run at the same
+/// time; further tasks wait in a queue with the capacity
+/// `bioheating.tasks.queue-capacity`. When the queue is full, new tasks are
+/// rejected. The results of finished tasks are kept for
+/// `bioheating.tasks.retention-minutes` until the client fetches them.
 @Service
 public class TaskService {
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final Map<String, Task> store = new ConcurrentHashMap<>();
 	private final long taskTimeoutMs;
-	private final Executor exec;
+	private final ThreadPoolExecutor exec;
 
 	public TaskService(
-		@Value("${bioheating.tasks.retention-minutes:30}") int timeout,
-		@Qualifier("applicationTaskExecutor") Executor exec
+		@Value("${bioheating.tasks.max-parallel:2}") int maxParallel,
+		@Value("${bioheating.tasks.queue-capacity:100}") int queueCapacity,
+		@Value("${bioheating.tasks.retention-minutes:30}") int retentionMinutes
 	) {
-		this.taskTimeoutMs = timeout * 60L * 1000L;
-		this.exec = exec;
+		this.taskTimeoutMs = retentionMinutes * 60L * 1000L;
+		int n = Math.max(1, maxParallel);
+		var threadCount = new AtomicInteger();
+		this.exec = new ThreadPoolExecutor(
+			n, n, 0L, TimeUnit.MILLISECONDS,
+			new LinkedBlockingQueue<>(Math.max(1, queueCapacity)),
+			r -> {
+				var thread = new Thread(r, "task-" + threadCount.incrementAndGet());
+				thread.setDaemon(true);
+				return thread;
+			});
+		log.info(
+			"Task execution: max. {} parallel tasks, queue capacity {}",
+			n, queueCapacity);
+	}
+
+	@PreDestroy
+	void shutdown() {
+		exec.shutdownNow();
 	}
 
 	public void schedule(NewTask<?> task) {
@@ -45,29 +73,53 @@ public class TaskService {
 			return;
 		}
 		store.put(task.id, task);
-		CompletableFuture.runAsync(() -> exec(task), exec);
-	}
-
-	private void exec(NewTask<?> task) {
 		try {
-			var res = task.func.get();
-			if (res.isError()) {
-				store.put(task.id, task.toError(task.errorCode, res.error()));
-			} else {
-				store.put(task.id, task.toResult(res.value()));
-			}
-		} catch (Exception e) {
+			exec.execute(() -> exec(task));
+		} catch (RejectedExecutionException e) {
+			log.warn("Rejected {} task {}: queue is full", task.type, task.id);
 			store.put(
 				task.id,
-				task.toError(
-					task.errorCode,
-					"failed to execute task: " + e.getMessage()
-				)
+				task.toError(ErrorCode.TOO_MANY_TASKS, "the task queue is full")
 			);
 		}
 	}
 
-	@Async
+	private void exec(NewTask<?> task) {
+		long start = System.currentTimeMillis();
+		log.info(
+			"Started {} task {} after {} ms in the queue; running: {}, queued: {}",
+			task.type, task.id, start - task.time,
+			exec.getActiveCount(), exec.getQueue().size());
+		boolean ok = false;
+		try {
+			var res = task.func.get();
+			if (res.isError()) {
+				store.put(task.id, task.toError(task.type.errorCode(), res.error()));
+			} else {
+				store.put(task.id, task.toResult(res.value()));
+				ok = true;
+			}
+		} catch (Throwable e) {
+			// also errors like a StackOverflowError, so that the task does not
+			// stay in the running state forever
+			log.error("{} task {} failed", task.type, task.id, e);
+			store.put(
+				task.id,
+				task.toError(
+					task.type.errorCode(),
+					"failed to execute task: " + e.getMessage()
+				)
+			);
+		} finally {
+			var rt = Runtime.getRuntime();
+			long heapMb = (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
+			log.info(
+				"Finished {} task {} in {} ms: {}; heap used: {} MB",
+				task.type, task.id, System.currentTimeMillis() - start,
+				ok ? "ok" : "failed", heapMb);
+		}
+	}
+
 	@Scheduled(fixedRate = 30, timeUnit = TimeUnit.MINUTES)
 	public void runCleanup() {
 		long cutoffTime = System.currentTimeMillis() - taskTimeoutMs;
@@ -108,6 +160,25 @@ public class TaskService {
 		String error,
 		Object result
 	) {}
+
+	/// The types of tasks with the error codes that are reported to the client
+	/// when a task fails.
+	public enum TaskType {
+
+		PROJECT_IMPORT(ErrorCode.PROJECT_IMPORT_FAILED),
+		PROJECT_UPDATE(ErrorCode.PROJECT_UPDATE_FAILED),
+		CALCULATION(ErrorCode.CALCULATION_FAILED);
+
+		private final ErrorCode errorCode;
+
+		TaskType(ErrorCode errorCode) {
+			this.errorCode = errorCode;
+		}
+
+		public ErrorCode errorCode() {
+			return errorCode;
+		}
+	}
 
 	public enum Status {
 		RUNNING,
@@ -162,23 +233,22 @@ public class TaskService {
 			return new Result<>(id(), System.currentTimeMillis(), userId(), value);
 		}
 
-		/// A new task. `errorCode` is the code that is reported to the client
-		/// when the task fails.
+		/// A new task. `time` is the time when the task was created.
 		record NewTask<T>(
 			String id,
 			long time,
 			long userId,
-			ErrorCode errorCode,
+			TaskType type,
 			Supplier<Res<T>> func
 		) implements Task {
 			public static <T> NewTask<T> of(
 				User user,
-				ErrorCode errorCode,
+				TaskType type,
 				Supplier<Res<T>> func
 			) {
 				var id = UUID.randomUUID().toString();
 				long time = System.currentTimeMillis();
-				return new NewTask<>(id, time, user.id(), errorCode, func);
+				return new NewTask<>(id, time, user.id(), type, func);
 			}
 		}
 

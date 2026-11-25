@@ -284,6 +284,8 @@ export const de: Messages = {
 		ADMIN_REQUIRED: "Diese Aktion ist nur für Administratoren erlaubt.",
 		TASK_NOT_FOUND: "Die Aufgabe wurde nicht gefunden.",
 		TASK_FAILED: "Die Aufgabe ist fehlgeschlagen.",
+		TOO_MANY_TASKS:
+			"Der Server ist gerade ausgelastet. Bitte versuchen Sie es später erneut.",
 		USER_NOT_FOUND: "Der Benutzer wurde nicht gefunden.",
 		INVALID_USER_DATA: "Die Benutzerdaten sind ungültig.",
 		USER_NAME_EXISTS: "Ein anderer Benutzer mit diesem Namen existiert bereits.",

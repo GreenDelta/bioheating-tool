@@ -12,6 +12,7 @@ public enum ErrorCode {
 	ADMIN_REQUIRED,
 	TASK_NOT_FOUND,
 	TASK_FAILED,
+	TOO_MANY_TASKS,
 
 	// users
 	USER_NOT_FOUND,
