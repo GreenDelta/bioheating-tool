@@ -4,9 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openlca.commons.Res;
 
@@ -15,94 +16,130 @@ import com.greendelta.bioheating.services.ErrorCode;
 
 class TaskServiceTest {
 
-	private final User user = user();
-	private final TaskService service = new TaskService(1, 1, 30);
+	private User user;
+	private TaskService service;
+
+	@BeforeEach
+	void setUp() {
+		user = new User();
+		user.id(42);
+	}
 
 	@AfterEach
-	void shutdown() {
-		service.shutdown();
+	void tearDown() {
+		if (service != null) {
+			service.shutdown();
+		}
 	}
 
+	/// With max. 2 parallel tasks, 2 tasks run at the same time and a third
+	/// task waits in the queue until one of them is finished.
 	@Test
-	void limitsParallelTasksAndRejectsWhenTheQueueIsFull() throws Exception {
-		var started = new CountDownLatch(1);
-		var release = new CountDownLatch(1);
-		var running = new AtomicInteger();
-		var maxRunning = new AtomicInteger();
+	void testMaxParallel() throws Exception {
+		service = new TaskService(2, 10, 30);
 
-		var first = NewTask.of(user, TaskType.CALCULATION, () -> {
-			track(running, maxRunning);
-			started.countDown();
-			await(release);
-			running.decrementAndGet();
-			return Res.ok("first");
-		});
-		var second = NewTask.of(user, TaskType.CALCULATION, () -> {
-			track(running, maxRunning);
-			running.decrementAndGet();
-			return Res.ok("second");
-		});
-		var third = NewTask.of(user, TaskType.CALCULATION, () -> Res.ok("third"));
+		// the first two tasks count down `twoTasksStarted` and then block until
+		// we count down `finishTasks`; the third task counts down
+		// `thirdTaskStarted` and finishes directly
+		var twoTasksStarted = new CountDownLatch(2);
+		var thirdTaskStarted = new CountDownLatch(1);
+		var finishTasks = new CountDownLatch(1);
 
+		Supplier<Res<String>> blockingTask = () -> {
+			twoTasksStarted.countDown();
+			waitFor(finishTasks);
+			return Res.ok("done");
+		};
+		service.schedule(NewTask.of(user, TaskType.CALCULATION, blockingTask));
+		service.schedule(NewTask.of(user, TaskType.CALCULATION, blockingTask));
+		service.schedule(NewTask.of(user, TaskType.CALCULATION, () -> {
+			thirdTaskStarted.countDown();
+			return Res.ok("done");
+		}));
+
+		// both blocking tasks are running at the same time
+		assertTrue(twoTasksStarted.await(5, TimeUnit.SECONDS));
+		// ... and the third task has to wait
+		assertFalse(thirdTaskStarted.await(200, TimeUnit.MILLISECONDS));
+
+		// when the blocking tasks are finished, the third task can start
+		finishTasks.countDown();
+		assertTrue(thirdTaskStarted.await(5, TimeUnit.SECONDS));
+	}
+
+	/// With max. 1 parallel task and a queue capacity of 1, a third task is
+	/// rejected: the first task runs, the second waits in the queue.
+	@Test
+	void testQueueFull() {
+		service = new TaskService(1, 1, 30);
+
+		var finishTasks = new CountDownLatch(1);
+		Supplier<Res<String>> blockingTask = () -> {
+			waitFor(finishTasks);
+			return Res.ok("done");
+		};
+
+		var first = NewTask.of(user, TaskType.CALCULATION, blockingTask);
+		var second = NewTask.of(user, TaskType.CALCULATION, blockingTask);
+		var third = NewTask.of(user, TaskType.CALCULATION, blockingTask);
 		service.schedule(first);
-		assertTrue(started.await(5, TimeUnit.SECONDS));
-		service.schedule(second); // waits in the queue
-		service.schedule(third); // the queue is full
+		service.schedule(second);
+		service.schedule(third);
 
-		var rejected = service.getState(user, third.id()).orElseThrow();
-		assertEquals(TaskStatus.ERROR, rejected.status());
-		assertEquals(ErrorCode.TOO_MANY_TASKS, rejected.errorCode());
-		assertEquals(TaskStatus.RUNNING, stateOf(second.id()));
+		// the rejection happens directly in `schedule`, so we do not need to
+		// wait here
+		var state = service.getState(user, third.id()).orElseThrow();
+		assertEquals(TaskStatus.ERROR, state.status());
+		assertEquals(ErrorCode.TOO_MANY_TASKS, state.errorCode());
 
-		release.countDown();
-		awaitReady(first.id());
-		awaitReady(second.id());
-		assertEquals(1, maxRunning.get());
+		finishTasks.countDown();
 	}
 
+	/// The result of a successful task is returned to the client.
 	@Test
-	void reportsTheErrorCodeOfTheTaskType() throws Exception {
+	void testResult() throws Exception {
+		service = new TaskService(1, 10, 30);
+		var task = NewTask.of(user, TaskType.CALCULATION, () -> Res.ok("done"));
+		service.schedule(task);
+
+		var state = waitUntilDone(task);
+		assertEquals(TaskStatus.READY, state.status());
+		assertEquals("done", state.result());
+	}
+
+	/// When a task fails, the client gets the error code of the task type.
+	@Test
+	void testError() throws Exception {
+		service = new TaskService(1, 10, 30);
 		var task = NewTask.of(
 			user, TaskType.PROJECT_UPDATE, () -> Res.error("failed"));
 		service.schedule(task);
-		var state = awaitDone(task.id());
+
+		var state = waitUntilDone(task);
 		assertEquals(TaskStatus.ERROR, state.status());
 		assertEquals(ErrorCode.PROJECT_UPDATE_FAILED, state.errorCode());
 	}
 
-	private TaskStatus stateOf(String id) {
-		return service.getState(user, id).orElseThrow().status();
-	}
-
-	private void awaitReady(String id) throws Exception {
-		assertEquals(TaskStatus.READY, awaitDone(id).status());
-	}
-
-	private TaskState awaitDone(String id) throws Exception {
+	/// Polls the state of the task until it is not running anymore, like the
+	/// client does.
+	private TaskState waitUntilDone(NewTask<?> task) throws Exception {
 		long end = System.currentTimeMillis() + 5000;
 		while (System.currentTimeMillis() < end) {
-			var state = service.getState(user, id).orElseThrow();
-			if (state.status() != TaskStatus.RUNNING) return state;
+			var state = service.getState(user, task.id()).orElseThrow();
+			if (state.status() != TaskStatus.RUNNING)
+				return state;
 			Thread.sleep(10);
 		}
-		throw new AssertionError("task did not finish: " + id);
+		throw new AssertionError("task did not finish: " + task.id());
 	}
 
-	private static void track(AtomicInteger running, AtomicInteger max) {
-		max.accumulateAndGet(running.incrementAndGet(), Math::max);
-	}
-
-	private static void await(CountDownLatch latch) {
+	/// Waits for the latch inside a task; the task function cannot throw the
+	/// checked `InterruptedException`.
+	private static void waitFor(CountDownLatch latch) {
 		try {
 			latch.await(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
-	}
-
-	private static User user() {
-		var user = new User();
-		user.id(42);
-		return user;
 	}
 }

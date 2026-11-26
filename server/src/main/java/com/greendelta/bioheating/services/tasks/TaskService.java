@@ -89,11 +89,13 @@ public class TaskService {
 
 	private void exec(NewTask<?> task) {
 		long start = System.currentTimeMillis();
-		log.info(
+		long waitTime = start - task.time();
+		log.debug(
 			"Started {} task {} after {} ms in the queue; running: {}, queued: {}",
-			task.type(), task.id(), start - task.time(),
+			task.type(), task.id(), waitTime,
 			exec.getActiveCount(), exec.getQueue().size());
 		boolean ok = false;
+
 		try {
 			var res = task.func().get();
 			if (res.isError()) {
@@ -105,6 +107,7 @@ public class TaskService {
 				store.put(task.id(), task.toResult(res.value()));
 				ok = true;
 			}
+
 		} catch (Throwable e) {
 			// also errors like a StackOverflowError, so that the task does not
 			// stay in the running state forever
@@ -116,13 +119,20 @@ public class TaskService {
 					"failed to execute task: " + e.getMessage()
 				)
 			);
+
 		} finally {
-			var rt = Runtime.getRuntime();
-			long heapMb = (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
 			log.info(
-				"Finished {} task {} in {} ms: {}; heap used: {} MB",
-				task.type(), task.id(), System.currentTimeMillis() - start,
-				ok ? "ok" : "failed", heapMb);
+				"Finished {} task {}: {}; waited {} ms, ran {} ms",
+				task.type(), task.id(), ok ? "ok" : "failed",
+				waitTime, System.currentTimeMillis() - start);
+			if (log.isDebugEnabled()) {
+				// log memory in debug mode
+				var rt = Runtime.getRuntime();
+				long heapMb = (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
+				log.debug(
+					"Heap used after {} task {}: {} MB",
+					task.type(), task.id(), heapMb);
+			}
 		}
 	}
 
@@ -135,7 +145,7 @@ public class TaskService {
 				Task task = entry.getValue();
 				return (
 					(task instanceof TaskError || task instanceof TaskResult) &&
-					task.time() < cutoffTime
+						task.time() < cutoffTime
 				);
 			});
 	}
