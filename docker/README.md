@@ -106,27 +106,20 @@ outputs and can be edited on the server (restart the app afterwards with
 
 When you run `docker compose up`, the `data/db` and `data/app/uploads` folders will be created automatically if they don't exist. When uploading a new version, you do not need to delete the `data/` folder. Keeping it ensures your database and uploaded files persist across updates. Only delete the `data/` folder if you want to wipe the database and start with a clean installation. Note that you may need `sudo` to delete these folders as Docker creates them with root permissions.
 
-### Parallel tasks and server sizing
+### CPU and memory settings
 
-Project imports, data updates, and calculations run as background tasks. Two
-settings in `docker-compose.yaml` control the CPU load:
+The CPU and memory usage of the application is configured in the
+`bioheating-app` service of the `docker-compose.yaml`: the parallel tasks and
+calculation threads as environment variables (`APP_TASKS_*`,
+`APP_CALCULATION_THREADS`), the heap size with `-Xmx` in `JAVA_TOOL_OPTIONS`,
+and the memory limit of the container with `mem_limit`. The meaning of these
+settings and how to size a server is described in the section [Scaling the
+server](../README.md#scaling-the-server) of the main README. After changing
+them, restart the application with `docker compose up -d`.
 
-* `APP_TASKS_MAX_PARALLEL`: the maximum number of tasks that run at the
-  same time (default `2`); further tasks wait in a queue
-* `APP_CALCULATION_THREADS`: the threads of a single calculation
-  (default `0` = about the half of the available processors)
-
-The memory is set via `mem_limit` and `-Xmx` in `JAVA_TOOL_OPTIONS`. For each
-task, the application logs the waiting time in the queue, the duration, and
-the used heap memory after the task:
+To check the task times and the resource usage:
 
 ```bash
-docker logs bioheating-app 2>&1 | grep -E "(Started|Finished) .* task"
+docker logs bioheating-app 2>&1 | grep "Finished .* task"
+docker stats
 ```
-
-To size a server, run representative projects (e.g. with 100, 1000, and 5000
-buildings) one after another and in parallel, and compare these values with
-the CPU and memory usage of `docker stats`. A rough estimate is then:
-
-* memory: base heap + parallel tasks × heap peak of a large task
-* CPU cores: parallel calculations × threads per calculation

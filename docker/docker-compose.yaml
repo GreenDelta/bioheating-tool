@@ -21,9 +21,9 @@
 #   sudo rm -rf ./data/db
 #   sudo rm -rf ./data/app/uploads
 #
-# Also note, that the memory settings (mem_limit, Xmx) are for a small server
-# currently. It makes sense to adjust them when moving to a more powerfull
-# server.
+# Also note, that the CPU and memory settings (APP_TASKS_MAX_PARALLEL,
+# APP_CALCULATION_THREADS, mem_limit, Xmx) are for a small server currently;
+# see the main README.md for how to adjust them.
 
 services:
   bioheating-db:
@@ -54,8 +54,7 @@ services:
     restart: unless-stopped
     environment:
       APP_DATA_DIR: /app/data
-      # the maximum number of parallel tasks (imports, calculations) and the
-      # threads per calculation (0 = automatic), see application.properties
+      # background tasks, see the main README.md
       APP_TASKS_MAX_PARALLEL: 2
       APP_CALCULATION_THREADS: 0
       JAVA_TOOL_OPTIONS: "-Xmx2176m -XX:MaxMetaspaceSize=384m -XX:+ExitOnOutOfMemoryError -XX:+UseG1GC -XX:+UseStringDeduplication"

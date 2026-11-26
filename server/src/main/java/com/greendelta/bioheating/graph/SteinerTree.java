@@ -42,7 +42,9 @@ public class SteinerTree {
 
 	/// Computes the tree with the given number of threads. If the number is
 	/// `<= 0`, it is derived from the available processors: about the half of
-	/// them, so that parallel calculations do not block each other.
+	/// them, so that parallel calculations do not block each other. In the
+	/// application, the number is configured with `app.calculation.threads`,
+	/// see the README.md.
 	public static Res<SpanningTree<Edge>> compute(Graph g, int threads) {
 		int n = threads > 0 ? threads : defaultThreadCount();
 

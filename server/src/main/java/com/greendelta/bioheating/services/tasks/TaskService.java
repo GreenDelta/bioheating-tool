@@ -22,11 +22,8 @@ import com.greendelta.bioheating.services.ErrorCode;
 import jakarta.annotation.PreDestroy;
 
 /// Executes long-running tasks like project imports and calculations in the
-/// background. At most `app.tasks.max-parallel` tasks run at the same
-/// time; further tasks wait in a queue with the capacity
-/// `app.tasks.queue-capacity`. When the queue is full, new tasks are
-/// rejected. The results of finished tasks are kept for
-/// `app.tasks.retention-minutes` until the client fetches them.
+/// background, with a limited number of parallel tasks and a queue for the
+/// waiting tasks. See the README.md for the concepts and configuration.
 @Service
 public class TaskService {
 
