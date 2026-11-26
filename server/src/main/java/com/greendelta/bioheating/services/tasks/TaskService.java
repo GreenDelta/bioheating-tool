@@ -36,13 +36,18 @@ public class TaskService {
 	private final ThreadPoolExecutor exec;
 
 	public TaskService(
-		@Value("${app.tasks.max-parallel:2}") int maxParallel,
-		@Value("${app.tasks.queue-capacity:100}") int queueCapacity,
-		@Value("${app.tasks.retention-minutes:30}") int retentionMinutes
+		@Value("${app.tasks.max-parallel}") int maxParallel,
+		@Value("${app.tasks.queue-capacity}") int queueCapacity,
+		@Value("${app.tasks.retention-minutes}") int retentionMinutes
 	) {
 		this.taskTimeoutMs = retentionMinutes * 60L * 1000L;
 		int n = Math.max(1, maxParallel);
 		var threadCount = new AtomicInteger();
+
+		// the same as Executors.newFixedThreadPool(n): n threads that are
+		// kept alive; but with a bounded queue so that `execute` throws a
+		// RejectedExecutionException when the queue is full; the threads are
+		// daemon threads, so that they do not block the shutdown of the JVM
 		this.exec = new ThreadPoolExecutor(
 			n, n, 0L, TimeUnit.MILLISECONDS,
 			new LinkedBlockingQueue<>(Math.max(1, queueCapacity)),

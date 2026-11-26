@@ -52,7 +52,7 @@ public class SolutionController {
 		UserService users,
 		TaskService tasks,
 		FileService files,
-		@Value("${app.calculation.threads:0}") int calculationThreads
+		@Value("${app.calculation.threads}") int calculationThreads
 	) {
 		this.db = db;
 		this.projects = projects;
