@@ -56,8 +56,8 @@ services:
       APP_DATA_DIR: /app/data
       # the maximum number of parallel tasks (imports, calculations) and the
       # threads per calculation (0 = automatic), see application.properties
-      BIOHEATING_TASKS_MAX_PARALLEL: 2
-      BIOHEATING_CALCULATION_THREADS: 0
+      APP_TASKS_MAX_PARALLEL: 2
+      APP_CALCULATION_THREADS: 0
       JAVA_TOOL_OPTIONS: "-Xmx2176m -XX:MaxMetaspaceSize=384m -XX:+ExitOnOutOfMemoryError -XX:+UseG1GC -XX:+UseStringDeduplication"
     depends_on:
       bioheating-db:

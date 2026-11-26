@@ -111,9 +111,9 @@ When you run `docker compose up`, the `data/db` and `data/app/uploads` folders w
 Project imports, data updates, and calculations run as background tasks. Two
 settings in `docker-compose.yaml` control the CPU load:
 
-* `BIOHEATING_TASKS_MAX_PARALLEL`: the maximum number of tasks that run at the
+* `APP_TASKS_MAX_PARALLEL`: the maximum number of tasks that run at the
   same time (default `2`); further tasks wait in a queue
-* `BIOHEATING_CALCULATION_THREADS`: the threads of a single calculation
+* `APP_CALCULATION_THREADS`: the threads of a single calculation
   (default `0` = about the half of the available processors)
 
 The memory is set via `mem_limit` and `-Xmx` in `JAVA_TOOL_OPTIONS`. For each

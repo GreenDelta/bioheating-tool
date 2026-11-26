@@ -1,9 +1,5 @@
 package com.greendelta.bioheating.services;
 
-import com.greendelta.bioheating.model.User;
-import com.greendelta.bioheating.services.TaskService.Task.Error;
-import com.greendelta.bioheating.services.TaskService.Task.NewTask;
-import com.greendelta.bioheating.services.TaskService.Task.Result;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,7 +10,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import jakarta.annotation.PreDestroy;
+
 import org.openlca.commons.Res;
 import org.openlca.commons.Strings;
 import org.slf4j.Logger;
@@ -23,12 +19,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.greendelta.bioheating.model.User;
+import com.greendelta.bioheating.services.TaskService.Task.Error;
+import com.greendelta.bioheating.services.TaskService.Task.NewTask;
+import com.greendelta.bioheating.services.TaskService.Task.Result;
+
+import jakarta.annotation.PreDestroy;
+
 /// Executes long-running tasks like project imports and calculations in the
-/// background. At most `bioheating.tasks.max-parallel` tasks run at the same
+/// background. At most `app.tasks.max-parallel` tasks run at the same
 /// time; further tasks wait in a queue with the capacity
-/// `bioheating.tasks.queue-capacity`. When the queue is full, new tasks are
+/// `app.tasks.queue-capacity`. When the queue is full, new tasks are
 /// rejected. The results of finished tasks are kept for
-/// `bioheating.tasks.retention-minutes` until the client fetches them.
+/// `app.tasks.retention-minutes` until the client fetches them.
 @Service
 public class TaskService {
 
@@ -38,9 +41,9 @@ public class TaskService {
 	private final ThreadPoolExecutor exec;
 
 	public TaskService(
-		@Value("${bioheating.tasks.max-parallel:2}") int maxParallel,
-		@Value("${bioheating.tasks.queue-capacity:100}") int queueCapacity,
-		@Value("${bioheating.tasks.retention-minutes:30}") int retentionMinutes
+		@Value("${app.tasks.max-parallel:2}") int maxParallel,
+		@Value("${app.tasks.queue-capacity:100}") int queueCapacity,
+		@Value("${app.tasks.retention-minutes:30}") int retentionMinutes
 	) {
 		this.taskTimeoutMs = retentionMinutes * 60L * 1000L;
 		int n = Math.max(1, maxParallel);
