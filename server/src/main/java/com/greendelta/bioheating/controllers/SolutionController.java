@@ -30,10 +30,10 @@ import com.greendelta.bioheating.pipes.PipePlanXls;
 import com.greendelta.bioheating.services.ErrorCode;
 import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
-import com.greendelta.bioheating.services.TaskService;
-import com.greendelta.bioheating.services.TaskService.Task.NewTask;
-import com.greendelta.bioheating.services.TaskService.TaskType;
 import com.greendelta.bioheating.services.UserService;
+import com.greendelta.bioheating.services.tasks.NewTask;
+import com.greendelta.bioheating.services.tasks.TaskService;
+import com.greendelta.bioheating.services.tasks.TaskType;
 
 @RestController
 @RequestMapping("/api/solutions")

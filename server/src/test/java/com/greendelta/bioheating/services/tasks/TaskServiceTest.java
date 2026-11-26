@@ -1,18 +1,17 @@
-package com.greendelta.bioheating.services;
+package com.greendelta.bioheating.services.tasks;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import com.greendelta.bioheating.model.User;
-import com.greendelta.bioheating.services.TaskService.Status;
-import com.greendelta.bioheating.services.TaskService.Task.NewTask;
-import com.greendelta.bioheating.services.TaskService.TaskType;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.openlca.commons.Res;
+
+import com.greendelta.bioheating.model.User;
+import com.greendelta.bioheating.services.ErrorCode;
 
 class TaskServiceTest {
 
@@ -51,9 +50,9 @@ class TaskServiceTest {
 		service.schedule(third); // the queue is full
 
 		var rejected = service.getState(user, third.id()).orElseThrow();
-		assertEquals(Status.ERROR, rejected.status());
+		assertEquals(TaskStatus.ERROR, rejected.status());
 		assertEquals(ErrorCode.TOO_MANY_TASKS, rejected.errorCode());
-		assertEquals(Status.RUNNING, stateOf(second.id()));
+		assertEquals(TaskStatus.RUNNING, stateOf(second.id()));
 
 		release.countDown();
 		awaitReady(first.id());
@@ -67,23 +66,23 @@ class TaskServiceTest {
 			user, TaskType.PROJECT_UPDATE, () -> Res.error("failed"));
 		service.schedule(task);
 		var state = awaitDone(task.id());
-		assertEquals(Status.ERROR, state.status());
+		assertEquals(TaskStatus.ERROR, state.status());
 		assertEquals(ErrorCode.PROJECT_UPDATE_FAILED, state.errorCode());
 	}
 
-	private Status stateOf(String id) {
+	private TaskStatus stateOf(String id) {
 		return service.getState(user, id).orElseThrow().status();
 	}
 
 	private void awaitReady(String id) throws Exception {
-		assertEquals(Status.READY, awaitDone(id).status());
+		assertEquals(TaskStatus.READY, awaitDone(id).status());
 	}
 
-	private TaskService.TaskState awaitDone(String id) throws Exception {
+	private TaskState awaitDone(String id) throws Exception {
 		long end = System.currentTimeMillis() + 5000;
 		while (System.currentTimeMillis() < end) {
 			var state = service.getState(user, id).orElseThrow();
-			if (state.status() != Status.RUNNING) return state;
+			if (state.status() != TaskStatus.RUNNING) return state;
 			Thread.sleep(10);
 		}
 		throw new AssertionError("task did not finish: " + id);

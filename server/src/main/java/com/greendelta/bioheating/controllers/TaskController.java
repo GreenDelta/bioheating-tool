@@ -1,15 +1,16 @@
 package com.greendelta.bioheating.controllers;
 
-import com.greendelta.bioheating.services.TaskService;
-import com.greendelta.bioheating.services.UserService;
 import org.springframework.http.ResponseEntity;
-import com.greendelta.bioheating.services.ErrorCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.greendelta.bioheating.services.ErrorCode;
+import com.greendelta.bioheating.services.UserService;
+import com.greendelta.bioheating.services.tasks.TaskService;
 
 @RestController
 @RequestMapping("/api/tasks")
