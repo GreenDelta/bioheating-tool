@@ -1,17 +1,15 @@
 package com.greendelta.bioheating.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import com.greendelta.bioheating.model.BuildingType;
-import com.greendelta.bioheating.model.ConstructionAge;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.greendelta.bioheating.model.BuildingType;
+import com.greendelta.bioheating.model.ConstructionAge;
 
 class XlsBuildingPatchTest {
 
@@ -130,7 +128,7 @@ class XlsBuildingPatchTest {
 		assertEquals(
 			ConstructionAge.AGE_1979_1995, value(5, 4.0).constructionAge());
 		assertEquals(
-			ConstructionAge.AGE_1995_2009, value(5, 2000.0).constructionAge());
+			ConstructionAge.AGE_1996_2009, value(5, 2000.0).constructionAge());
 		assertEquals(
 			ConstructionAge.AGE_1979_1995,
 			value(5, "1979-1994").constructionAge());

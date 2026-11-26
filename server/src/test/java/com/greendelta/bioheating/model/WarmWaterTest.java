@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,7 +10,7 @@ class WarmWaterTest {
 	void looksUpTheFractionForTheTypeAndAge() {
 		assertEquals(
 			22.0,
-			WarmWater.of(BuildingType.HIGH_RISE, ConstructionAge.AGE_1900_1919),
+			WarmWater.of(BuildingType.HIGH_RISE, ConstructionAge.AGE_1900_1918),
 			1e-6
 		);
 		assertEquals(
@@ -21,7 +20,7 @@ class WarmWaterTest {
 		);
 		assertEquals(
 			9.0,
-			WarmWater.of(BuildingType.SINGLE_FAMILY, ConstructionAge.AGE_1900_1919),
+			WarmWater.of(BuildingType.SINGLE_FAMILY, ConstructionAge.AGE_1900_1918),
 			1e-6
 		);
 		assertEquals(

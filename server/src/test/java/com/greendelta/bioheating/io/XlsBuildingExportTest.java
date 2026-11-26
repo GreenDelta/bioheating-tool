@@ -1,15 +1,7 @@
 package com.greendelta.bioheating.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import com.greendelta.bioheating.model.Building;
-import com.greendelta.bioheating.model.BuildingType;
-import com.greendelta.bioheating.model.ConstructionAge;
-import com.greendelta.bioheating.model.GeoMap;
-import com.greendelta.bioheating.model.Project;
-import com.greendelta.bioheating.model.RoofType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,10 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.locationtech.jts.geom.Coordinate;
+
+import com.greendelta.bioheating.model.Building;
+import com.greendelta.bioheating.model.BuildingType;
+import com.greendelta.bioheating.model.ConstructionAge;
+import com.greendelta.bioheating.model.GeoMap;
+import com.greendelta.bioheating.model.Project;
+import com.greendelta.bioheating.model.RoofType;
 
 class XlsBuildingExportTest {
 
@@ -34,7 +34,7 @@ class XlsBuildingExportTest {
 			squareBuilding("b-1", 500000, 5500000, 400)
 				.name("Main Street 1")
 				.type(BuildingType.SINGLE_FAMILY)
-				.constructionAge(ConstructionAge.AGE_1995_2009)
+				.constructionAge(ConstructionAge.AGE_1996_2009)
 				.height(20)
 				.groundArea(400)
 				.roofType(RoofType.FLAT)
@@ -60,7 +60,7 @@ class XlsBuildingExportTest {
 		assertEquals("b-1", imported.cityId());
 		assertEquals("Main Street 1", imported.name());
 		assertEquals(BuildingType.SINGLE_FAMILY, imported.type());
-		assertEquals(ConstructionAge.AGE_1995_2009, imported.constructionAge());
+		assertEquals(ConstructionAge.AGE_1996_2009, imported.constructionAge());
 		assertEquals(20.0, imported.height(), 1e-6);
 		assertEquals(400.0, imported.groundArea(), 1e-6);
 		assertEquals(RoofType.FLAT, imported.roofType());

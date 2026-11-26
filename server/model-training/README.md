@@ -77,11 +77,11 @@ Construction year (column 3):
 
 | Range     | Code        |
 |-----------|-------------|
-| 1900-1919 | 1           |
+| 1900-1918 | 1           |
 | 1919-1948 | 2           |
 | 1949-1978 | 3           |
 | 1979-1995 | 4 (default) |
-| 1995-2009 | 5           |
+| 1996-2009 | 5           |
 | 2010-2030 | 6           |
 
 Roof type (column 4): `1` = flat roof (Flachdach), `0` = pitched roof

@@ -120,26 +120,26 @@ export function buildingTypeFromString(value: string): BuildingType {
 }
 
 export enum ConstructionAge {
-	AGE_1900_1919 = "AGE_1900_1919",
+	AGE_1900_1918 = "AGE_1900_1918",
 	AGE_1919_1948 = "AGE_1919_1948",
 	AGE_1949_1978 = "AGE_1949_1978",
 	AGE_1979_1995 = "AGE_1979_1995",
-	AGE_1995_2009 = "AGE_1995_2009",
+	AGE_1996_2009 = "AGE_1996_2009",
 	AGE_2010_2030 = "AGE_2010_2030",
 }
 
 export function constructionAgeFromString(value: string): ConstructionAge {
 	switch (value?.toUpperCase()) {
-		case "AGE_1900_1919":
-			return ConstructionAge.AGE_1900_1919;
+		case "AGE_1900_1918":
+			return ConstructionAge.AGE_1900_1918;
 		case "AGE_1919_1948":
 			return ConstructionAge.AGE_1919_1948;
 		case "AGE_1949_1978":
 			return ConstructionAge.AGE_1949_1978;
 		case "AGE_1979_1995":
 			return ConstructionAge.AGE_1979_1995;
-		case "AGE_1995_2009":
-			return ConstructionAge.AGE_1995_2009;
+		case "AGE_1996_2009":
+			return ConstructionAge.AGE_1996_2009;
 		case "AGE_2010_2030":
 			return ConstructionAge.AGE_2010_2030;
 		default:
@@ -149,16 +149,16 @@ export function constructionAgeFromString(value: string): ConstructionAge {
 
 export function constructionAgeToString(age: ConstructionAge): string {
 	switch (age) {
-		case ConstructionAge.AGE_1900_1919:
-			return "1900-1919";
+		case ConstructionAge.AGE_1900_1918:
+			return "1900-1918";
 		case ConstructionAge.AGE_1919_1948:
 			return "1919-1948";
 		case ConstructionAge.AGE_1949_1978:
 			return "1949-1978";
 		case ConstructionAge.AGE_1979_1995:
 			return "1979-1995";
-		case ConstructionAge.AGE_1995_2009:
-			return "1995-2009";
+		case ConstructionAge.AGE_1996_2009:
+			return "1996-2009";
 		case ConstructionAge.AGE_2010_2030:
 			return "2010-2030";
 		default:

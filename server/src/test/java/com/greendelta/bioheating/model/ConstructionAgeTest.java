@@ -1,7 +1,6 @@
 package com.greendelta.bioheating.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +33,22 @@ class ConstructionAgeTest {
 		);
 	}
 
+	/// The classes do not overlap: each year at a class border belongs to
+	/// exactly one class.
+	@Test
+	void testClassBorders() {
+		assertEquals(ConstructionAge.AGE_1900_1918, ConstructionAge.ofYear(1918));
+		assertEquals(ConstructionAge.AGE_1919_1948, ConstructionAge.ofYear(1919));
+		assertEquals(ConstructionAge.AGE_1919_1948, ConstructionAge.ofYear(1948));
+		assertEquals(ConstructionAge.AGE_1949_1978, ConstructionAge.ofYear(1949));
+		assertEquals(ConstructionAge.AGE_1949_1978, ConstructionAge.ofYear(1978));
+		assertEquals(ConstructionAge.AGE_1979_1995, ConstructionAge.ofYear(1979));
+		assertEquals(ConstructionAge.AGE_1979_1995, ConstructionAge.ofYear(1995));
+		assertEquals(ConstructionAge.AGE_1996_2009, ConstructionAge.ofYear(1996));
+		assertEquals(ConstructionAge.AGE_1996_2009, ConstructionAge.ofYear(2009));
+		assertEquals(ConstructionAge.AGE_2010_2030, ConstructionAge.ofYear(2010));
+	}
+
 	@Test
 	void parsesUserProvidedValues() {
 		// codes
@@ -48,13 +63,13 @@ class ConstructionAgeTest {
 			ConstructionAge.parse("1994")
 		);
 		assertEquals(
-			ConstructionAge.AGE_1995_2009,
+			ConstructionAge.AGE_1996_2009,
 			ConstructionAge.parse("2000")
 		);
 		// range strings (the ranges are defined by their upper bound)
 		assertEquals(
-			ConstructionAge.AGE_1900_1919,
-			ConstructionAge.parse("1900-1919")
+			ConstructionAge.AGE_1900_1918,
+			ConstructionAge.parse("1900-1918")
 		);
 		assertEquals(
 			ConstructionAge.AGE_1919_1948,
@@ -69,8 +84,8 @@ class ConstructionAgeTest {
 			ConstructionAge.parse("1979-1994")
 		);
 		assertEquals(
-			ConstructionAge.AGE_1995_2009,
-			ConstructionAge.parse("1995-2009")
+			ConstructionAge.AGE_1996_2009,
+			ConstructionAge.parse("1996-2009")
 		);
 		assertEquals(
 			ConstructionAge.AGE_2010_2030,
