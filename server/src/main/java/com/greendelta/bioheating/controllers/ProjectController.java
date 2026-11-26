@@ -28,7 +28,7 @@ import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ModelService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.UserService;
-import com.greendelta.bioheating.services.tasks.NewTask;
+import com.greendelta.bioheating.services.tasks.Task;
 import com.greendelta.bioheating.services.tasks.TaskService;
 import com.greendelta.bioheating.services.tasks.TaskType;
 
@@ -111,12 +111,11 @@ public class ProjectController {
 			.name(name)
 			.description(description)
 			.user(user);
-		var task = NewTask.of(user, TaskType.PROJECT_IMPORT, () ->
+		var task = Task.of(user, TaskType.PROJECT_IMPORT, () ->
 			files.useFiles(geoFiles.value(),
 				gmlFiles -> new ProjectCreator(db, project, gmlFiles, model.predictor()).call())
 		);
-		tasks.schedule(task);
-		return Http.ok(task.toState());
+		return Http.ok(tasks.schedule(task));
 	}
 
 	@DeleteMapping("/{id}")
@@ -176,7 +175,7 @@ public class ProjectController {
 			.withStreets(updateStreets)
 			.withEstimation(estimateDemand);
 
-		NewTask<ProjectInfo> task;
+		Task<ProjectInfo> task;
 		if (hasFile) {
 			// the upload must be saved within the request thread
 			var saved = files.saveUploads(new MultipartFile[]{upload});
@@ -184,17 +183,16 @@ public class ProjectController {
 				return Http.badRequest(ErrorCode.UPLOAD_FAILED, saved.error());
 			if (saved.value().size() != 1)
 				return Http.badRequest(ErrorCode.NO_VALID_FILES);
-			task = NewTask.of(user, TaskType.PROJECT_UPDATE, () ->
+			task = Task.of(user, TaskType.PROJECT_UPDATE, () ->
 				files.useFiles(saved.value(), excel -> update
 					.withExcelFile(excel.getFirst())
 					.call()
 					.then(p -> Res.ok(ProjectInfo.of(p)))));
 		} else {
-			task = NewTask.of(user, TaskType.PROJECT_UPDATE, () ->
+			task = Task.of(user, TaskType.PROJECT_UPDATE, () ->
 				update.call().then(p -> Res.ok(ProjectInfo.of(p))));
 		}
-		tasks.schedule(task);
-		return Http.ok(task.toState());
+		return Http.ok(tasks.schedule(task));
 	}
 
 	@PostMapping("/{id}/estimate-building")

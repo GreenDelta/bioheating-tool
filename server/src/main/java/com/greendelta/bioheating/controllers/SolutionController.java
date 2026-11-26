@@ -31,7 +31,7 @@ import com.greendelta.bioheating.services.ErrorCode;
 import com.greendelta.bioheating.services.FileService;
 import com.greendelta.bioheating.services.ProjectService;
 import com.greendelta.bioheating.services.UserService;
-import com.greendelta.bioheating.services.tasks.NewTask;
+import com.greendelta.bioheating.services.tasks.Task;
 import com.greendelta.bioheating.services.tasks.TaskService;
 import com.greendelta.bioheating.services.tasks.TaskType;
 
@@ -169,7 +169,7 @@ public class SolutionController {
 			var user = users.getCurrentUser(auth).orElse(null);
 			if (user == null) return Http.unauthorized();
 
-			var task = NewTask.of(user, TaskType.CALCULATION, () -> {
+			var task = Task.of(user, TaskType.CALCULATION, () -> {
 				var graph = Graph.buildFrom(project);
 				if (graph.isError()) return graph.wrapError(
 					"failed to create project graph"
@@ -182,8 +182,7 @@ public class SolutionController {
 
 				return new MinTreeSolution(project, tree.value()).create(db);
 			});
-			tasks.schedule(task);
-			return Http.ok(task.toState());
+			return Http.ok(tasks.schedule(task));
 		});
 	}
 

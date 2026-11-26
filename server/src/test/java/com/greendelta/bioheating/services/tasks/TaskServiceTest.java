@@ -50,9 +50,9 @@ class TaskServiceTest {
 			waitFor(finishTasks);
 			return Res.ok("done");
 		};
-		service.schedule(NewTask.of(user, TaskType.CALCULATION, blockingTask));
-		service.schedule(NewTask.of(user, TaskType.CALCULATION, blockingTask));
-		service.schedule(NewTask.of(user, TaskType.CALCULATION, () -> {
+		service.schedule(Task.of(user, TaskType.CALCULATION, blockingTask));
+		service.schedule(Task.of(user, TaskType.CALCULATION, blockingTask));
+		service.schedule(Task.of(user, TaskType.CALCULATION, () -> {
 			thirdTaskStarted.countDown();
 			return Res.ok("done");
 		}));
@@ -79,18 +79,20 @@ class TaskServiceTest {
 			return Res.ok("done");
 		};
 
-		var first = NewTask.of(user, TaskType.CALCULATION, blockingTask);
-		var second = NewTask.of(user, TaskType.CALCULATION, blockingTask);
-		var third = NewTask.of(user, TaskType.CALCULATION, blockingTask);
-		service.schedule(first);
-		service.schedule(second);
-		service.schedule(third);
+		var first = Task.of(user, TaskType.CALCULATION, blockingTask);
+		var second = Task.of(user, TaskType.CALCULATION, blockingTask);
+		var third = Task.of(user, TaskType.CALCULATION, blockingTask);
+		assertEquals(TaskStatus.RUNNING, service.schedule(first).status());
+		assertEquals(TaskStatus.RUNNING, service.schedule(second).status());
 
-		// the rejection happens directly in `schedule`, so we do not need to
-		// wait here
-		var state = service.getState(user, third.id()).orElseThrow();
+		// the rejection is directly returned by `schedule`
+		var state = service.schedule(third);
 		assertEquals(TaskStatus.ERROR, state.status());
 		assertEquals(ErrorCode.TOO_MANY_TASKS, state.errorCode());
+
+		// ... and is also stored for the client
+		var stored = service.getState(user, third.id()).orElseThrow();
+		assertEquals(ErrorCode.TOO_MANY_TASKS, stored.errorCode());
 
 		finishTasks.countDown();
 	}
@@ -99,7 +101,7 @@ class TaskServiceTest {
 	@Test
 	void testResult() throws Exception {
 		service = new TaskService(1, 10, 30);
-		var task = NewTask.of(user, TaskType.CALCULATION, () -> Res.ok("done"));
+		var task = Task.of(user, TaskType.CALCULATION, () -> Res.ok("done"));
 		service.schedule(task);
 
 		var state = waitUntilDone(task);
@@ -111,7 +113,7 @@ class TaskServiceTest {
 	@Test
 	void testError() throws Exception {
 		service = new TaskService(1, 10, 30);
-		var task = NewTask.of(
+		var task = Task.of(
 			user, TaskType.PROJECT_UPDATE, () -> Res.error("failed"));
 		service.schedule(task);
 
@@ -122,7 +124,7 @@ class TaskServiceTest {
 
 	/// Polls the state of the task until it is not running anymore, like the
 	/// client does.
-	private TaskState waitUntilDone(NewTask<?> task) throws Exception {
+	private TaskState waitUntilDone(Task<?> task) throws Exception {
 		long end = System.currentTimeMillis() + 5000;
 		while (System.currentTimeMillis() < end) {
 			var state = service.getState(user, task.id()).orElseThrow();

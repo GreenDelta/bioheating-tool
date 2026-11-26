@@ -28,7 +28,7 @@ import jakarta.annotation.PreDestroy;
 public class TaskService {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	private final Map<String, Task> store = new ConcurrentHashMap<>();
+	private final Map<String, Entry> store = new ConcurrentHashMap<>();
 	private final long taskTimeoutMs;
 	private final ThreadPoolExecutor exec;
 
@@ -63,28 +63,24 @@ public class TaskService {
 		exec.shutdownNow();
 	}
 
-	public void schedule(NewTask<?> task) {
-		if (task == null || Strings.isBlank(task.id())) return;
-		if (task.func() == null) {
-			store.put(
-				task.id(),
-				task.toError(ErrorCode.TASK_FAILED, "No function provided")
-			);
-			return;
-		}
-		store.put(task.id(), task);
+	/// Adds the task to the queue and returns its state: `RUNNING` when it was
+	/// added, or an `ERROR` when it was rejected because the queue is full.
+	public TaskState schedule(Task<?> task) {
+		var running = TaskState.running(task.id());
+		put(task, running);
 		try {
 			exec.execute(() -> exec(task));
+			return running;
 		} catch (RejectedExecutionException e) {
 			log.warn("Rejected {} task {}: queue is full", task.type(), task.id());
-			store.put(
-				task.id(),
-				task.toError(ErrorCode.TOO_MANY_TASKS, "the task queue is full")
-			);
+			var rejected = TaskState.error(
+				task.id(), ErrorCode.TOO_MANY_TASKS, "the task queue is full");
+			put(task, rejected);
+			return rejected;
 		}
 	}
 
-	private void exec(NewTask<?> task) {
+	private void exec(Task<?> task) {
 		long start = System.currentTimeMillis();
 		long waitTime = start - task.time();
 		log.debug(
@@ -96,12 +92,10 @@ public class TaskService {
 		try {
 			var res = task.func().get();
 			if (res.isError()) {
-				store.put(
-					task.id(),
-					task.toError(task.type().errorCode(), res.error())
-				);
+				put(task, TaskState.error(
+					task.id(), task.type().errorCode(), res.error()));
 			} else {
-				store.put(task.id(), task.toResult(res.value()));
+				put(task, TaskState.ready(task.id(), res.value()));
 				ok = true;
 			}
 
@@ -109,13 +103,10 @@ public class TaskService {
 			// also errors like a StackOverflowError, so that the task does not
 			// stay in the running state forever
 			log.error("{} task {} failed", task.type(), task.id(), e);
-			store.put(
+			put(task, TaskState.error(
 				task.id(),
-				task.toError(
-					task.type().errorCode(),
-					"failed to execute task: " + e.getMessage()
-				)
-			);
+				task.type().errorCode(),
+				"failed to execute task: " + e.getMessage()));
 
 		} finally {
 			log.info(
@@ -133,33 +124,39 @@ public class TaskService {
 		}
 	}
 
+	/// Removes the finished tasks whose results were not fetched by the client
+	/// within the retention time.
 	@Scheduled(fixedRate = 30, timeUnit = TimeUnit.MINUTES)
 	public void runCleanup() {
 		long cutoffTime = System.currentTimeMillis() - taskTimeoutMs;
-		store
-			.entrySet()
-			.removeIf(entry -> {
-				Task task = entry.getValue();
-				return (
-					(task instanceof TaskError || task instanceof TaskResult) &&
-						task.time() < cutoffTime
-				);
-			});
+		store.values().removeIf(entry ->
+			entry.state().status() != TaskStatus.RUNNING
+				&& entry.time() < cutoffTime);
 	}
 
 	public Optional<TaskState> getState(User user, String id) {
 		if (user == null || Strings.isBlank(id)) return Optional.empty();
-		var task = store.get(id);
-		return task != null && task.userId() == user.id()
-			? Optional.of(task.toState())
+		var entry = store.get(id);
+		return entry != null && entry.userId() == user.id()
+			? Optional.of(entry.state())
 			: Optional.empty();
 	}
 
 	public boolean remove(User user, String id) {
 		if (user == null || Strings.isBlank(id)) return false;
-		var task = store.get(id);
-		if (task == null || task.userId() != user.id()) return false;
+		var entry = store.get(id);
+		if (entry == null || entry.userId() != user.id()) return false;
 		store.remove(id);
 		return true;
+	}
+
+	private void put(Task<?> task, TaskState state) {
+		var entry = new Entry(task.userId(), System.currentTimeMillis(), state);
+		store.put(task.id(), entry);
+	}
+
+	/// The current state of a task, together with the user who created the
+	/// task and the time of the last state change.
+	private record Entry(long userId, long time, TaskState state) {
 	}
 }
