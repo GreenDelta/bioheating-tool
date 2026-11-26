@@ -2,8 +2,11 @@ package com.greendelta.bioheating.model;
 
 import java.util.function.IntSupplier;
 
-/// The building type. There is no unknown value; when the type cannot be
-/// determined it defaults to MULTI_GENERATION.
+/// The building type. There is no unknown value: an invalid or missing type
+/// code defaults to MULTI_GENERATION (see `fromCode`). When the type is
+/// estimated from the geometry with `estimateFrom`, but neither the height nor
+/// the ground area is known, the number of heated neighbors decides, and
+/// without neighbors it is a SINGLE_FAMILY house.
 public enum BuildingType {
 	HIGH_RISE(1),
 	MULTI_FAMILY_SMALL(2),
@@ -33,7 +36,9 @@ public enum BuildingType {
 		return MULTI_GENERATION;
 	}
 
-	/// Returns the default height in m of the respective building type.
+	/// Returns the default height in m of the respective building type. The
+	/// default height and ground area of a type are chosen so that
+	/// `estimateFrom` classifies them again as that type.
 	public double defaultHeight() {
 		return switch (this) {
 			case HIGH_RISE -> 30;
@@ -43,9 +48,9 @@ public enum BuildingType {
 			case BUILDING_PART,
 			     SINGLE_FAMILY,
 			     END_TERRACE,
-			     MID_TERRACE -> 8;
-			case HOUSE_GROUP -> 9;
-			case MULTI_GENERATION -> 12;
+			     MID_TERRACE,
+			     HOUSE_GROUP,
+			     MULTI_GENERATION -> 8;
 		};
 	}
 
@@ -57,11 +62,10 @@ public enum BuildingType {
 			case MULTI_FAMILY_MEDIUM -> 300;
 			case MULTI_FAMILY_LARGE -> 500;
 			case BUILDING_PART -> 20;
-			case SINGLE_FAMILY -> 100;
+			case SINGLE_FAMILY, HOUSE_GROUP -> 100;
 			case END_TERRACE -> 90;
 			case MID_TERRACE -> 80;
-			case HOUSE_GROUP -> 130;
-			case MULTI_GENERATION -> 250;
+			case MULTI_GENERATION -> 200;
 		};
 	}
 
@@ -82,13 +86,18 @@ public enum BuildingType {
 		if (!hasHeight && !hasArea)
 			return byNeighbors(neighborCount);
 
+		// only one value is known: the thresholds are chosen so that the
+		// default value of the estimated type for the missing value (e.g. the
+		// default height of 15 m for a medium multi-family house) gives the
+		// same type in the full decision tree below
+
 		// only the ground area is known
 		if (!hasHeight) {
 			if (groundArea < 30)
 				return BuildingType.BUILDING_PART;
 			if (groundArea < 150)
 				return byNeighbors(neighborCount);
-			if (groundArea < 380)
+			if (groundArea < 333) // 333 m2 * 15 m < 5000 m3
 				return BuildingType.MULTI_FAMILY_MEDIUM;
 			else
 				return BuildingType.MULTI_FAMILY_LARGE;
@@ -98,7 +107,7 @@ public enum BuildingType {
 		if (!hasArea) {
 			if (height > 25)
 				return BuildingType.HIGH_RISE;
-			if (height > 18)
+			if (height > 16.5) // 16.5 m * 300 m2 < 5000 m3
 				return BuildingType.MULTI_FAMILY_LARGE;
 			if (height > 12)
 				return BuildingType.MULTI_FAMILY_MEDIUM;

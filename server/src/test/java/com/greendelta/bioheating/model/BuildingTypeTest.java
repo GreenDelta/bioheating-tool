@@ -214,6 +214,35 @@ class BuildingTypeTest {
 		assertRoundTrip(BuildingType.END_TERRACE, 1);
 		assertRoundTrip(BuildingType.MID_TERRACE, 2);
 		assertRoundTrip(BuildingType.HOUSE_GROUP, 3);
+		assertRoundTrip(BuildingType.MULTI_GENERATION, 0);
+	}
+
+	/// When only the ground area or only the height is known, the missing value
+	/// is later filled with the default of the estimated type. The full
+	/// decision tree must then give the same type again.
+	@Test
+	void testMissingValuesAreConsistentWithDefaults() {
+		double[] areas = {10, 29.9, 30, 100, 149.9, 150, 200, 332.9, 333, 1000};
+		double[] heights = {3, 8, 12, 12.1, 16.5, 16.6, 20, 25, 25.1, 40};
+		for (int neighbors = 0; neighbors <= 3; neighbors++) {
+			int n = neighbors;
+			for (double area : areas) {
+				var type = BuildingType.estimateFrom(0, area, () -> n);
+				assertEquals(
+					type,
+					BuildingType.estimateFrom(type.defaultHeight(), area, () -> n),
+					"ground area " + area + " m2 with the default height of " + type
+				);
+			}
+			for (double height : heights) {
+				var type = BuildingType.estimateFrom(height, 0, () -> n);
+				assertEquals(
+					type,
+					BuildingType.estimateFrom(height, type.defaultGroundArea(), () -> n),
+					"height " + height + " m with the default ground area of " + type
+				);
+			}
+		}
 	}
 
 	/// The default height and ground area of a type must estimate back to that
