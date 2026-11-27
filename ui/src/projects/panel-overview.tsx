@@ -120,16 +120,13 @@ export const OverviewPanel = ({ project, isDirty, onChange }: Props) => {
 					<div className="col-12">
 						{isDirty ? (
 							// the update works on the saved project
-							<button
-								className="btn btn-outline-primary w-100"
-								disabled
-								title={t("overview.saveFirst")}>
+							<span className="text-muted" title={t("overview.saveFirst")}>
 								{t("overview.updateData")}
-							</button>
+							</span>
 						) : (
 							<Link
 								to={`/ui/projects/${project.id}/update`}
-								className="btn btn-outline-primary w-100">
+								className="text-decoration-none">
 								{t("overview.updateData")}
 							</Link>
 						)}
