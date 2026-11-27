@@ -8,15 +8,17 @@ For the Docker setup, we have two images that we need to build:
 
 ## Building all images
 
-To build both the database and application images and export them as compressed tarballs, use the `docker-all` command:
+To build both the database and application images and export them as compressed
+tarballs, use the `docker-all` command:
 
 ```bash
 dart run docker/build.dart docker-all
 ```
 
 This command will:
-+  Check that no containers (`bioheating-db`, `bioheating-app`) are currently running
-+  Delete any existing images with these names
++ Check that no containers (`bioheating-db`, `bioheating-app`) are currently
+  running
++ Delete any existing images with these names
 + Build both images
 + Export them to `docker/images/` as `.tar.gz` files
 
@@ -25,13 +27,15 @@ The exported files can then be transferred to a server for deployment.
 
 ## Building the database image
 
-Build the `bioheating-db` image via the `docker/build.dart` script (see the `docker-db` command in the script):
+Build the `bioheating-db` image via the `docker/build.dart` script (see the
+`docker-db` command in the script):
 
 ```bash
 dart run docker/build.dart docker-db
 ```
 
-For running the database image, use `docker-compose.db-dev.yaml` to run just the database container (it contains additional details in its comments).
+For running the database image, use `docker-compose.db-dev.yaml` to run just the
+database container (it contains additional details in its comments).
 
 
 ## Building the application image
@@ -43,7 +47,8 @@ dart run docker/build.dart docker-app
 ```
 
 This will build the UI, the server, and then the Docker image `bioheating-app`.
-Use docker-compose to run both services with proper configuration. Run these commands from the `docker/` directory:
+Use docker-compose to run both services with proper configuration. Run these
+commands from the `docker/` directory:
 
 ```bash
 cd docker
@@ -70,8 +75,8 @@ The `docker-compose.yml` file automatically configures:
 
 ### External Deployment (Server)
 
-To deploy to a remote server run `dart run docker/build.dart docker-all` locally.
-This requires a trained model in `server/app/model` (see
+To deploy to a remote server run `dart run docker/build.dart docker-all`
+locally. This requires a trained model in `server/app/model` (see
 `server/model-training/README.md`). Copy these files to your server:
 
 + `docker/images/bioheating-db.tar.gz`
@@ -100,11 +105,17 @@ docker compose up -d
 The application does not start when the prediction model is missing in
 `data/app/model`; check the logs with `docker logs bioheating-app`. The model
 consists of the files `demand-model.ubj`, `peak-model.ubj`, and `config.json`.
-The `config.json` contains the corrections that are applied to the model
-outputs and can be edited on the server (restart the app afterwards with
-`docker compose restart bioheating-app`).
+The `config.json` contains the corrections that are applied to the model outputs
+and can be edited on the server (restart the app afterwards with `docker compose
+restart bioheating-app`).
 
-When you run `docker compose up`, the `data/db` and `data/app/uploads` folders will be created automatically if they don't exist. When uploading a new version, you do not need to delete the `data/` folder. Keeping it ensures your database and uploaded files persist across updates. Only delete the `data/` folder if you want to wipe the database and start with a clean installation. Note that you may need `sudo` to delete these folders as Docker creates them with root permissions.
+When you run `docker compose up`, the `data/db` and `data/app/uploads` folders
+will be created automatically if they don't exist. When uploading a new version,
+you do not need to delete the `data/` folder. Keeping it ensures your database
+and uploaded files persist across updates. Only delete the `data/` folder if you
+want to wipe the database and start with a clean installation. Note that you may
+need `sudo` to delete these folders as Docker creates them with root
+permissions.
 
 ### CPU and memory settings
 
