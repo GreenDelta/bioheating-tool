@@ -12,9 +12,7 @@ public class ModelTrainingExample {
 				new File(dataDir, "training-data.csv")
 			).orElseThrow();
 
-			var modelDir = new File(
-				"./src/main/resources/com/greendelta/bioheating/predict"
-			);
+			var modelDir = new File("./app/model");
 			Training.save(models, modelDir).orElseThrow();
 
 			System.out.println("All done!");

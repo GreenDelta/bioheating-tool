@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+from common import DEMAND_MODEL_FILE, MODEL_CONFIG_FILE, PEAK_MODEL_FILE
+
 
 def main():
     script_dir = Path(__file__).parent
@@ -16,14 +18,12 @@ def main():
                 f.unlink()
                 print(f"Deleted: {f.name}")
 
-    # delete all model files only if --all flag is provided
-    delete_models = "--all" in sys.argv
-    mod_dir = script_dir / "../src/main/resources/com/greendelta/bioheating/predict"
-    if delete_models and mod_dir.exists():
-        for model in mod_dir.glob("*-model.ubj"):
-            if model.is_file():
-                model.unlink()
-                print(f"Deleted: {model.name}")
+    # delete the model files in server/app/model only with the --all flag
+    if "--all" in sys.argv:
+        for f in [DEMAND_MODEL_FILE, PEAK_MODEL_FILE, MODEL_CONFIG_FILE]:
+            if f.is_file():
+                f.unlink()
+                print(f"Deleted: {f}")
 
     print("All done!")
 

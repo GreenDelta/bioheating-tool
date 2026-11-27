@@ -17,6 +17,11 @@ cd server/model-training
 # install dependencies (creates .venv automatically)
 uv sync
 
+# to run the complete training pipeline, just do this:
+uv run all-fresh.py data/training-simout.xlsx
+
+# alternatively, you can run each step separately:
+
 # convert the simulation output Excel files to the CSV format
 uv run xls_simout_to_csv.py training-simout.xlsx data/training-data.csv
 
@@ -35,7 +40,7 @@ gnuplot model-check-plot.plt
 # clean up generated check files and charts
 uv run clean.py
 
-# clean up including model files
+# clean up including the model files in ../app/model
 uv run clean.py --all
 ```
 
@@ -186,4 +191,3 @@ This creates `data/model-check-heat-demand.png` and
 `data/model-check-peak-load.png` from `data/validation-check.txt`. Since both
 the self-validation and the validation write to that same file, run the
 `validate.py` command for the data you want to see before running gnuplot.
-
